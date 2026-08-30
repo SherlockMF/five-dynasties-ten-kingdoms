@@ -25,6 +25,14 @@ export class LocalHistoryRepository implements HistoryRepository {
     return seedData.events.filter((item) => item.startYear <= year && (item.endYear ?? item.startYear) >= year);
   }
 
+  async getEventsInRange(startYear: number, endYear: number) {
+    return seedData.events.filter(
+      (item) =>
+        item.startYear <= endYear &&
+        (item.endYear ?? item.startYear) >= startYear,
+    );
+  }
+
   async getEvent(id: string): Promise<HistoricalEventDetail | null> {
     const event = seedData.events.find((item) => item.id === id);
     if (!event) return null;

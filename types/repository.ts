@@ -14,6 +14,7 @@ export interface HistoryRepository {
   getDynasty(id: string): Promise<DynastyDetail | null>;
   getRegionsByYear(year: number): Promise<HistoricalRegion[]>;
   getEventsByYear(year: number): Promise<HistoricalEvent[]>;
+  getEventsInRange(startYear: number, endYear: number): Promise<HistoricalEvent[]>;
   getEvent(id: string): Promise<HistoricalEventDetail | null>;
   getEventRelations(id: string): Promise<EventRelation[]>;
   searchPeople(query: string, year?: number): Promise<Person[]>;
