@@ -18,7 +18,7 @@ export function DynastyRegion({ dynasty, region, path, selected, onSelect }: { d
         onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(); } }}
         className="cursor-pointer outline-none transition-[fill-opacity,stroke-width] hover:fill-opacity-100 focus:fill-opacity-100"
       >
-        <title>{dynasty.name}，{dynasty.startYear}—{dynasty.endYear}</title>
+        <title>{`${dynasty.name}，${dynasty.startYear}—${dynasty.endYear}`}</title>
       </path>
       <text x={region.labelPoint[0]} y={region.labelPoint[1]} className="pointer-events-none fill-paper font-serif text-[9px] font-semibold tracking-[.14em]" textAnchor="middle">
         {dynasty.shortName}
