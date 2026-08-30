@@ -1,0 +1,1 @@
+export function AiEmpty({ year }: { year: number }) { return <div className="grid flex-1 place-items-center px-6 text-center"><div><p className="font-serif text-3xl text-ink/15">问</p><h2 className="mt-4 font-serif text-xl">从当前线索继续追问</h2><p className="mt-3 text-sm leading-6 text-muted">当前上下文：{year}年。你可以问“他为什么这么做？”或“这件事后来导致了什么？”</p></div></div>; }

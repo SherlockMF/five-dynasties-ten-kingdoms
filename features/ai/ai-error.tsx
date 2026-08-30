@@ -1,0 +1,1 @@
+export function AiError({ message, onRetry }: { message: string; onRetry: () => void }) { return <div role="alert" className="rounded-xl border border-cinnabar/25 bg-cinnabar/5 p-4 text-sm"><p>{message}</p><button type="button" onClick={onRetry} className="mt-3 font-semibold text-cinnabar underline underline-offset-4">重新尝试</button></div>; }
