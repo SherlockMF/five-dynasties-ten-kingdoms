@@ -7,6 +7,10 @@ export class LocalHistoryRepository implements HistoryRepository {
     return seedData.dynasties.filter((item) => item.startYear <= year && item.endYear >= year);
   }
 
+  async getAllDynasties() {
+    return seedData.dynasties;
+  }
+
   async getDynasty(id: string) {
     const dynasty = seedData.dynasties.find((item) => item.id === id);
     if (!dynasty) return null;
@@ -19,6 +23,12 @@ export class LocalHistoryRepository implements HistoryRepository {
 
   async getRegionsByYear(year: number) {
     return seedData.regions.filter((item) => item.validFromYear <= year && year < item.validToYearExclusive);
+  }
+
+  async getRegionsInRange(startYear: number, endYear: number) {
+    return seedData.regions.filter(
+      (item) => item.validFromYear <= endYear && item.validToYearExclusive > startYear,
+    );
   }
 
   async getEventsByYear(year: number) {

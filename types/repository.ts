@@ -11,8 +11,10 @@ import type {
 
 export interface HistoryRepository {
   getDynastiesByYear(year: number): Promise<Dynasty[]>;
+  getAllDynasties(): Promise<Dynasty[]>;
   getDynasty(id: string): Promise<DynastyDetail | null>;
   getRegionsByYear(year: number): Promise<HistoricalRegion[]>;
+  getRegionsInRange(startYear: number, endYear: number): Promise<HistoricalRegion[]>;
   getEventsByYear(year: number): Promise<HistoricalEvent[]>;
   getEventsInRange(startYear: number, endYear: number): Promise<HistoricalEvent[]>;
   getEvent(id: string): Promise<HistoricalEventDetail | null>;
