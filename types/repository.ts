@@ -20,6 +20,8 @@ export interface HistoryRepository {
   getEvent(id: string): Promise<HistoricalEventDetail | null>;
   getEventRelations(id: string): Promise<EventRelation[]>;
   searchPeople(query: string, year?: number): Promise<Person[]>;
+  getAllPeople(): Promise<Person[]>;
+  getAllPersonRelations(): Promise<import("@/types/history").PersonRelation[]>;
   getPerson(id: string): Promise<Person | null>;
   getFirstDegreeRelations(id: string, year?: number): Promise<PersonGraphData>;
 }

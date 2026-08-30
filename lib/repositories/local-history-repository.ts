@@ -69,6 +69,14 @@ export class LocalHistoryRepository implements HistoryRepository {
     });
   }
 
+  async getAllPeople() {
+    return seedData.people;
+  }
+
+  async getAllPersonRelations() {
+    return seedData.personRelations;
+  }
+
   async getPerson(id: string) {
     return seedData.people.find((person) => person.id === id) ?? null;
   }
