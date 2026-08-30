@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-ink: var(--ink);
+  --color-paper: var(--paper);
+  --color-mist: var(--mist);
+  --color-cinnabar: var(--cinnabar);
+  --color-gold: var(--gold);
+  --color-muted: var(--muted);
+  --font-serif: var(--font-display);
+  --font-sans: var(--font-body);
+}
+
+:root {
+  --ink: #172824;
+  --paper: #f3f0e7;
+  --mist: #dfe6e1;
+  --cinnabar: #9f4036;
+  --gold: #b79755;
+  --muted: #6e716b;
+  --border: rgba(23, 40, 36, 0.14);
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-body: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", sans-serif;
+}
+
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--paper);
+  color: var(--ink);
+  overflow-x: clip;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  background:
+    linear-gradient(90deg, transparent 49.9%, rgba(23, 40, 36, 0.025) 50%, transparent 50.1%),
+    radial-gradient(circle at 88% 12%, rgba(64, 105, 94, 0.12), transparent 26rem),
+    var(--paper);
+  font-family: var(--font-body);
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--cinnabar);
+  color: var(--paper);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
