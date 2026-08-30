@@ -1,0 +1,1 @@
+export default function EventLoading() { return <main className="mx-auto max-w-[1320px] px-6 py-16"><div aria-label="事件详情加载中" className="h-20 w-28 animate-pulse rounded-xl bg-ink/10" /><div className="mt-8 h-16 max-w-2xl animate-pulse rounded-xl bg-ink/10" /><div className="mt-10 h-96 animate-pulse rounded-2xl bg-ink/5" /></main>; }
