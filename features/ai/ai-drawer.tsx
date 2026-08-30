@@ -2,7 +2,7 @@
 
 import { History, Send, Sparkles, X } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useHistoryStore } from "@/features/history-state/history-store";
@@ -16,7 +16,11 @@ export function AiDrawer() {
   const pathname = usePathname();
   const open = useHistoryStore((state) => state.aiDrawerOpen);
   const setOpen = useHistoryStore((state) => state.setAiDrawerOpen);
-  const context = useHistoryStore((state) => ({ currentYear: state.currentYear, selectedDynasty: state.selectedDynasty, selectedPerson: state.selectedPerson, selectedEvent: state.selectedEvent }));
+  const currentYear = useHistoryStore((state) => state.currentYear);
+  const selectedDynasty = useHistoryStore((state) => state.selectedDynasty);
+  const selectedPerson = useHistoryStore((state) => state.selectedPerson);
+  const selectedEvent = useHistoryStore((state) => state.selectedEvent);
+  const context = useMemo(() => ({ currentYear, selectedDynasty, selectedPerson, selectedEvent }), [currentYear, selectedDynasty, selectedPerson, selectedEvent]);
   const [message, setMessage] = useState("");
   const [answer, setAnswer] = useState<AiAnswer>();
   const [error, setError] = useState("");

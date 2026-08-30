@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import type { ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { SiteHeader } from "@/components/layout/site-header";
+import { AiDrawer } from "@/features/ai/ai-drawer";
+import { HistoryProvider } from "@/features/history-state/history-provider";
 
 import "./globals.css";
 
@@ -15,9 +17,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="zh-CN">
       <body>
-        <SiteHeader />
-        {children}
-        <MobileNav />
+        <Suspense fallback={null}>
+          <HistoryProvider>
+            <SiteHeader />
+            {children}
+            <AiDrawer />
+            <MobileNav />
+          </HistoryProvider>
+        </Suspense>
       </body>
     </html>
   );
