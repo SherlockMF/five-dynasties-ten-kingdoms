@@ -1,6 +1,7 @@
 import { Crown, Flag, Landmark, Scale, Swords } from "lucide-react";
 import Link from "next/link";
 
+import { SourceMarker } from "@/components/history/source-marker";
 import { cn } from "@/lib/utils";
 import type { EventType, HistoricalEvent } from "@/types/history";
 
@@ -28,8 +29,9 @@ export function TimelineEventNode({ event }: { event: HistoricalEvent }) {
         <Icon aria-hidden="true" className={cn("size-3.5", meta.className)} />
         {meta.label}
       </div>
-      <h3 className="mt-3 font-serif text-lg text-ink group-hover:text-cinnabar">
-        {event.title}
+      <h3 className="mt-3 flex items-baseline gap-1 font-serif text-lg text-ink group-hover:text-cinnabar">
+        <span>{event.title}</span>
+        <SourceMarker entity={event} />
       </h3>
       <p className="mt-2 line-clamp-2 text-xs leading-6 text-muted">
         {event.summary}

@@ -44,4 +44,15 @@ describe("Timeline", () => {
 
     expect(screen.getByText("唐末前史")).toBeVisible();
   });
+
+  it("keeps the full timeline range available after filtering", async () => {
+    const user = userEvent.setup();
+    render(<Timeline events={events} />);
+
+    await user.click(screen.getByRole("button", { name: "宋初统一" }));
+    await user.selectOptions(screen.getByLabelText("直接选择年份"), "875");
+
+    expect(useHistoryStore.getState().currentYear).toBe(875);
+    expect(screen.getByLabelText("875至979年时间轨")).toBeInTheDocument();
+  });
 });
