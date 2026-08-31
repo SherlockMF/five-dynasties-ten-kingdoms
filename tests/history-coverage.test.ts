@@ -209,7 +209,10 @@ describe("expanded northern history corpus", () => {
       .toBe(975);
     expect(people.find((person) => person.id === "li-congke")).toMatchObject({
       deathYear: 936,
-      disputedNote: expect.stringContaining("公历 937 年初"),
+      biography: expect.stringContaining("清泰三年闰十一月二十六日"),
+      disputedNote: expect.stringMatching(
+        /清泰三年闰十一月二十六日.*公历 937-01-11/,
+      ),
     });
   });
 });

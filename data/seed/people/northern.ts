@@ -60,8 +60,8 @@ export const northernPeople: Person[] = [
   {
     id: "li-congke", name: "李从珂", birthYear: 885, deathYear: 936, dynastyIds: ["later-tang"], roles: ["后唐末帝", "凤翔节度使"],
     summary: "李嗣源养子，934 年起兵夺位，后因逼反石敬瑭而亡国。",
-    biography: "李从珂凭军中资历在凤翔起兵并进入洛阳即位。其与石敬瑭相互猜忌，清泰三年十二月在河东叛乱与契丹介入后失去军心，于洛阳自焚。",
-    disputedNote: "本数据按后唐清泰三年记 deathYear=936；该年十二月对应公历 937 年初，因此现代资料也常标作 937 年去世。",
+    biography: "李从珂凭军中资历在凤翔起兵并进入洛阳即位。其与石敬瑭相互猜忌，清泰三年闰十一月二十六日在河东叛乱与契丹介入后失去军心，于洛阳自焚。",
+    disputedNote: "本数据按后唐清泰三年记 deathYear=936；清泰三年闰十一月二十六日对应公历 937-01-11，因此现代资料也常标作 937 年去世。",
     sourceRefs: ["《新五代史》卷七《唐本纪第七》", "《资治通鉴》卷二百七十九至卷二百八十"], verificationStatus: "reviewed", ...mixed([3, 4]),
   },
   {
