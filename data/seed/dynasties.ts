@@ -30,8 +30,8 @@ const dynastyRulerPeriods: Record<string, DynastyRulerPeriod[]> = {
   wu: [
     { name: "杨行密", startYear: 902, endYear: 905, personId: "yang-xingmi" },
     { name: "杨渥", startYear: 905, endYear: 908 },
-    { name: "杨隆演", startYear: 908, endYear: 921 },
-    { name: "杨溥", startYear: 921, endYear: 937 },
+    { name: "杨隆演", startYear: 908, endYear: 920 },
+    { name: "杨溥", startYear: 920, endYear: 937 },
   ],
   wuyue: [
     { name: "钱镠", startYear: 907, endYear: 932, personId: "qian-liu" },
@@ -42,11 +42,12 @@ const dynastyRulerPeriods: Record<string, DynastyRulerPeriod[]> = {
   ],
   min: [
     { name: "王审知", startYear: 909, endYear: 925, personId: "wang-shenzhi" },
-    { name: "王延翰", startYear: 925, endYear: 926 },
-    { name: "王延钧", startYear: 926, endYear: 935 },
+    { name: "王延翰", startYear: 925, endYear: 927 },
+    { name: "王延钧", startYear: 927, endYear: 935 },
     { name: "王继鹏", startYear: 935, endYear: 939 },
     { name: "王延羲", startYear: 939, endYear: 944 },
     { name: "王延政", startYear: 943, endYear: 945, note: "闽分裂期间据建州称帝" },
+    { name: "朱文进", startYear: 944, endYear: 945, note: "福州政变后自立闽王" },
   ],
   chu: [
     { name: "马殷", startYear: 907, endYear: 930, personId: "ma-yin" },
@@ -113,7 +114,7 @@ const dynastyRecords: WithoutRulerPeriods<Dynasty>[] = [
   { id: "later-zhou", name: "后周", shortName: "周", category: "five-dynasties", startYear: 951, endYear: 960, capital: "开封", founderPersonId: "guo-wei", summary: "郭威取代后汉建立，柴荣继位后整顿军政并推进统一战争。其积累的中央军力和行政资源被北宋继承，是五代最后一个中原政权。", predecessorIds: ["later-han"], successorIds: ["northern-song"], color: "#b09348", sourceRefs: ["《新五代史》卷十一至卷十二《周本纪第十一至第十二》", "《资治通鉴》卷二百九十至卷二百九十四"], verificationStatus: "reviewed", ...mixed([5, 6]) },
   { id: "wu", name: "吴", shortName: "吴", category: "ten-kingdoms", startYear: 902, endYear: 937, capital: "广陵", summary: "杨行密奠定基础、杨氏后人延续的淮南政权，控制长江下游大片地区。后期实权转入徐温、徐知诰集团，937 年由南唐取代。", predecessorIds: [], successorIds: ["southern-tang"], color: "#71918d", sourceRefs: ["《新五代史》卷六十一《吴世家第一》"], verificationStatus: "reviewed", ...historicalExtension() },
   { id: "wuyue", name: "吴越", shortName: "吴越", category: "ten-kingdoms", startYear: 907, endYear: 978, capital: "杭州", summary: "钱氏以两浙为核心建立的政权，长期奉中原王朝正朔并经营水利、海贸。其政局相对稳定，978 年主动归宋。", predecessorIds: [], successorIds: [], color: "#5b8f92", sourceRefs: ["《新五代史》卷六十七《吴越世家第七》"], verificationStatus: "reviewed", ...historicalExtension() },
-  { id: "min", name: "闽", shortName: "闽", category: "ten-kingdoms", startYear: 909, endYear: 945, capital: "福州", summary: "王审知家族据福建建立的政权，利用山海交通维持区域统治。后期宗室内斗严重，最终为南唐及地方势力分割。", predecessorIds: [], successorIds: ["southern-tang"], color: "#8a7f4f", sourceRefs: ["《新五代史》卷六十八《闽世家第八》"], verificationStatus: "reviewed", ...historicalExtension() },
+  { id: "min", name: "闽", shortName: "闽", category: "ten-kingdoms", startYear: 909, endYear: 945, capital: "福州", summary: "王审知家族据福建建立的政权，利用山海交通维持区域统治。后期宗室内斗严重，最终为南唐及地方势力分割。", predecessorIds: [], successorIds: ["southern-tang"], color: "#8a7f4f", sourceRefs: ["《新五代史》卷六十八《闽世家第八》", "《十国春秋》卷九十至卷九十二《闽一至闽三》"], verificationStatus: "reviewed", ...historicalExtension() },
   { id: "chu", name: "楚", shortName: "楚", category: "ten-kingdoms", startYear: 907, endYear: 951, capital: "潭州", summary: "马殷家族以湖南为中心建立的政权，依靠茶业和南北贸易维持财政。马氏诸子争位削弱统治，951 年被南唐攻灭。", predecessorIds: [], successorIds: ["southern-tang"], color: "#98705b", sourceRefs: ["《新五代史》卷六十六《楚世家第六》"], verificationStatus: "reviewed", ...historicalExtension() },
   { id: "former-shu", name: "前蜀", shortName: "蜀", category: "ten-kingdoms", startYear: 907, endYear: 925, capital: "成都", summary: "王建在唐末控制四川后建立的政权，凭险要和富庶维持独立。王衍时期军政松弛，925 年被后唐迅速攻灭。", predecessorIds: [], successorIds: ["later-tang"], color: "#9d7953", sourceRefs: ["《新五代史》卷六十三《前蜀世家第三》", "《资治通鉴》卷二百七十四《后唐纪三》"], verificationStatus: "reviewed", ...historicalExtension() },
   { id: "later-shu", name: "后蜀", shortName: "蜀", category: "ten-kingdoms", startYear: 934, endYear: 965, capital: "成都", summary: "孟知祥在后唐失去四川控制后建立，继续以成都平原为政治与经济中心。后蜀与中原长期并立，965 年被北宋攻灭。", predecessorIds: ["later-tang"], successorIds: ["northern-song"], color: "#a47f57", sourceRefs: ["《新五代史》卷六十四《后蜀世家第四》"], verificationStatus: "reviewed", ...historicalExtension() },

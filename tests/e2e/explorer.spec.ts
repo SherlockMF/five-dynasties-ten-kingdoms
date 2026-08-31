@@ -20,6 +20,30 @@ test("explores 936 from map to person to event and asks a contextual question", 
   await expect(page.getByText("当前上下文：936年")).toBeVisible();
 });
 
+test("map dynasty profiles expose exact transition-year ruler sets", async ({ page }) => {
+  for (const fixture of [
+    { dynasty: "吴", year: 920, rulers: ["杨隆演", "杨溥"] },
+    { dynasty: "闽", year: 944, rulers: ["王延羲", "王延政", "朱文进"] },
+  ]) {
+    await page.goto(`/map?year=${fixture.year}`);
+    await page
+      .getByRole("button", { name: `查看${fixture.dynasty}`, exact: true })
+      .click();
+    const dialog = page.getByRole("dialog", {
+      name: `${fixture.dynasty}详情`,
+    });
+    const rulerSection = dialog
+      .locator("section")
+      .filter({ hasText: "当年君主（年内）" });
+    await expect(rulerSection.getByRole("listitem")).toHaveCount(
+      fixture.rulers.length,
+    );
+    for (const ruler of fixture.rulers) {
+      await expect(rulerSection.getByText(ruler, { exact: true })).toBeVisible();
+    }
+  }
+});
+
 test("map event markers stay projected and expose a bounded sourced popover", async ({ page }) => {
   await page.goto("/map?year=936");
   const marker = page.getByRole("button", {

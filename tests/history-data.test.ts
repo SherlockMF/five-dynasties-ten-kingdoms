@@ -236,6 +236,14 @@ describe("history seed data", () => {
     },
   );
 
+  it("cites the Min primary histories used for disputed succession years", () => {
+    const min = seedData.dynasties.find(({ id }) => id === "min");
+    expect(min?.sourceRefs).toEqual([
+      "《新五代史》卷六十八《闽世家第八》",
+      "《十国春秋》卷九十至卷九十二《闽一至闽三》",
+    ]);
+  });
+
   it("validates duplicate person dynasty references", () => {
     const personIndex = seedData.people.findIndex(
       (person) => person.dynastyIds.length > 0,
@@ -621,6 +629,45 @@ describe("history seed data", () => {
       "dynasty:later-jin:ruler-period:0:person-outside-dynasty:zhu-wen",
     );
   });
+
+  it.each([
+    ["wu", 920, ["杨隆演", "杨溥"]],
+    ["wu", 921, ["杨溥"]],
+    ["min", 926, ["王延翰"]],
+    ["min", 927, ["王延翰", "王延钧"]],
+    ["min", 943, ["王延羲", "王延政"]],
+    ["min", 944, ["朱文进", "王延羲", "王延政"]],
+    ["min", 945, ["朱文进", "王延政"]],
+    ["wuyue", 941, ["钱元瓘", "钱弘佐"]],
+    ["wuyue", 947, ["钱弘佐", "钱弘倧"]],
+    ["wuyue", 948, ["钱俶", "钱弘倧"]],
+    ["jingnan", 929, ["高从诲", "高季兴"]],
+    ["jingnan", 948, ["高从诲", "高保融"]],
+    ["jingnan", 960, ["高保勖", "高保融"]],
+    ["jingnan", 962, ["高保勖", "高继冲"]],
+    ["northern-han", 954, ["刘崇", "刘钧"]],
+    ["northern-han", 968, ["刘继元", "刘继恩", "刘钧"]],
+    ["northern-han", 979, ["刘继元"]],
+    ["liao", 926, ["耶律德光", "耶律阿保机"]],
+    ["liao", 947, ["耶律德光", "耶律阮"]],
+    ["liao", 951, ["耶律璟", "耶律阮"]],
+    ["liao", 969, ["耶律璟", "耶律贤"]],
+    ["northern-song", 976, ["赵光义", "赵匡胤"]],
+  ] as const)(
+    "records the exact %s ruler set in %i",
+    (dynastyId, year, expectedNames) => {
+      const dynasty = seedData.dynasties.find(({ id }) => id === dynastyId);
+      if (!dynasty) throw new Error(`missing dynasty fixture: ${dynastyId}`);
+      const actualNames = dynasty.rulerPeriods
+        .filter(
+          (period) => period.startYear <= year && period.endYear >= year,
+        )
+        .map((period) => period.name)
+        .sort();
+
+      expect(actualNames).toEqual([...expectedNames].sort());
+    },
+  );
 
   it("uses corrected traceable citations for Du Chongwei and Northern Han", () => {
     const allSourceRefs = Object.values(seedData)

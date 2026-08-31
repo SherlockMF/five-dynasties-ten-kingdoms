@@ -174,6 +174,37 @@ describe("HistoricalMap", () => {
     ).toBeVisible();
   });
 
+  it.each([
+    ["wu", "吴", 920, ["杨隆演", "杨溥"]],
+    ["min", "闽", 944, ["王延羲", "王延政", "朱文进"]],
+  ] as const)(
+    "shows the exact %s (%s) ruler set in %i across the list and popover",
+    (dynastyId, dynastyName, year, expectedNames) => {
+      useHistoryStore.getState().reset({
+        currentYear: year,
+        selectedDynasty: dynastyId,
+      });
+      render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+      const dialog = screen.getByRole("dialog", {
+        name: `${dynastyName}详情`,
+      });
+      const rulerSection = within(dialog)
+        .getByText("当年君主（年内）")
+        .closest("section");
+      if (!rulerSection) throw new Error("ruler section missing");
+      const popoverNames = [...rulerSection.querySelectorAll("li")]
+        .map((item) => item.firstElementChild?.textContent)
+        .sort();
+      expect(popoverNames).toEqual([...expectedNames].sort());
+      expect(
+        within(
+          screen.getByRole("button", { name: `查看${dynastyName}` }),
+        ).getByText(`当年君主：${expectedNames.join("、")}`),
+      ).toBeVisible();
+    },
+  );
+
   it("does not infer accuracy when a selected dynasty has no active region", () => {
     useHistoryStore.getState().selectDynasty("later-jin");
     render(
