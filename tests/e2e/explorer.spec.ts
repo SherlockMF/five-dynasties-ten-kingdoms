@@ -224,8 +224,14 @@ test("mobile map popover recomputes its viewport placement after rotation", asyn
   await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
 });
 
-test("map event modal backdrop blocks background markers and year controls", async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 800 });
+test("map event modal is a top-level inert and accessible portal", async (
+  { context, page },
+  testInfo,
+) => {
+  const viewport = testInfo.project.name === "mobile"
+    ? { width: 412, height: 915 }
+    : { width: 1280, height: 800 };
+  await page.setViewportSize(viewport);
   await page.goto("/map?year=936");
   const taiyuan = page.getByRole("button", {
     name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
@@ -234,6 +240,11 @@ test("map event modal backdrop blocks background markers and year controls", asy
     name: "幽州：燕云十六州归辽（时称契丹）",
   });
   const slider = page.getByRole("slider", { name: "地图年份" });
+  const backgroundLink = testInfo.project.name === "mobile"
+    ? page
+        .getByRole("navigation", { name: "移动端主要导航" })
+        .getByRole("link", { name: "首页" })
+    : page.getByRole("link", { name: "五代十国互动历史探索首页" });
 
   await taiyuan.click();
   const taiyuanDialog = page.getByRole("dialog", { name: "太原事件" });
@@ -242,7 +253,77 @@ test("map event modal backdrop blocks background markers and year controls", asy
   await expect(backdrop).toBeVisible();
   await expect(youzhou).toBeDisabled();
   const backdropBox = await backdrop.boundingBox();
-  expect(backdropBox).toEqual({ x: 0, y: 0, width: 1280, height: 800 });
+  expect(backdropBox).toEqual({ x: 0, y: 0, ...viewport });
+  expect(
+    await taiyuanDialog.evaluate((dialog) =>
+      dialog.parentElement?.matches("[data-map-event-modal-host]"),
+    ),
+  ).toBe(true);
+  expect(
+    await page.locator("body > :not([data-map-event-modal-host])").evaluateAll(
+      (elements) => elements.every((element) => (element as HTMLElement).inert),
+    ),
+  ).toBe(true);
+
+  for (const backgroundControl of [backgroundLink, slider, youzhou]) {
+    await expect(backgroundControl).toBeVisible();
+    expect(
+      await backgroundControl.evaluate((element) => {
+        const box = element.getBoundingClientRect();
+        const hit = document.elementFromPoint(
+          box.left + box.width / 2,
+          box.top + box.height / 2,
+        );
+        return {
+          blocked: hit !== element && !element.contains(hit),
+          hitModal: Boolean(hit?.closest("[data-map-event-modal-host]")),
+        };
+      }),
+    ).toEqual({ blocked: true, hitModal: true });
+  }
+
+  const close = taiyuanDialog.getByRole("button", { name: "关闭太原事件" });
+  await expect(close).toBeFocused();
+  await slider.evaluate((element) => (element as HTMLElement).focus());
+  await expect(close).toBeFocused();
+  const sourceMarker = taiyuanDialog
+    .getByRole("note", { name: "第04集主线、史料扩展" })
+    .first();
+  await sourceMarker.focus();
+  await expect(
+    taiyuanDialog.getByRole("tooltip", { includeHidden: true }).first(),
+  ).toBeVisible();
+
+  const client = await context.newCDPSession(page);
+  const axTree = await client.send("Accessibility.getFullAXTree");
+  for (const foregroundName of [
+    "太原事件",
+    "关闭太原事件",
+    "石敬瑭起兵（太原）",
+    "第04集主线、史料扩展",
+  ]) {
+    expect(
+      axTree.nodes.some(
+        (node) => !node.ignored && node.name?.value === foregroundName,
+      ),
+      `${foregroundName} should remain in the accessibility tree`,
+    ).toBe(true);
+  }
+  for (const backgroundName of [
+    "地图年份",
+    "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    testInfo.project.name === "mobile"
+      ? "首页"
+      : "五代十国互动历史探索首页",
+  ]) {
+    expect(
+      axTree.nodes.some(
+        (node) => !node.ignored && node.name?.value === backgroundName,
+      ),
+      `${backgroundName} should be ignored while inert`,
+    ).toBe(false);
+  }
+
   const youzhouBox = await youzhou.boundingBox();
   expect(youzhouBox).not.toBeNull();
   await page.mouse.click(
@@ -276,12 +357,30 @@ test("a disappearing event selection closes permanently with a safe focus target
   });
   await marker.click();
   const dialog = page.getByRole("dialog", { name: "太原事件" });
-  await slider.focus();
-  await page.keyboard.press("ArrowRight");
+  const close = dialog.getByRole("button", { name: "关闭太原事件" });
+  await slider.evaluate((element) => (element as HTMLElement).focus());
+  await expect(close).toBeFocused();
+  await slider.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )?.set?.call(input, "937");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
   await expect(slider).toHaveValue("937");
   await expect(dialog).toBeHidden();
-  await expect(slider).toBeFocused();
-  await page.keyboard.press("ArrowLeft");
+  await expect(page.getByLabel("937年地图事件")).toBeFocused();
+  await slider.evaluate((element) => {
+    const input = element as HTMLInputElement;
+    Object.getOwnPropertyDescriptor(
+      HTMLInputElement.prototype,
+      "value",
+    )?.set?.call(input, "936");
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  });
   await expect(slider).toHaveValue("936");
   await expect(dialog).toBeHidden();
 

@@ -2,6 +2,7 @@
 
 import { MapPin, X } from "lucide-react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import {
   useEffect,
   useId,
@@ -124,10 +125,12 @@ export function MapEventMarkers({
   const layerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const activeTriggerRef = useRef<HTMLButtonElement>(null);
+  const restoreFocusOnCloseRef = useRef(false);
   const dialogId = useId();
   const [selection, setSelection] = useState<{
     locationId?: string;
     invalidated?: boolean;
+    modalHost?: HTMLDivElement;
   }>({});
   const selectedLocationId = selection.locationId;
   const [viewport, setViewport] = useState({
@@ -217,8 +220,48 @@ export function MapEventMarkers({
     (group) => group.location.id === selectedLocationId,
   );
   if (selectedLocationId && !selectedGroup) {
-    setSelection({ invalidated: true });
+    setSelection({ invalidated: true, modalHost: selection.modalHost });
   }
+
+  const modalHost = selection.modalHost;
+  const selectedGroupId = selectedGroup?.location.id;
+  useLayoutEffect(() => {
+    if (!modalHost || !selectedGroupId) return;
+
+    if (!modalHost.isConnected) document.body.append(modalHost);
+    const fallbackLayer = layerRef.current;
+    closeButtonRef.current?.focus();
+    const originalInert = new Map<HTMLElement, boolean>();
+    const makeInert = (element: HTMLElement) => {
+      if (element === modalHost || originalInert.has(element)) return;
+      originalInert.set(element, element.inert);
+      element.inert = true;
+    };
+    for (const element of document.body.children) {
+      if (element instanceof HTMLElement) makeInert(element);
+    }
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        for (const node of mutation.addedNodes) {
+          if (node instanceof HTMLElement) makeInert(node);
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true });
+
+    return () => {
+      observer.disconnect();
+      for (const [element, inert] of originalInert) element.inert = inert;
+      modalHost.remove();
+      if (!restoreFocusOnCloseRef.current) return;
+      restoreFocusOnCloseRef.current = false;
+      if (activeTriggerRef.current?.isConnected) {
+        activeTriggerRef.current.focus();
+      } else {
+        fallbackLayer?.focus();
+      }
+    };
+  }, [modalHost, selectedGroupId]);
 
   useLayoutEffect(() => {
     if (!selection.invalidated) return;
@@ -233,18 +276,9 @@ export function MapEventMarkers({
     }
   }, [selection.invalidated]);
 
-  useEffect(() => {
-    if (selectedLocationId) closeButtonRef.current?.focus();
-  }, [selectedLocationId]);
-
   const closeDialog = (restoreFocus = true) => {
+    restoreFocusOnCloseRef.current = restoreFocus;
     setSelection({});
-    if (!restoreFocus) return;
-    if (activeTriggerRef.current?.isConnected) {
-      activeTriggerRef.current.focus();
-    } else {
-      layerRef.current?.focus();
-    }
   };
 
   const handleDialogKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
@@ -272,12 +306,13 @@ export function MapEventMarkers({
   };
 
   return (
-    <div
-      ref={layerRef}
-      tabIndex={-1}
-      aria-label={`${year}年地图事件`}
-      className="pointer-events-none absolute inset-0 z-10"
-    >
+    <>
+      <div
+        ref={layerRef}
+        tabIndex={-1}
+        aria-label={`${year}年地图事件`}
+        className="pointer-events-none absolute inset-0 z-10"
+      >
       {positionedGroups.map(({
         location,
         events: locationEvents,
@@ -326,8 +361,11 @@ export function MapEventMarkers({
                 if (open) {
                   closeDialog();
                 } else {
+                  const modalHost = document.createElement("div");
+                  modalHost.dataset.mapEventModalHost = "";
+                  document.body.append(modalHost);
                   activeTriggerRef.current = event.currentTarget;
-                  setSelection({ locationId: location.id });
+                  setSelection({ locationId: location.id, modalHost });
                   onSelect(locationEvents[0].id);
                 }
               }}
@@ -339,15 +377,15 @@ export function MapEventMarkers({
           </div>
         );
       })}
-      {selectedGroup ? (
+      </div>
+      {selectedGroup && modalHost ? createPortal(<>
         <div
           data-testid="map-modal-backdrop"
           aria-hidden="true"
           onPointerDown={() => closeDialog()}
-          className="pointer-events-auto fixed inset-0 z-40 cursor-default bg-ink/20 backdrop-blur-[1px]"
+          className="pointer-events-auto fixed inset-0 z-[2147483000] cursor-default bg-ink/20 backdrop-blur-[1px]"
         />
-      ) : null}
-      {selectedGroup ? (() => {
+        {(() => {
         const anchor = {
           x: viewport.left + selectedGroup.markerPoint[0],
           y: viewport.top + selectedGroup.markerPoint[1],
@@ -379,7 +417,7 @@ export function MapEventMarkers({
               ? { bottom: Math.max(16, anchor.viewportHeight - anchor.y + 20) }
               : { top: Math.max(16, anchor.y + 20) }),
           }}
-          className="pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-ink/15 bg-paper p-4 text-ink shadow-2xl"
+          className="pointer-events-auto fixed z-[2147483001] w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-ink/15 bg-paper p-4 text-ink shadow-2xl"
         >
           <Button
             ref={closeButtonRef}
@@ -415,7 +453,8 @@ export function MapEventMarkers({
             ))}
           </ul>
         </aside>;
-      })() : null}
-    </div>
+      })()}
+      </>, modalHost) : null}
+    </>
   );
 }

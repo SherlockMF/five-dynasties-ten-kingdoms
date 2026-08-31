@@ -211,6 +211,64 @@ describe("MapEventMarkers", () => {
     expect(screen.queryByRole("dialog", { name: "洛阳事件" })).not.toBeInTheDocument();
   });
 
+  it("portals the modal and precisely restores body sibling inert state", async () => {
+    const user = userEvent.setup();
+    const rebellion = events.find(
+      (event) => event.id === "shi-jingtang-rebellion",
+    );
+    if (!rebellion) throw new Error("fixture event missing");
+    const alreadyInert = document.createElement("div");
+    alreadyInert.inert = true;
+    document.body.append(alreadyInert);
+
+    const { container, unmount } = render(
+      <MapEventMarkers
+        year={936}
+        events={[rebellion]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+    const originalContainerInert = container.inert;
+    try {
+      await user.click(
+        screen.getByRole("button", { name: "太原：石敬瑭起兵" }),
+      );
+      const host = document.querySelector<HTMLElement>(
+        "[data-map-event-modal-host]",
+      );
+      const dialog = screen.getByRole("dialog", { name: "太原事件" });
+      expect(host).not.toBeNull();
+      expect(host?.parentElement).toBe(document.body);
+      expect(dialog.parentElement).toBe(host);
+      expect(container.inert).toBe(true);
+      expect(alreadyInert.inert).toBe(true);
+
+      await user.click(
+        within(dialog).getByRole("button", { name: "关闭太原事件" }),
+      );
+      expect(
+        document.querySelector("[data-map-event-modal-host]"),
+      ).not.toBeInTheDocument();
+      expect(container.inert).toBe(originalContainerInert);
+      expect(alreadyInert.inert).toBe(true);
+
+      await user.click(
+        screen.getByRole("button", { name: "太原：石敬瑭起兵" }),
+      );
+      expect(container.inert).toBe(true);
+      unmount();
+      expect(
+        document.querySelector("[data-map-event-modal-host]"),
+      ).not.toBeInTheDocument();
+      expect(container.inert).toBe(originalContainerInert);
+      expect(alreadyInert.inert).toBe(true);
+    } finally {
+      unmount();
+      alreadyInert.remove();
+    }
+  });
+
   it("clears a selection that disappears without reviving it when the year returns", async () => {
     const user = userEvent.setup();
     const rebellion = events.find(
