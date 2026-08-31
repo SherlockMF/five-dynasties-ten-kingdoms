@@ -1,10 +1,11 @@
 import { seedData } from "@/data/seed";
+import { deepFreeze } from "@/lib/deep-freeze";
 import type { HistoryRepository } from "@/types/repository";
 import type { HistoricalEventDetail, PersonGraphData } from "@/types/history";
 
 export class LocalHistoryRepository implements HistoryRepository {
   async getDynastiesByYear(year: number) {
-    return seedData.dynasties.filter((item) => item.startYear <= year && item.endYear >= year);
+    return deepFreeze(seedData.dynasties.filter((item) => item.startYear <= year && item.endYear >= year));
   }
 
   async getAllDynasties() {
@@ -14,59 +15,59 @@ export class LocalHistoryRepository implements HistoryRepository {
   async getDynasty(id: string) {
     const dynasty = seedData.dynasties.find((item) => item.id === id);
     if (!dynasty) return null;
-    return {
+    return deepFreeze({
       ...dynasty,
       keyPeople: seedData.people.filter((person) => person.dynastyIds.includes(id)),
       keyEvents: seedData.events.filter((event) => event.dynastyIds.includes(id)),
-    };
+    });
   }
 
   async getRegionsByYear(year: number) {
-    return seedData.regions.filter((item) => item.validFromYear <= year && year < item.validToYearExclusive);
+    return deepFreeze(seedData.regions.filter((item) => item.validFromYear <= year && year < item.validToYearExclusive));
   }
 
   async getRegionsInRange(startYear: number, endYear: number) {
-    return seedData.regions.filter(
+    return deepFreeze(seedData.regions.filter(
       (item) => item.validFromYear <= endYear && item.validToYearExclusive > startYear,
-    );
+    ));
   }
 
   async getEventsByYear(year: number) {
-    return seedData.events.filter((item) => item.startYear <= year && (item.endYear ?? item.startYear) >= year);
+    return deepFreeze(seedData.events.filter((item) => item.startYear <= year && (item.endYear ?? item.startYear) >= year));
   }
 
   async getEventsInRange(startYear: number, endYear: number) {
-    return seedData.events.filter(
+    return deepFreeze(seedData.events.filter(
       (item) =>
         item.startYear <= endYear &&
         (item.endYear ?? item.startYear) >= startYear,
-    );
+    ));
   }
 
   async getEvent(id: string): Promise<HistoricalEventDetail | null> {
     const event = seedData.events.find((item) => item.id === id);
     if (!event) return null;
     const relations = await this.getEventRelations(id);
-    return {
+    return deepFreeze({
       ...event,
       causeEventIds: relations.filter((relation) => relation.targetEventId === id).map((relation) => relation.sourceEventId),
       consequenceEventIds: relations.filter((relation) => relation.sourceEventId === id).map((relation) => relation.targetEventId),
       people: seedData.people.filter((person) => event.personIds.includes(person.id)),
       dynasties: seedData.dynasties.filter((dynasty) => event.dynastyIds.includes(dynasty.id)),
       locations: seedData.locations.filter((location) => event.locationIds.includes(location.id)),
-    };
+    });
   }
 
   async getEventRelations(id: string) {
-    return seedData.eventRelations.filter((relation) => relation.sourceEventId === id || relation.targetEventId === id);
+    return deepFreeze(seedData.eventRelations.filter((relation) => relation.sourceEventId === id || relation.targetEventId === id));
   }
 
   async searchPeople(query: string, year?: number) {
     const normalized = query.trim().toLocaleLowerCase("zh-CN");
-    return seedData.people.filter((person) => {
+    return deepFreeze(seedData.people.filter((person) => {
       const active = year === undefined || (person.birthYear ?? -Infinity) <= year && (person.deathYear ?? Infinity) >= year;
       return active && (!normalized || `${person.name}${person.roles.join("")}`.toLocaleLowerCase("zh-CN").includes(normalized));
-    });
+    }));
   }
 
   async getAllPeople() {
@@ -90,6 +91,6 @@ export class LocalHistoryRepository implements HistoryRepository {
       return connected && active;
     });
     const relatedIds = new Set(relations.flatMap((relation) => [relation.sourcePersonId, relation.targetPersonId]));
-    return { center, people: seedData.people.filter((person) => relatedIds.has(person.id)), relations };
+    return deepFreeze({ center, people: seedData.people.filter((person) => relatedIds.has(person.id)), relations });
   }
 }

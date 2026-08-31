@@ -223,7 +223,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "辽军携带所获北上，耶律德光途中患病身亡，并非被起义军杀死。",
     result: "辽朝在中原的直接统治迅速收缩，内部随即发生皇位竞争。",
     impact: "北方权力真空扩大，刘知远得以更顺利地接收开封。",
-    personIds: ["liu-zhiyuan"], dynastyIds: ["liao", "later-han"], locationIds: [], causeEventIds: ["later-jin-falls"], consequenceEventIds: ["later-han-founded"],
+    personIds: ["yelu-deguang", "liu-zhiyuan"], dynastyIds: ["liao", "later-han"], locationIds: [], causeEventIds: ["later-jin-falls"], consequenceEventIds: ["later-han-founded"],
     sourceRefs: ["《资治通鉴》卷二百八十六《后汉纪一》", "《辽史》卷四《太宗本纪下》"], verificationStatus: "reviewed", ...mixed([5]),
   },
   {

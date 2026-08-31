@@ -145,18 +145,52 @@ describe("expanded northern history corpus", () => {
     expect(people.filter((person) => northernPersonIds.includes(person.id))).toHaveLength(28);
   });
 
-  it("covers the principal sites and all sixteen Yanyun prefectures", () => {
-    const yanyunIds = [
-      "youzhou", "jizhou", "yingzhou", "mozhou", "zhuozhou", "tanzhou-yanyun",
-      "shunzhou", "xinzhou", "guizhou", "ruzhou", "wuzhou", "yunzhou",
-      "yingzhou-shanxi", "huanzhou", "shuozhou", "weizhou-yanyun",
+  it("contains the exact thirty-five valid locations", () => {
+    const expectedIds = [
+      "baixang", "changan", "chengdu", "chenqiao", "fengzhou", "fuzhou",
+      "gaoping", "guangzhou", "guizhou", "hangzhou", "huanzhou", "jiangling",
+      "jinling", "jizhou", "kaifeng", "luoyang", "mozhou", "qinzhou", "ruzhou",
+      "shouzhou", "shuozhou", "shunzhou", "taiyuan", "tanzhou", "tanzhou-yanyun",
+      "weizhou", "weizhou-yanyun", "wuzhou", "xinzhou", "yangzhou", "yingzhou",
+      "yingzhou-shanxi", "youzhou", "yunzhou", "zhuozhou",
     ];
+
     expect(locations).toHaveLength(35);
-    expect(yanyunIds.every((id) => locations.some((location) => location.id === id))).toBe(true);
+    expect(locations.map((location) => location.id).sort()).toEqual([...expectedIds].sort());
+    expect(new Set(locations.map((location) => location.id)).size).toBe(35);
+    for (const location of locations) {
+      expect(Number.isFinite(location.longitude), `${location.id}:longitude`).toBe(true);
+      expect(Number.isFinite(location.latitude), `${location.id}:latitude`).toBe(true);
+      expect(location.longitude, `${location.id}:longitude-range`).toBeGreaterThanOrEqual(-180);
+      expect(location.longitude, `${location.id}:longitude-range`).toBeLessThanOrEqual(180);
+      expect(location.latitude, `${location.id}:latitude-range`).toBeGreaterThanOrEqual(-90);
+      expect(location.latitude, `${location.id}:latitude-range`).toBeLessThanOrEqual(90);
+    }
   });
 
   it("provides queryable regions for all seventeen core regimes", () => {
+    const expectedIntervals: Record<string, [number, number]> = {
+      chu: [907, 951], jingnan: [924, 963], liao: [916, 980], "later-han": [947, 951],
+      "later-jin": [936, 947], "later-liang": [907, 923], "later-shu": [934, 965],
+      "later-tang": [923, 936], "later-zhou": [951, 960], min: [909, 945],
+      "northern-han": [951, 979], "northern-song": [960, 980], "southern-han": [917, 971],
+      "southern-tang": [937, 975], "former-shu": [907, 925], wu: [902, 937], wuyue: [907, 978],
+    };
+
+    expect(regions.map((region) => region.dynastyId).sort()).toEqual(Object.keys(expectedIntervals).sort());
     expect(new Set(regions.map((region) => region.dynastyId)).size).toBe(17);
+    for (const region of regions) {
+      expect([region.validFromYear, region.validToYearExclusive], region.id).toEqual(expectedIntervals[region.dynastyId]);
+      expect(region.geometry.type, region.id).toBe("Polygon");
+      if (region.geometry.type !== "Polygon") throw new Error(`Expected Polygon: ${region.id}`);
+      for (const ring of region.geometry.coordinates) {
+        expect(ring[0], `${region.id}:closed-ring`).toEqual(ring.at(-1));
+        for (const coordinate of ring) {
+          expect(coordinate.every(Number.isFinite), `${region.id}:coordinate`).toBe(true);
+        }
+      }
+      expect(region.labelPoint.every(Number.isFinite), `${region.id}:labelPoint`).toBe(true);
+    }
     for (const year of [907, 923, 936, 947, 951, 960, 971, 975, 979]) {
       const active = regions.filter(
         (region) => region.validFromYear <= year && year < region.validToYearExclusive,
@@ -173,14 +207,21 @@ describe("expanded northern history corpus", () => {
     const battle = events.find((event) => event.id === "battle-shiling-pass")!;
     const fall = events.find((event) => event.id === "northern-han-falls")!;
 
-    expect(battle.causeEventIds).not.toContain("northern-han-falls");
-    expect(battle.consequenceEventIds).toContain("northern-han-falls");
-    expect(fall.causeEventIds).toContain("battle-shiling-pass");
-    expect(fall.consequenceEventIds).not.toContain("battle-shiling-pass");
+    expect([...battle.causeEventIds].sort()).toEqual(["liao-allies-northern-han"]);
+    expect([...battle.consequenceEventIds].sort()).toEqual(["northern-han-falls"]);
+    expect([...fall.causeEventIds].sort()).toEqual(["battle-shiling-pass", "liao-allies-northern-han", "wuyue-submits"]);
+    expect([...fall.consequenceEventIds].sort()).toEqual([]);
     expect(battle.locationIds).toEqual([]);
     expect(`${battle.summary}${battle.background}${battle.process}${battle.result}${battle.impact}`)
       .not.toContain("未能进入北汉境内");
     expect(battle.summary).toContain("未能抵达太原解围");
+    expect([...battle.personIds].sort()).toEqual(["zhao-guangyi"]);
+  });
+
+  it("maps death events to their deceased subject", () => {
+    const event = events.find((item) => item.id === "yelu-deguang-dies")!;
+
+    expect([...event.personIds].sort()).toEqual(["liu-zhiyuan", "yelu-deguang"]);
   });
 
   it("uses only historically applicable locations for corrected campaigns", () => {
@@ -194,14 +235,34 @@ describe("expanded northern history corpus", () => {
     for (const id of ["abaoyi-khagan", "liao-founded", "liao-destroys-balhae"]) {
       expect(event(id).locationIds, id).toEqual([]);
     }
-    expect(event("song-conquers-later-shu").locationIds).toEqual(["chengdu", "fengzhou"]);
-    expect(event("song-conquers-later-shu").personIds).not.toContain("li-chuyun");
-    expect(event("southern-tang-destroys-min").locationIds).not.toContain("fuzhou");
-    expect(event("sixteen-prefectures-ceded").locationIds).toEqual(yanyunIds);
-    expect(event("later-zhou-northern-campaign").locationIds).toEqual(
-      expect.arrayContaining(["yingzhou", "mozhou"]),
-    );
-    expect(event("later-zhou-northern-campaign").locationIds).not.toContain("youzhou");
+    expect([...event("song-conquers-later-shu").locationIds].sort()).toEqual(["chengdu", "fengzhou"]);
+    expect([...event("song-conquers-later-shu").personIds].sort()).toEqual(["cao-bin", "meng-chang"]);
+    expect([...event("southern-tang-destroys-min").locationIds].sort()).toEqual([]);
+    expect([...event("southern-tang-destroys-min").personIds].sort()).toEqual(["li-jing"]);
+    expect([...event("sixteen-prefectures-ceded").locationIds].sort()).toEqual([...yanyunIds].sort());
+    expect([...event("later-zhou-northern-campaign").locationIds].sort()).toEqual(["mozhou", "yingzhou"]);
+  });
+
+  it("keeps every corrected event mapping exact", () => {
+    const event = (id: string) => events.find((item) => item.id === id)!;
+    const expectIds = (actual: readonly string[], expected: string[]) =>
+      expect([...actual].sort()).toEqual([...expected].sort());
+
+    expectIds(event("former-shu-falls").personIds, ["guo-chongtao", "li-cunxu"]);
+    expectIds(event("wu-kingdom-established").personIds, ["xu-wen"]);
+    expectIds(event("min-claims-emperor").personIds, []);
+    expectIds(event("min-civil-war").personIds, []);
+    expectIds(event("southern-tang-destroys-chu").personIds, ["li-jing"]);
+    expectIds(event("wuping-regime-forms").personIds, []);
+    expectIds(event("wuping-regime-forms").locationIds, ["tanzhou"]);
+    expectIds(event("wuping-regime-forms").causeEventIds, ["southern-tang-destroys-chu"]);
+    expectIds(event("wuping-regime-forms").consequenceEventIds, ["song-takes-wuping"]);
+    expectIds(event("song-takes-jingnan").personIds, ["li-chuyun"]);
+    expectIds(event("song-takes-jingnan").locationIds, ["jiangling"]);
+    expectIds(event("song-takes-wuping").personIds, ["li-chuyun"]);
+    expectIds(event("song-takes-wuping").locationIds, ["jiangling", "tanzhou"]);
+    expectIds(event("liao-aids-northern-han-gaoping").locationIds, ["gaoping"]);
+    expectIds(event("liao-aids-northern-han-gaoping").consequenceEventIds, ["battle-gaoping", "chai-rong-reforms"]);
   });
 
   it("records the corrected Wuping and Gaoping narratives", () => {
@@ -210,7 +271,7 @@ describe("expanded northern history corpus", () => {
     const gaopingAid = events.find((event) => event.id === "liao-aids-northern-han-gaoping")!;
     const gaopingBattle = events.find((event) => event.id === "battle-gaoping")!;
 
-    expect(wupingFormation.dynastyIds).not.toContain("northern-song");
+    expect([...wupingFormation.dynastyIds].sort()).toEqual(["later-zhou", "southern-tang"]);
     expect(wupingConquest.process).not.toMatch(/击败张文表|镇压张文表/);
     expect(`${wupingConquest.background}${wupingConquest.process}`).toContain("杨师璠");
     expect(wupingConquest.process).toContain("张从富");
@@ -236,26 +297,38 @@ describe("expanded northern history corpus", () => {
       .not.toContain("later-liang-founded");
   });
 
-  it("maps transcript episode five and six subjects exactly", () => {
-    const episodeFiveIds = [
-      "yang-xingmi-prince-wu", "wu-kingdom-established", "wu-emperor-yang-pu", "southern-tang-replaces-wu",
-    ];
-    const episodeSixIds = [
-      "song-takes-jingnan", "song-takes-wuping", "song-conquers-later-shu",
-      "song-conquers-southern-han", "song-attacks-southern-tang", "southern-tang-falls",
-      "wuyue-submits", "northern-han-falls", "battle-shiling-pass",
-    ];
-    const personEpisodeFiveIds = ["yang-xingmi", "xu-wen", "li-bian"];
-    const personEpisodeSixIds = ["li-yu", "qian-chu", "zhao-guangyi", "cao-bin", "pan-mei", "li-chuyun"];
-    const assertMixed = (entity: { contentOrigin: string; transcriptEpisodeIds: readonly number[] }, episode: number, id: string) => {
-      expect(entity.contentOrigin, `${id}:origin`).toBe("mixed");
-      expect(entity.transcriptEpisodeIds, `${id}:episodes`).toContain(episode);
-    };
+  it("maps every mixed Task 4 entity to its exact transcript episodes", () => {
+    const mixedMap = (entities: Array<{ id: string; contentOrigin: string; transcriptEpisodeIds: readonly number[] }>) =>
+      Object.fromEntries(entities
+        .filter((entity) => entity.contentOrigin === "mixed")
+        .sort((left, right) => left.id.localeCompare(right.id))
+        .map((entity) => [entity.id, [...entity.transcriptEpisodeIds]]));
 
-    for (const id of episodeFiveIds) assertMixed(events.find((event) => event.id === id)!, 5, id);
-    for (const id of episodeSixIds) assertMixed(events.find((event) => event.id === id)!, 6, id);
-    for (const id of personEpisodeFiveIds) assertMixed(people.find((person) => person.id === id)!, 5, id);
-    for (const id of personEpisodeSixIds) assertMixed(people.find((person) => person.id === id)!, 6, id);
+    expect(mixedMap([...tenKingdomsEvents, ...liaoSongEvents])).toEqual({
+      "abaoyi-khagan": [2, 3], "battle-shiling-pass": [6], "chenqiao-mutiny": [6],
+      "former-shu-founded": [2], "later-zhou-southern-tang-war": [6], "liao-aids-later-jin": [4],
+      "liao-aids-northern-han-gaoping": [6], "liao-allies-northern-han": [5, 6],
+      "liao-destroys-balhae": [3], "liao-enters-kaifeng": [5], "liao-founded": [3],
+      "northern-han-falls": [6], "song-attacks-southern-tang": [6], "song-conquers-later-shu": [6],
+      "song-conquers-southern-han": [6], "song-takes-jingnan": [6], "song-takes-wuping": [6],
+      "southern-tang-destroys-chu": [6], "southern-tang-falls": [6], "southern-tang-replaces-wu": [5],
+      "southern-tang-yields-huainan": [6], "wu-emperor-yang-pu": [5], "wu-kingdom-established": [5],
+      "wuping-regime-forms": [6], "wuyue-submits": [6], "yang-xingmi-prince-wu": [5],
+    });
+    expect(mixedMap([...southernPeople, ...liaoSongPeople])).toEqual({
+      "cao-bin": [6], "gao-baorong": [6], "li-bian": [5], "li-chuyun": [6], "li-jing": [6],
+      "li-yu": [6], "meng-zhixiang": [3], "pan-mei": [6], "qian-chu": [6], "shulu-ping": [3],
+      "wang-jian": [2], "xu-wen": [5], "yang-xingmi": [5], "yelu-abaoji": [2, 3],
+      "yelu-deguang": [4, 5], "yelu-ruan": [5], "zhao-guangyi": [6],
+    });
+  });
+
+  it("supports disputed biographies with matching sources", () => {
+    const liYu = people.find((person) => person.id === "li-yu")!;
+    const liuYan = people.find((person) => person.id === "liu-yan")!;
+
+    expect(liYu.sourceRefs).toContain("《李煜死因叙事的文献分歧研究》");
+    expect(liuYan.disputedNote).toBeUndefined();
   });
 
   it("scopes Yanyun-specific research references to Yanyun locations", () => {

@@ -68,7 +68,7 @@ describe("LocalHistoryRepository", () => {
         expect.arrayContaining(expected.causes),
       );
       expect(
-        event?.consequenceEventIds.sort(),
+        event && [...event.consequenceEventIds].sort(),
         `${expected.id}:consequences`,
       ).toEqual(expect.arrayContaining(expected.consequences));
     }
