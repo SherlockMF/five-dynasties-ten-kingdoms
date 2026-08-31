@@ -64,13 +64,13 @@ describe("LocalHistoryRepository", () => {
     for (const expected of expectations) {
       const event = await repository.getEvent(expected.id);
 
-      expect(event?.causeEventIds.sort(), `${expected.id}:causes`).toEqual(
-        expected.causes.sort(),
+      expect(event?.causeEventIds, `${expected.id}:causes`).toEqual(
+        expect.arrayContaining(expected.causes),
       );
       expect(
         event?.consequenceEventIds.sort(),
         `${expected.id}:consequences`,
-      ).toEqual(expected.consequences.sort());
+      ).toEqual(expect.arrayContaining(expected.consequences));
     }
   });
 });

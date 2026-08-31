@@ -1,4 +1,6 @@
 import { northernPeople } from "./northern";
+import { liaoSongPeople } from "./liao-song";
+import { southernPeople } from "./southern";
 
 const featuredPersonIds = [
   "zhu-wen",
@@ -15,7 +17,7 @@ const featuredRank = new Map(
   featuredPersonIds.map((personId, index) => [personId, index]),
 );
 
-export const people = [...northernPeople].sort(
+export const people = [...northernPeople, ...southernPeople, ...liaoSongPeople].sort(
   (left, right) =>
     (featuredRank.get(left.id) ?? Number.MAX_SAFE_INTEGER) -
     (featuredRank.get(right.id) ?? Number.MAX_SAFE_INTEGER),

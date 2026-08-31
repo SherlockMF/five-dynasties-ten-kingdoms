@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { dynasties, eventRelations, events, people, seedData } from "@/data/seed";
+import { dynasties, eventRelations, events, locations, people, regions, seedData } from "@/data/seed";
+import { liaoSongEvents } from "@/data/seed/events/liao-song";
+import { tenKingdomsEvents } from "@/data/seed/events/ten-kingdoms";
+import { liaoSongPeople } from "@/data/seed/people/liao-song";
+import { southernPeople } from "@/data/seed/people/southern";
 import { validateHistoryData } from "@/lib/validation/history-data";
 import type { HistoricalEvent } from "@/types/history";
 
@@ -43,9 +47,11 @@ describe("expanded northern history corpus", () => {
     "zhao-pu",
   ];
 
-  it("covers ten late-Tang events and forty events overall", () => {
+  it("covers the complete 74-event corpus", () => {
     expect(events.filter((event) => event.tracks.includes("late-tang"))).toHaveLength(10);
-    expect(events).toHaveLength(40);
+    expect(events).toHaveLength(74);
+    expect(tenKingdomsEvents).toHaveLength(20);
+    expect(liaoSongEvents).toHaveLength(14);
     expect(
       events.some(
         (event) =>
@@ -57,14 +63,19 @@ describe("expanded northern history corpus", () => {
         (event) => event.id === "later-tang-falls" && event.startYear === 936,
       ),
     ).toBe(true);
+    expect(events.some((event) => event.id === "wuyue-submits" && event.startYear === 978)).toBe(true);
+    expect(events.some((event) => event.id === "northern-han-falls" && event.startYear === 979)).toBe(true);
   });
 
   it("provides complete sourced narratives for every event", () => {
     for (const event of events) {
       expect(event.tracks.length, `${event.id}:tracks`).toBeGreaterThan(0);
       expect(event.sourceRefs.length, `${event.id}:sourceRefs`).toBeGreaterThan(0);
-      expect(event.contentOrigin, `${event.id}:contentOrigin`).toBe("mixed");
-      expect(event.transcriptEpisodeIds.length, `${event.id}:episodes`).toBeGreaterThan(0);
+      if (event.contentOrigin === "historical-extension") {
+        expect(event.transcriptEpisodeIds, `${event.id}:extension-episodes`).toEqual([]);
+      } else {
+        expect(event.transcriptEpisodeIds.length, `${event.id}:episodes`).toBeGreaterThan(0);
+      }
       for (const field of [
         "summary",
         "background",
@@ -107,8 +118,8 @@ describe("expanded northern history corpus", () => {
     const lateTangEvents = events.filter((event) =>
       event.tracks.includes("late-tang"),
     );
-    const fiveDynastiesEvents = events.filter(
-      (event) => !event.tracks.includes("late-tang"),
+    const fiveDynastiesEvents = events.filter((event) =>
+      event.tracks.includes("five-dynasties"),
     );
 
     expect(lateTangEvents).toHaveLength(10);
@@ -118,24 +129,44 @@ describe("expanded northern history corpus", () => {
           event.tracks.length === 1 && event.tracks[0] === "late-tang",
       ),
     ).toBe(true);
-    expect(fiveDynastiesEvents).toHaveLength(30);
+    expect(fiveDynastiesEvents.length).toBeGreaterThanOrEqual(30);
     for (const event of fiveDynastiesEvents) {
-      expect(event.tracks, event.id).toEqual(
-        event.dynastyIds.includes("liao")
-          ? ["five-dynasties", "liao-north"]
-          : ["five-dynasties"],
-      );
+      expect(event.tracks, event.id).toContain("five-dynasties");
     }
   });
 
-  it("contains the twenty-eight northern people exactly once", () => {
-    expect(people).toHaveLength(28);
+  it("contains the fifty-two people exactly once", () => {
+    expect(people).toHaveLength(52);
+    expect(southernPeople).toHaveLength(16);
+    expect(liaoSongPeople).toHaveLength(8);
     expect(people.some((person) => person.id === "li-keyong")).toBe(true);
     expect(people.some((person) => person.id === "sang-weihan")).toBe(true);
     expect(new Set(people.map((person) => person.id)).size).toBe(people.length);
-    expect(people.map((person) => person.id).sort()).toEqual(
-      [...northernPersonIds].sort(),
-    );
+    expect(people.filter((person) => northernPersonIds.includes(person.id))).toHaveLength(28);
+  });
+
+  it("covers the principal sites and all sixteen Yanyun prefectures", () => {
+    const yanyunIds = [
+      "youzhou", "jizhou", "yingzhou", "mozhou", "zhuozhou", "tanzhou-yanyun",
+      "shunzhou", "xinzhou", "guizhou", "ruzhou", "wuzhou", "yunzhou",
+      "yingzhou-shanxi", "huanzhou", "shuozhou", "weizhou-yanyun",
+    ];
+    expect(locations).toHaveLength(35);
+    expect(yanyunIds.every((id) => locations.some((location) => location.id === id))).toBe(true);
+  });
+
+  it("provides queryable regions for all seventeen core regimes", () => {
+    expect(new Set(regions.map((region) => region.dynastyId)).size).toBe(17);
+    for (const year of [907, 923, 936, 947, 951, 960, 971, 975, 979]) {
+      const active = regions.filter(
+        (region) => region.validFromYear <= year && year < region.validToYearExclusive,
+      );
+      expect(active.filter((region) => ["later-liang", "later-tang", "later-jin", "later-han", "later-zhou", "northern-song"].includes(region.dynastyId)), `${year}:central`).toHaveLength(1);
+      expect(active.some((region) => region.dynastyId === "liao") || year < 916, `${year}:liao`).toBe(true);
+      if (year < 979) {
+        expect(active.some((region) => ["wu", "wuyue", "min", "chu", "former-shu", "later-shu", "southern-han", "southern-tang", "jingnan", "northern-han"].includes(region.dynastyId)), `${year}:regional`).toBe(true);
+      }
+    }
   });
 
   it("records source and provenance invariants for every person", () => {

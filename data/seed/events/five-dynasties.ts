@@ -93,7 +93,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "郭崇韬等率军沿秦岭道路南下，前蜀各地守军接连降服。",
     result: "后唐短期控制四川，但征服军内部很快因权责与猜忌发生冲突。",
     impact: "前蜀灭亡扩大了后唐版图，也直接引出郭崇韬被杀和军心动荡。",
-    personIds: ["li-cunxu", "guo-chongtao"], dynastyIds: ["later-tang", "former-shu"], locationIds: [], causeEventIds: ["later-tang-founded", "later-liang-falls"], consequenceEventIds: ["xingjiao-mutiny", "meng-zhixiang-controls-shu"],
+    personIds: ["li-cunxu", "guo-chongtao", "wang-jian"], dynastyIds: ["later-tang", "former-shu"], locationIds: ["chengdu"], causeEventIds: ["former-shu-founded", "later-tang-founded", "later-liang-falls"], consequenceEventIds: ["xingjiao-mutiny", "meng-zhixiang-controls-shu"],
     sourceRefs: ["《资治通鉴》卷二百七十四《后唐纪三》", "《旧五代史》卷三十三《唐书·庄宗纪七》"], verificationStatus: "reviewed", ...mixed([3]),
   },
   {
@@ -123,7 +123,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "孟知祥与东川董璋一度联合反抗朝廷，后又击败董璋并兼有两川。",
     result: "后唐无法恢复对四川的直接控制，孟知祥取得建国所需的军政基础。",
     impact: "四川再次脱离中原王朝，为 934 年后蜀建立铺路。",
-    personIds: [], dynastyIds: ["later-tang", "later-shu"], locationIds: [], causeEventIds: ["former-shu-falls", "li-siyuan-enthroned"], consequenceEventIds: ["later-shu-founded"],
+    personIds: ["meng-zhixiang"], dynastyIds: ["later-tang", "later-shu"], locationIds: ["chengdu"], causeEventIds: ["former-shu-falls", "li-siyuan-enthroned"], consequenceEventIds: ["later-shu-founded"],
     sourceRefs: ["《资治通鉴》卷二百七十七至卷二百七十八《后唐纪六至七》", "《新五代史》卷六十四《后蜀世家第四》"], verificationStatus: "reviewed", ...mixed([3]),
   },
   {
@@ -133,7 +133,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "孟知祥在蜀中设置朝廷、改元称帝，把既成的地方统治转为独立王朝。",
     result: "后蜀控制四川盆地，并与中原五代政权长期并存。",
     impact: "四川的稳定割据成为十国格局的重要组成，也限制了中原政权向西南扩张。",
-    personIds: [], dynastyIds: ["later-shu", "later-tang"], locationIds: [], causeEventIds: ["meng-zhixiang-controls-shu"], consequenceEventIds: [],
+    personIds: ["meng-zhixiang"], dynastyIds: ["later-shu", "later-tang"], locationIds: ["chengdu"], causeEventIds: ["meng-zhixiang-controls-shu"], consequenceEventIds: ["song-conquers-later-shu"],
     sourceRefs: ["《资治通鉴》卷二百七十九《后唐纪八》", "《新五代史》卷六十四《后蜀世家第四》"], verificationStatus: "reviewed", ...mixed([3]),
   },
   {
@@ -173,7 +173,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "耶律德光册立石敬瑭，联军解除太原之围后南下，后晋最终定都开封。",
     result: "后晋取代后唐，形成对契丹称臣并履行岁输、割地承诺的关系。",
     impact: "后晋的建立把中原皇位更替与辽朝利益紧密连接，内部争议延续至灭亡。",
-    personIds: ["shi-jingtang", "sang-weihan", "liu-zhiyuan"], dynastyIds: ["later-tang", "later-jin", "liao"], locationIds: ["taiyuan", "kaifeng"], causeEventIds: ["shi-jingtang-rebellion", "later-tang-falls"], consequenceEventIds: ["sixteen-prefectures-ceded", "shi-chonggui-enthroned"],
+    personIds: ["shi-jingtang", "sang-weihan", "liu-zhiyuan", "yelu-deguang"], dynastyIds: ["later-tang", "later-jin", "liao"], locationIds: ["taiyuan", "kaifeng"], causeEventIds: ["liao-aids-later-jin", "shi-jingtang-rebellion", "later-tang-falls"], consequenceEventIds: ["sixteen-prefectures-ceded", "shi-chonggui-enthroned"],
     sourceRefs: ["《资治通鉴》卷二百八十《后晋纪一》", "《新五代史》卷八《晋本纪第八》"], verificationStatus: "reviewed", ...mixed([4]),
   },
   {
@@ -303,7 +303,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "后周军沿水陆北进，多处守军归降；柴荣病重后停止进攻幽州并返回开封。",
     result: "后周取得部分关南州县，但未能收复幽州，幼主继位造成新的权力过渡。",
     impact: "柴荣去世中断北征，后周积累的军政力量随后由北宋继承。",
-    personIds: ["chai-rong", "zhao-kuangyin", "fan-zhi"], dynastyIds: ["later-zhou", "liao"], locationIds: ["youzhou", "kaifeng"], causeEventIds: ["sixteen-prefectures-ceded", "chai-rong-reforms"], consequenceEventIds: [],
+    personIds: ["chai-rong", "zhao-kuangyin", "fan-zhi"], dynastyIds: ["later-zhou", "liao"], locationIds: ["youzhou", "kaifeng"], causeEventIds: ["sixteen-prefectures-ceded", "chai-rong-reforms"], consequenceEventIds: ["chenqiao-mutiny"],
     sourceRefs: ["《资治通鉴》卷二百九十四《后周纪五》", "《新五代史》卷十二《周本纪第十二》"], verificationStatus: "reviewed", ...mixed([6]),
   },
 ];
