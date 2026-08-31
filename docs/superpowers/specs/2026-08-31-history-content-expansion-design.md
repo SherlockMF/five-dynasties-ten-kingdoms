@@ -22,7 +22,7 @@
 - `transcript-core`：六集明确涉及且已经史料核定。
 - `historical-extension`：六集未覆盖，由史料补充。
 - `mixed`：逐字稿提供叙事主线，具体事实由史料补齐。
-- `disputed`：存在影响理解的重要异说，详情中并列呈现。
+- `disputedNote`：与来源类型正交；存在影响理解的重要异说时填写，详情中并列呈现并追加 `³`。
 
 界面主视图使用紧凑数字角标：
 
@@ -56,10 +56,10 @@
 
 在现有 `SourcedEntity` 基础上增加：
 
-- `contentOrigin`：四种来源类型之一。
+- `contentOrigin`：`transcript-core`、`historical-extension`、`mixed` 三种来源类型之一。
 - `transcriptEpisodeIds`：关联第01—06集，可为空。
 - `sourceRefs`：继续保存可读书目或稳定来源标识。
-- `disputedNote`：继续承担异说说明。
+- `disputedNote`：继续承担异说说明；非空时界面追加 `³` 角标。
 
 事件模型继续使用背景、过程、结果、影响、人物、政权、地点和事件因果关系。人物模型补充简传与关键选择。政权模型补足创立者、都城、前后继关系和较完整摘要。地点模型用于事件定位，不把现代行政边界反投射为古代精确边界。
 
