@@ -59,7 +59,7 @@ export function SourceMarker({ entity, showLegend = false }: SourceMarkerProps) 
   return (
     <span className="inline-flex items-baseline gap-2">
       {marker}
-      <span className="text-xs text-ink-muted">
+      <span className="text-xs text-muted">
         ¹ 六集主线 · ² 史料扩展 · ³ 存在异说
       </span>
     </span>
