@@ -1,9 +1,7 @@
-import type { SourcedEntity } from "@/types/history";
+import type { ContentProvenance, SourcedEntity } from "@/types/history";
 
-type SourceMarkerEntity = Pick<
-  SourcedEntity,
-  "contentOrigin" | "transcriptEpisodeIds" | "disputedNote"
->;
+type SourceMarkerEntity = ContentProvenance &
+  Pick<SourcedEntity, "disputedNote">;
 
 export function getSourceMarkerText(entity: SourceMarkerEntity): string {
   const originMarker = {

@@ -1,10 +1,8 @@
-import type { HistoricalLocation, TranscriptEpisodeId } from "@/types/history";
+import type { HistoricalLocation } from "@/types/history";
+
+import { mixed as transcript } from "./provenance";
 
 const base = { sourceRefs: ["中国历史地图集（位置参考）"], verificationStatus: "illustrative" as const };
-const transcript = (transcriptEpisodeIds: TranscriptEpisodeId[]) => ({
-  contentOrigin: "mixed" as const,
-  transcriptEpisodeIds,
-});
 
 export const locations: HistoricalLocation[] = [
   { id: "kaifeng", name: "开封", longitude: 114.31, latitude: 34.8, modernReference: "今河南开封", ...base, ...transcript([2, 3, 4, 5, 6]) },

@@ -2,19 +2,15 @@ import type {
   DynastySuccession,
   EventRelation,
   PersonRelation,
-  TranscriptEpisodeId,
 } from "@/types/history";
+
+import {
+  historicalExtension,
+  mixed as transcript,
+} from "./provenance";
 
 const sourceRefs = ["《旧五代史》《新五代史》（关系概要）"];
 const verified = { sourceRefs, verificationStatus: "reviewed" as const };
-const transcript = (transcriptEpisodeIds: TranscriptEpisodeId[]) => ({
-  contentOrigin: "mixed" as const,
-  transcriptEpisodeIds,
-});
-const extension = {
-  contentOrigin: "historical-extension" as const,
-  transcriptEpisodeIds: [],
-};
 
 export const personRelations: PersonRelation[] = [
   { id: "li-cunxu-li-siyuan", sourcePersonId: "li-cunxu", targetPersonId: "li-siyuan", type: "ruler-subject", description: "后唐建立过程中的君臣与将领关系。", endYear: 926, ...verified, ...transcript([3]) },
@@ -33,25 +29,11 @@ export const eventRelations: EventRelation[] = [
   { id: "reforms-to-song", sourceEventId: "chai-rong-reforms", targetEventId: "chenqiao-mutiny", type: "context", description: "后周整军与禁军体系构成陈桥兵变的制度背景之一。", ...verified, ...transcript([6]) },
 ];
 
-const successionEpisodes: Record<string, TranscriptEpisodeId[]> = {
-  "later-liang-later-tang": [3],
-  "later-tang-later-jin": [4],
-  "later-jin-later-han": [5],
-  "later-han-later-zhou": [5, 6],
-  "later-zhou-northern-song": [6],
-};
-
 export const dynastySuccessions: DynastySuccession[] = [
-  ["later-liang", "later-tang"], ["later-tang", "later-jin"], ["later-jin", "later-han"], ["later-han", "later-zhou"], ["later-zhou", "northern-song"], ["wu", "southern-tang"],
-].map(([predecessorId, successorId]) => {
-  const id = `${predecessorId}-${successorId}`;
-  const transcriptEpisodeIds = successionEpisodes[id];
-
-  return {
-    id,
-    predecessorId,
-    successorId,
-    ...verified,
-    ...(transcriptEpisodeIds ? transcript(transcriptEpisodeIds) : extension),
-  };
-});
+  { id: "later-liang-later-tang", predecessorId: "later-liang", successorId: "later-tang", ...verified, ...transcript([3]) },
+  { id: "later-tang-later-jin", predecessorId: "later-tang", successorId: "later-jin", ...verified, ...transcript([4]) },
+  { id: "later-jin-later-han", predecessorId: "later-jin", successorId: "later-han", ...verified, ...transcript([5]) },
+  { id: "later-han-later-zhou", predecessorId: "later-han", successorId: "later-zhou", ...verified, ...transcript([5, 6]) },
+  { id: "later-zhou-northern-song", predecessorId: "later-zhou", successorId: "northern-song", ...verified, ...transcript([6]) },
+  { id: "wu-southern-tang", predecessorId: "wu", successorId: "southern-tang", ...verified, ...historicalExtension() },
+];

@@ -1,10 +1,8 @@
-import type { HistoricalEvent, TranscriptEpisodeId } from "@/types/history";
+import type { HistoricalEvent } from "@/types/history";
+
+import { mixed as transcript } from "./provenance";
 
 const source = ["《资治通鉴》与《旧五代史》（MVP 概要）"];
-const transcript = (transcriptEpisodeIds: TranscriptEpisodeId[]) => ({
-  contentOrigin: "mixed" as const,
-  transcriptEpisodeIds,
-});
 
 export const events: HistoricalEvent[] = [
   { id: "later-liang-founded", title: "后梁建立", eventType: "founding", startYear: 907, summary: "朱温代唐称帝，唐朝灭亡，五代十国时期由此展开。", background: "唐末藩镇势力坐大，中央权威崩解。", result: "后梁成为中原第一个五代政权。", impact: "北方进入连续而快速的政权更替。", personIds: ["zhu-wen"], dynastyIds: ["later-liang"], locationIds: ["kaifeng"], causeEventIds: [], consequenceEventIds: [], sourceRefs: source, verificationStatus: "reviewed", ...transcript([2]) },

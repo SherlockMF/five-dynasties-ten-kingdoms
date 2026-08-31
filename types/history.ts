@@ -6,6 +6,26 @@ export type ContentOrigin =
   | "historical-extension"
   | "mixed";
 export type TranscriptEpisodeId = 1 | 2 | 3 | 4 | 5 | 6;
+export type TranscriptEpisodeIds = readonly [
+  TranscriptEpisodeId,
+  ...TranscriptEpisodeId[],
+];
+export type HistoricalExtensionProvenance = {
+  contentOrigin: "historical-extension";
+  transcriptEpisodeIds: readonly [];
+};
+export type TranscriptCoreProvenance = {
+  contentOrigin: "transcript-core";
+  transcriptEpisodeIds: TranscriptEpisodeIds;
+};
+export type MixedContentProvenance = {
+  contentOrigin: "mixed";
+  transcriptEpisodeIds: TranscriptEpisodeIds;
+};
+export type ContentProvenance =
+  | HistoricalExtensionProvenance
+  | TranscriptCoreProvenance
+  | MixedContentProvenance;
 export type NarrativeTrack =
   | "late-tang"
   | "five-dynasties"
@@ -31,15 +51,13 @@ export type PersonRelationType =
   | "political"
   | "succession";
 
-export interface SourcedEntity {
+export type SourcedEntity = ContentProvenance & {
   sourceRefs: string[];
   verificationStatus: VerificationStatus;
-  contentOrigin: ContentOrigin;
-  transcriptEpisodeIds: TranscriptEpisodeId[];
   disputedNote?: string;
-}
+};
 
-export interface Dynasty extends SourcedEntity {
+export type Dynasty = SourcedEntity & {
   id: string;
   name: string;
   shortName: string;
@@ -52,9 +70,9 @@ export interface Dynasty extends SourcedEntity {
   predecessorIds: string[];
   successorIds: string[];
   color: string;
-}
+};
 
-export interface Person extends SourcedEntity {
+export type Person = SourcedEntity & {
   id: string;
   name: string;
   birthYear?: number;
@@ -63,9 +81,9 @@ export interface Person extends SourcedEntity {
   roles: string[];
   summary: string;
   biography?: string;
-}
+};
 
-export interface HistoricalEvent extends SourcedEntity {
+export type HistoricalEvent = SourcedEntity & {
   id: string;
   title: string;
   eventType: EventType;
@@ -81,9 +99,9 @@ export interface HistoricalEvent extends SourcedEntity {
   locationIds: string[];
   causeEventIds: string[];
   consequenceEventIds: string[];
-}
+};
 
-export interface PersonRelation extends SourcedEntity {
+export type PersonRelation = SourcedEntity & {
   id: string;
   sourcePersonId: string;
   targetPersonId: string;
@@ -91,18 +109,18 @@ export interface PersonRelation extends SourcedEntity {
   description?: string;
   startYear?: number;
   endYear?: number;
-}
+};
 
-export interface HistoricalLocation extends SourcedEntity {
+export type HistoricalLocation = SourcedEntity & {
   id: string;
   name: string;
   longitude: number;
   latitude: number;
   geometry?: Geometry;
   modernReference?: string;
-}
+};
 
-export interface HistoricalRegion extends SourcedEntity {
+export type HistoricalRegion = SourcedEntity & {
   id: string;
   dynastyId: string;
   validFromYear: number;
@@ -112,22 +130,22 @@ export interface HistoricalRegion extends SourcedEntity {
   temporalBasis: "year-end";
   accuracyLevel: "illustrative" | "approximate" | "verified";
   version: string;
-}
+};
 
-export interface EventRelation extends SourcedEntity {
+export type EventRelation = SourcedEntity & {
   id: string;
   sourceEventId: string;
   targetEventId: string;
   type: "cause" | "consequence" | "context";
   description?: string;
-}
+};
 
-export interface DynastySuccession extends SourcedEntity {
+export type DynastySuccession = SourcedEntity & {
   id: string;
   predecessorId: string;
   successorId: string;
   note?: string;
-}
+};
 
 export interface PersonGraphData {
   center: Person;
@@ -135,16 +153,16 @@ export interface PersonGraphData {
   relations: PersonRelation[];
 }
 
-export interface DynastyDetail extends Dynasty {
+export type DynastyDetail = Dynasty & {
   keyPeople: Person[];
   keyEvents: HistoricalEvent[];
-}
+};
 
-export interface HistoricalEventDetail extends HistoricalEvent {
+export type HistoricalEventDetail = HistoricalEvent & {
   people: Person[];
   dynasties: Dynasty[];
   locations: HistoricalLocation[];
-}
+};
 
 export interface HistoryDataSet {
   dynasties: Dynasty[];

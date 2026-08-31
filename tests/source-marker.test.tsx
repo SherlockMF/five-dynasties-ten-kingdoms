@@ -5,25 +5,51 @@ import {
   getSourceMarkerText,
   SourceMarker,
 } from "@/components/history/source-marker";
+import type { ContentProvenance } from "@/types/history";
+
+const markerCases = [
+  {
+    name: "transcript core",
+    entity: { contentOrigin: "transcript-core", transcriptEpisodeIds: [3] },
+    expected: "¹",
+  },
+  {
+    name: "historical extension",
+    entity: { contentOrigin: "historical-extension", transcriptEpisodeIds: [] },
+    expected: "²",
+  },
+  {
+    name: "mixed content",
+    entity: { contentOrigin: "mixed", transcriptEpisodeIds: [4] },
+    expected: "¹²",
+  },
+  {
+    name: "mixed disputed content",
+    entity: {
+      contentOrigin: "mixed",
+      transcriptEpisodeIds: [4],
+      disputedNote: "记载不一",
+    },
+    expected: "¹²³",
+  },
+  {
+    name: "blank disputed note",
+    entity: {
+      contentOrigin: "mixed",
+      transcriptEpisodeIds: [4],
+      disputedNote: "   ",
+    },
+    expected: "¹²",
+  },
+] satisfies readonly {
+  name: string;
+  entity: ContentProvenance & { disputedNote?: string };
+  expected: string;
+}[];
 
 describe("getSourceMarkerText", () => {
-  it("marks transcript-core content with the transcript symbol", () => {
-    expect(
-      getSourceMarkerText({
-        contentOrigin: "transcript-core",
-        transcriptEpisodeIds: [3],
-      }),
-    ).toBe("¹");
-  });
-
-  it("combines transcript, extension, and disputed symbols", () => {
-    expect(
-      getSourceMarkerText({
-        contentOrigin: "mixed",
-        transcriptEpisodeIds: [4],
-        disputedNote: "记载不一",
-      }),
-    ).toBe("¹²³");
+  it.each(markerCases)("marks $name as $expected", ({ entity, expected }) => {
+    expect(getSourceMarkerText(entity)).toBe(expected);
   });
 });
 
