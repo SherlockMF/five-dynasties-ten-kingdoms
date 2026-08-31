@@ -20,6 +20,13 @@ describe("history URL codec", () => {
 
   it("uses 936 for missing or invalid years", () => {
     expect(parseHistoryQuery("").currentYear).toBe(936);
+    expect(parseHistoryQuery("year=874").currentYear).toBe(936);
+    expect(parseHistoryQuery("year=980").currentYear).toBe(936);
     expect(parseHistoryQuery("year=1900").currentYear).toBe(936);
+  });
+
+  it("accepts the expanded timeline boundaries", () => {
+    expect(parseHistoryQuery("year=875").currentYear).toBe(875);
+    expect(parseHistoryQuery("year=979").currentYear).toBe(979);
   });
 });

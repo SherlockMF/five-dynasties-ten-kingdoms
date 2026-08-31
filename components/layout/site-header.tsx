@@ -24,7 +24,7 @@ export function SiteHeader() {
               山河纪
             </strong>
             <small className="block text-[9px] tracking-[0.22em] text-muted uppercase">
-              907—960
+              875—979
             </small>
           </span>
         </Link>

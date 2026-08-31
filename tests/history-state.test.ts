@@ -13,11 +13,11 @@ describe("history state", () => {
   it("clamps years and clears an inactive dynasty", () => {
     const next = reduceHistoryState(
       { currentYear: 936, selectedDynasty: "later-jin" },
-      { type: "setYear", year: 961 },
+      { type: "setYear", year: 980 },
       { isDynastyActive: () => false },
     );
 
-    expect(next.currentYear).toBe(960);
+    expect(next.currentYear).toBe(979);
     expect(next.selectedDynasty).toBeUndefined();
   });
 

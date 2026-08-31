@@ -1,7 +1,7 @@
 import {
   DEFAULT_YEAR,
   MAX_YEAR,
-  MIN_YEAR,
+  TIMELINE_MIN_YEAR,
   type HistoryCoreState,
 } from "./history-store";
 
@@ -14,7 +14,9 @@ export function parseHistoryQuery(
     typeof input === "string" ? new URLSearchParams(input) : input;
   const rawYear = Number(params.get("year"));
   const currentYear =
-    Number.isInteger(rawYear) && rawYear >= MIN_YEAR && rawYear <= MAX_YEAR
+    Number.isInteger(rawYear) &&
+    rawYear >= TIMELINE_MIN_YEAR &&
+    rawYear <= MAX_YEAR
       ? rawYear
       : DEFAULT_YEAR;
 
