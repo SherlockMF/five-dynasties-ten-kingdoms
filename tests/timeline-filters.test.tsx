@@ -140,6 +140,26 @@ describe("Timeline track filters", () => {
     expect(screen.queryByRole("button", { name: "唐末前史" })).not.toBeInTheDocument();
   });
 
+  it("keeps late-Tang event markers stable while browsing later years", () => {
+    render(<Timeline events={seedEvents} />);
+
+    expect(
+      screen.getByRole("button", { name: "选择875年，有历史事件" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "选择884年，有历史事件" }),
+    ).toBeInTheDocument();
+
+    act(() => useHistoryStore.getState().setCurrentYear(875));
+
+    expect(
+      screen.getByRole("button", { name: "选择875年，有历史事件" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "选择884年，有历史事件" }),
+    ).toBeInTheDocument();
+  });
+
   it("stops late-Tang bypass at the 907 stage boundary", async () => {
     const user = userEvent.setup();
     const feud = seedEvents.find(
@@ -166,6 +186,9 @@ describe("Timeline track filters", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "当前未选择时间线轨道",
     );
+    expect(
+      screen.getByRole("button", { name: "选择884年，有历史事件" }),
+    ).toBeInTheDocument();
 
     act(() => useHistoryStore.getState().setCurrentYear(908));
 
