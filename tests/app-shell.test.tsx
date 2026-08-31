@@ -19,5 +19,9 @@ describe("SiteHeader", () => {
       "href",
       "/people",
     );
+    expect(screen.getByRole("link", { name: "笔记" })).toHaveAttribute(
+      "href",
+      "/notes",
+    );
   });
 });

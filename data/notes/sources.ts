@@ -1,0 +1,77 @@
+import type { TranscriptSource } from "@/types/transcript-notes";
+
+export const transcriptSources: TranscriptSource[] = [
+  {
+    id: "zizhi-tongjian-254",
+    title: "《资治通鉴》卷二百五十四",
+    publisher: "维基文库",
+    url: "https://zh.wikisource.org/zh-hans/%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91_%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29/%E5%8D%B7254",
+    kind: "primary",
+    note: "用于核对黄巢入长安、杀掠记录及皮日休相关异说。",
+  },
+  {
+    id: "new-history-five-dynasties",
+    title: "《新五代史》",
+    publisher: "Chinese Text Project",
+    url: "https://ctext.org/wiki.pl?if=gb&res=626823",
+    kind: "primary",
+    note: "北宋欧阳修所撰，叙事性强；使用时同时提示成书年代与修史立场。",
+  },
+  {
+    id: "xuzizhi-001",
+    title: "《续资治通鉴长编》卷一",
+    publisher: "维基文库",
+    url: "https://zh.wikisource.org/zh-hans/%E7%BA%8C%E8%B3%87%E6%B2%BB%E9%80%9A%E9%91%91%E9%95%B7%E7%B7%A8_%28%E5%9B%9B%E5%BA%AB%E5%85%A8%E6%9B%B8%E6%9C%AC%29/%E5%8D%B7001",
+    kind: "primary",
+    note: "用于核对陈桥兵变、韩通遇害等宋初叙事，并保留原书的异说说明。",
+  },
+  {
+    id: "yan-yun-archaeology",
+    title: "考古学视野下的燕云十六州",
+    publisher: "故宫博物院院刊",
+    url: "https://www.dpm.org.cn/Uploads/File/2023/07/19/u64b7500e18409.pdf",
+    kind: "academic",
+    note: "用于核定十六州名目、地理范围与“燕云”概念形成。",
+  },
+  {
+    id: "ten-kingdoms-concept",
+    title: "“十国”概念的形成与演变",
+    publisher: "《唐史论丛》",
+    url: "https://tslc.cbpt.cnki.net/portal/journal/portal/client/paper/4a91916d69358975e2d1e31284b6fb9a",
+    kind: "academic",
+    note: "用于解释“十国”是后世形成的史学分类，并非当时完整国家清单。",
+  },
+  {
+    id: "multi-state-order",
+    title: "五代十国时期的多国并存秩序研究摘要",
+    publisher: "东京大学文学部",
+    url: "https://www.l.u-tokyo.ac.jp/postgraduate/database/2024/page_00045.html",
+    kind: "academic",
+    note: "用于校正“五代为大哥、十国为附属小弟”的单线叙事。",
+  },
+  {
+    id: "interstate-relations",
+    title: "五代十国的多极国际关系",
+    publisher: "国家古籍保护中心",
+    url: "https://www.nlc.cn/pcab/zy/pxjz/20260706_2653827.shtml",
+    kind: "institutional",
+    note: "用于区分称帝、受册、朝贡与实际主权。",
+  },
+  {
+    id: "li-yu-death",
+    title: "李煜死因叙事的文献分歧研究",
+    publisher: "Airiti Library",
+    url: "https://www.airitilibrary.com/Article/Detail/10152687-PP201610190009-PP2024110007-00001",
+    kind: "academic",
+    note: "用于提示李煜死因与小周后故事存在文献层累和版本冲突。",
+  },
+  {
+    id: "wuyue-submission",
+    title: "《宋史纪事本末》：吴越归地",
+    publisher: "Chinese Text Project",
+    url: "https://ctext.org/wiki.pl?chapter=412819&if=en&remap=gb",
+    kind: "primary",
+    note: "用于核对钱俶于978年纳土归宋的时间与过程。",
+  },
+];
+
