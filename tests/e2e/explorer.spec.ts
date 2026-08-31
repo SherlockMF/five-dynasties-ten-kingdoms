@@ -8,7 +8,7 @@ test("declares smooth scrolling so Next can normalize route transitions", async 
   );
 });
 
-test("moves from a sourced 936 timeline event to its detail and person", async ({ page }) => {
+test("moves from a sourced 936 timeline event to its person and dynasty map", async ({ page }) => {
   await page.goto("/timeline?year=936");
   await page.getByRole("button", { name: "辽与北方" }).click();
 
@@ -42,9 +42,35 @@ test("moves from a sourced 936 timeline event to its detail and person", async (
   await page.getByRole("link", { name: "石敬瑭", exact: true }).click();
   await expect(page).toHaveURL(/\/people\?year=936&person=shi-jingtang$/);
   await expect(page.getByRole("heading", { name: "石敬瑭" })).toBeVisible();
+
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { name: "燕云十六州归辽（时称契丹）" }),
+  ).toBeVisible();
+  const relatedDynasties = page.locator("section").filter({
+    has: page.getByRole("heading", { name: "相关政权" }),
+  });
+  await relatedDynasties
+    .getByRole("link", { name: "后晋", exact: true })
+    .click();
+  await expect.poll(() => new URL(page.url()).pathname).toBe("/map");
+  await expect.poll(() => new URL(page.url()).searchParams.get("year")).toBe("936");
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("dynasty"))
+    .toBe("later-jin");
+  const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
+  await expect(dynastyDialog).toBeVisible();
+  await expect(dynastyDialog.getByText("当年君主（年内）")).toBeVisible();
+  await expect(dynastyDialog.getByText("石敬瑭", { exact: true })).toBeVisible();
+  await expect(dynastyDialog.getByText("疆域精度")).toBeVisible();
+  await expect(
+    dynastyDialog.getByText("示意", { exact: true }).first(),
+  ).toBeVisible();
 });
 
 test("covers chronology boundaries and all four narrative filters", async ({ page }) => {
+  const trackLabels = ["五代主线", "十国并立", "辽与北方", "宋初统一"];
+
   for (const boundary of [
     { year: 875, period: "唐末前史", event: "查看王仙芝起事详情" },
     { year: 880, period: "唐末前史", event: "查看黄巢军进入长安详情" },
@@ -55,17 +81,64 @@ test("covers chronology boundaries and all four narrative filters", async ({ pag
   }
 
   for (const fixture of [
-    { year: 907, track: "五代主线", event: "查看后梁建立、唐亡详情" },
-    { year: 907, track: "十国并立", event: "查看前蜀建立详情" },
-    { year: 907, track: "辽与北方", event: "查看耶律阿保机成为契丹可汗详情" },
-    { year: 978, track: "宋初统一", event: "查看吴越纳土归宋详情" },
+    {
+      year: 907,
+      track: "五代主线",
+      event: "查看后梁建立、唐亡详情",
+      excludedEvent: "查看前蜀建立详情",
+    },
+    {
+      year: 907,
+      track: "十国并立",
+      event: "查看前蜀建立详情",
+      excludedEvent: "查看后梁建立、唐亡详情",
+    },
+    {
+      year: 907,
+      track: "辽与北方",
+      event: "查看耶律阿保机成为契丹可汗详情",
+      excludedEvent: "查看后梁建立、唐亡详情",
+    },
+    {
+      year: 978,
+      track: "宋初统一",
+      event: "查看吴越纳土归宋详情",
+      excludedEvent: "查看后梁建立、唐亡详情",
+    },
   ]) {
     await page.goto(`/timeline?year=${fixture.year}`);
     const selectedTrack = page.getByRole("button", { name: fixture.track });
     await selectedTrack.click();
-    await expect(selectedTrack).toHaveAttribute("aria-pressed", "true");
+    for (const label of trackLabels) {
+      await expect(page.getByRole("button", { name: label })).toHaveAttribute(
+        "aria-pressed",
+        label === fixture.track ? "true" : "false",
+      );
+    }
     await expect(page.getByRole("link", { name: fixture.event })).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: fixture.excludedEvent }),
+    ).toHaveCount(0);
   }
+
+  await page.goto("/timeline?year=907");
+  await page.getByRole("button", { name: "五代主线" }).click();
+  await expect(
+    page.getByRole("link", { name: "查看后梁建立、唐亡详情" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "查看前蜀建立详情" }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "十国并立" }).click();
+  await expect(
+    page.getByRole("link", { name: "查看后梁建立、唐亡详情" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "查看前蜀建立详情" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "查看耶律阿保机成为契丹可汗详情" }),
+  ).toHaveCount(0);
 
   await page.goto("/timeline?year=907");
   await expect(page.getByRole("combobox", { name: "直接选择年份" })).toHaveValue("907");
@@ -520,12 +593,9 @@ test("map event modal is a top-level inert and accessible portal", async (
   await expect(page.getByRole("dialog", { name: "幽州事件" })).toBeVisible();
   await page.keyboard.press("Escape");
   await taiyuan.click();
-  const sliderBox = await slider.boundingBox();
-  expect(sliderBox).not.toBeNull();
-  await page.mouse.click(
-    sliderBox!.x + sliderBox!.width - 4,
-    sliderBox!.y + sliderBox!.height / 2,
-  );
+  await backdrop.click({
+    position: { x: viewport.width - 1, y: viewport.height - 1 },
+  });
   await expect(taiyuanDialog).toBeHidden();
   await expect(slider).toHaveValue("936");
 });
