@@ -183,6 +183,73 @@ describe("MapEventMarkers", () => {
     expect(marker).toHaveFocus();
   });
 
+  it("keeps background markers inert while the modal event dialog is open", async () => {
+    const user = userEvent.setup();
+    const taiyuanEvent = events.find(
+      (event) => event.id === "shi-jingtang-rebellion",
+    );
+    const luoyangEvent = events.find(
+      (event) => event.id === "later-tang-falls",
+    );
+    if (!taiyuanEvent || !luoyangEvent) throw new Error("fixture event missing");
+
+    render(
+      <MapEventMarkers
+        year={936}
+        events={[taiyuanEvent, luoyangEvent]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "太原：石敬瑭起兵" }));
+    expect(screen.getByTestId("map-modal-backdrop")).toBeVisible();
+    const luoyangMarker = screen.getByRole("button", { name: "洛阳：后唐灭亡" });
+    expect(luoyangMarker).toBeDisabled();
+    await user.click(luoyangMarker);
+    expect(screen.getByRole("dialog", { name: "太原事件" })).toBeVisible();
+    expect(screen.queryByRole("dialog", { name: "洛阳事件" })).not.toBeInTheDocument();
+  });
+
+  it("clears a selection that disappears without reviving it when the year returns", async () => {
+    const user = userEvent.setup();
+    const rebellion = events.find(
+      (event) => event.id === "shi-jingtang-rebellion",
+    );
+    if (!rebellion) throw new Error("fixture event missing");
+    const { rerender } = render(
+      <MapEventMarkers
+        year={936}
+        events={[rebellion]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+    await user.click(screen.getByRole("button", { name: "太原：石敬瑭起兵" }));
+    expect(screen.getByRole("dialog", { name: "太原事件" })).toBeVisible();
+
+    rerender(
+      <MapEventMarkers
+        year={937}
+        events={[rebellion]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole("dialog", { name: "太原事件" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("937年地图事件")).toHaveFocus();
+
+    rerender(
+      <MapEventMarkers
+        year={936}
+        events={[rebellion]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole("dialog", { name: "太原事件" })).not.toBeInTheDocument();
+  });
+
   it("includes both endpoints of a multi-year event interval", () => {
     const rebellion = events.find(
       (event) => event.id === "shi-jingtang-rebellion",

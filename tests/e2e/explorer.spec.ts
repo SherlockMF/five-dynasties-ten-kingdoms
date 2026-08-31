@@ -75,6 +75,25 @@ test("mobile map event markers keep separate full-size touch targets", async ({ 
   const markers = page.locator("[data-event-marker]");
   await expect(markers).toHaveCount(19);
   await expect(markers.first()).toBeVisible();
+  await expect
+    .poll(async () =>
+      markers.evaluateAll((buttons) => {
+        const boxes = buttons.map((button) => button.getBoundingClientRect());
+        return boxes.reduce(
+          (overlaps, a, first) =>
+            overlaps +
+            boxes.slice(first + 1).filter(
+              (b) =>
+                a.x < b.x + b.width &&
+                a.x + a.width > b.x &&
+                a.y < b.y + b.height &&
+                a.y + a.height > b.y,
+            ).length,
+          0,
+        );
+      }),
+    )
+    .toBe(0);
   const targets = await markers.evaluateAll((buttons) =>
     buttons.map((button) => {
       const box = button.getBoundingClientRect();
@@ -203,6 +222,81 @@ test("mobile map popover recomputes its viewport placement after rotation", asyn
   });
   await taiyuan.tap();
   await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
+});
+
+test("map event modal backdrop blocks background markers and year controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto("/map?year=936");
+  const taiyuan = page.getByRole("button", {
+    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+  });
+  const youzhou = page.getByRole("button", {
+    name: "幽州：燕云十六州归辽（时称契丹）",
+  });
+  const slider = page.getByRole("slider", { name: "地图年份" });
+
+  await taiyuan.click();
+  const taiyuanDialog = page.getByRole("dialog", { name: "太原事件" });
+  const backdrop = page.getByTestId("map-modal-backdrop");
+  await expect(taiyuanDialog).toBeVisible();
+  await expect(backdrop).toBeVisible();
+  await expect(youzhou).toBeDisabled();
+  const backdropBox = await backdrop.boundingBox();
+  expect(backdropBox).toEqual({ x: 0, y: 0, width: 1280, height: 800 });
+  const youzhouBox = await youzhou.boundingBox();
+  expect(youzhouBox).not.toBeNull();
+  await page.mouse.click(
+    youzhouBox!.x + youzhouBox!.width / 2,
+    youzhouBox!.y + youzhouBox!.height / 2,
+  );
+  await expect(page.getByRole("dialog", { name: "幽州事件" })).toBeHidden();
+  if (await taiyuanDialog.isVisible()) {
+    await taiyuanDialog.getByRole("button", { name: "关闭太原事件" }).click();
+  }
+
+  await youzhou.click();
+  await expect(page.getByRole("dialog", { name: "幽州事件" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await taiyuan.click();
+  const sliderBox = await slider.boundingBox();
+  expect(sliderBox).not.toBeNull();
+  await page.mouse.click(
+    sliderBox!.x + sliderBox!.width - 4,
+    sliderBox!.y + sliderBox!.height / 2,
+  );
+  await expect(taiyuanDialog).toBeHidden();
+  await expect(slider).toHaveValue("936");
+});
+
+test("a disappearing event selection closes permanently with a safe focus target", async ({ page }) => {
+  await page.goto("/map?year=936");
+  const slider = page.getByRole("slider", { name: "地图年份" });
+  const marker = page.getByRole("button", {
+    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+  });
+  await marker.click();
+  const dialog = page.getByRole("dialog", { name: "太原事件" });
+  await slider.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(slider).toHaveValue("937");
+  await expect(dialog).toBeHidden();
+  await expect(slider).toBeFocused();
+  await page.keyboard.press("ArrowLeft");
+  await expect(slider).toHaveValue("936");
+  await expect(dialog).toBeHidden();
+
+  await marker.click();
+  await page.getByRole("button", { name: "播放历史" }).evaluate((button) =>
+    (button as HTMLButtonElement).click(),
+  );
+  await expect(slider).toHaveValue("937", { timeout: 3_000 });
+  await expect(dialog).toBeHidden();
+  await expect(page.getByLabel("937年地图事件")).toBeFocused();
+  await page.getByRole("button", { name: "暂停" }).evaluate((button) =>
+    (button as HTMLButtonElement).click(),
+  );
+  await page.keyboard.press("ArrowLeft");
+  await expect(dialog).toBeHidden();
 });
 
 test("map corrects pre-907 years without dropping existing query state", async ({ page }) => {

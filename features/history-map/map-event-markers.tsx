@@ -2,7 +2,14 @@
 
 import { MapPin, X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 
 import { SourceMarker } from "@/components/history/source-marker";
@@ -118,7 +125,11 @@ export function MapEventMarkers({
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const activeTriggerRef = useRef<HTMLButtonElement>(null);
   const dialogId = useId();
-  const [selectedLocationId, setSelectedLocationId] = useState<string>();
+  const [selection, setSelection] = useState<{
+    locationId?: string;
+    invalidated?: boolean;
+  }>({});
+  const selectedLocationId = selection.locationId;
   const [viewport, setViewport] = useState({
     width: 0,
     height: 0,
@@ -205,14 +216,35 @@ export function MapEventMarkers({
   const selectedGroup = positionedGroups.find(
     (group) => group.location.id === selectedLocationId,
   );
+  if (selectedLocationId && !selectedGroup) {
+    setSelection({ invalidated: true });
+  }
+
+  useLayoutEffect(() => {
+    if (!selection.invalidated) return;
+    activeTriggerRef.current = null;
+    const activeElement = document.activeElement as HTMLElement | null;
+    if (
+      !activeElement ||
+      activeElement === document.body ||
+      !activeElement.isConnected
+    ) {
+      layerRef.current?.focus();
+    }
+  }, [selection.invalidated]);
 
   useEffect(() => {
     if (selectedLocationId) closeButtonRef.current?.focus();
   }, [selectedLocationId]);
 
   const closeDialog = (restoreFocus = true) => {
-    setSelectedLocationId(undefined);
-    if (restoreFocus) activeTriggerRef.current?.focus();
+    setSelection({});
+    if (!restoreFocus) return;
+    if (activeTriggerRef.current?.isConnected) {
+      activeTriggerRef.current.focus();
+    } else {
+      layerRef.current?.focus();
+    }
   };
 
   const handleDialogKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
@@ -242,6 +274,7 @@ export function MapEventMarkers({
   return (
     <div
       ref={layerRef}
+      tabIndex={-1}
       aria-label={`${year}年地图事件`}
       className="pointer-events-none absolute inset-0 z-10"
     >
@@ -288,12 +321,13 @@ export function MapEventMarkers({
               aria-label={accessibleName}
               aria-expanded={open}
               aria-controls={open ? dialogId : undefined}
+              disabled={Boolean(selectedLocationId) && !open}
               onClick={(event) => {
                 if (open) {
                   closeDialog();
                 } else {
                   activeTriggerRef.current = event.currentTarget;
-                  setSelectedLocationId(location.id);
+                  setSelection({ locationId: location.id });
                   onSelect(locationEvents[0].id);
                 }
               }}
@@ -305,6 +339,14 @@ export function MapEventMarkers({
           </div>
         );
       })}
+      {selectedGroup ? (
+        <div
+          data-testid="map-modal-backdrop"
+          aria-hidden="true"
+          onPointerDown={() => closeDialog()}
+          className="pointer-events-auto fixed inset-0 z-40 cursor-default bg-ink/20 backdrop-blur-[1px]"
+        />
+      ) : null}
       {selectedGroup ? (() => {
         const anchor = {
           x: viewport.left + selectedGroup.markerPoint[0],
