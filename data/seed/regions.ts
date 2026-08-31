@@ -2,7 +2,7 @@ import type { ContentProvenance, HistoricalRegion } from "@/types/history";
 
 import { historicalExtension, mixed } from "./provenance";
 
-const sourceRefs = ["谭其骧主编《中国历史地图集》第五册（边界简化示意）", "《考古学视野下的燕云十六州》（北方区域参考）"];
+const sourceRefs = ["谭其骧主编《中国历史地图集》第五册（边界简化示意）"];
 const base = { temporalBasis: "year-end" as const, accuracyLevel: "illustrative" as const, sourceRefs, verificationStatus: "illustrative" as const, version: "mvp-1" };
 type RegionInput = ContentProvenance &
   Pick<

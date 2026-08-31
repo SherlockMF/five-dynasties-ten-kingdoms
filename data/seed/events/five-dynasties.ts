@@ -93,7 +93,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "郭崇韬等率军沿秦岭道路南下，前蜀各地守军接连降服。",
     result: "后唐短期控制四川，但征服军内部很快因权责与猜忌发生冲突。",
     impact: "前蜀灭亡扩大了后唐版图，也直接引出郭崇韬被杀和军心动荡。",
-    personIds: ["li-cunxu", "guo-chongtao", "wang-jian"], dynastyIds: ["later-tang", "former-shu"], locationIds: ["chengdu"], causeEventIds: ["former-shu-founded", "later-tang-founded", "later-liang-falls"], consequenceEventIds: ["xingjiao-mutiny", "meng-zhixiang-controls-shu"],
+    personIds: ["li-cunxu", "guo-chongtao"], dynastyIds: ["later-tang", "former-shu"], locationIds: ["chengdu"], causeEventIds: ["former-shu-founded", "later-tang-founded", "later-liang-falls"], consequenceEventIds: ["xingjiao-mutiny", "meng-zhixiang-controls-shu"],
     sourceRefs: ["《资治通鉴》卷二百七十四《后唐纪三》", "《旧五代史》卷三十三《唐书·庄宗纪七》"], verificationStatus: "reviewed", ...mixed([3]),
   },
   {
@@ -183,7 +183,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "后晋承认契丹对幽、云等州的统治，原有地方军政体系逐步并入辽朝。",
     result: "中原王朝失去幽州及其周边防御与交通节点。",
     impact: "此后后周、北宋屡图恢复燕云，其归属长期影响宋辽军事边界。",
-    personIds: ["shi-jingtang", "sang-weihan"], dynastyIds: ["later-jin", "liao"], locationIds: ["youzhou"], causeEventIds: ["shi-jingtang-rebellion", "founding-later-jin"], consequenceEventIds: ["later-jin-liao-war", "later-zhou-northern-campaign"],
+    personIds: ["shi-jingtang", "sang-weihan"], dynastyIds: ["later-jin", "liao"], locationIds: ["youzhou", "jizhou", "yingzhou", "mozhou", "zhuozhou", "tanzhou-yanyun", "shunzhou", "xinzhou", "guizhou", "ruzhou", "wuzhou", "yunzhou", "yingzhou-shanxi", "huanzhou", "shuozhou", "weizhou-yanyun"], causeEventIds: ["shi-jingtang-rebellion", "founding-later-jin"], consequenceEventIds: ["later-jin-liao-war", "later-zhou-northern-campaign"],
     sourceRefs: ["《资治通鉴》卷二百八十《后晋纪一》", "《辽史》卷四《太宗本纪下》"], verificationStatus: "reviewed", ...mixed([4]),
   },
   {
@@ -278,10 +278,10 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
   },
   {
     id: "battle-gaoping", title: "高平之战", eventType: "war", tracks: fiveDynastiesAndLiao, startYear: 954,
-    summary: "柴荣亲征，在高平击败北汉与辽军联军，稳住即位之初的后周政权。",
-    background: "郭威去世、柴荣新立，刘崇企图借辽军援助赢得南下机会。",
-    process: "后周军初战右翼溃退，柴荣亲临前线督战，赵匡胤等率部反击并扭转战局。",
-    result: "北汉联军败退，后周清理临阵退缩将领并重整禁军。",
+    summary: "柴荣亲征，在高平击败北汉军，稳住即位之初的后周政权。",
+    background: "郭威去世、柴荣新立，刘崇企图借辽援南下；杨衮所率辽军见周军强而未参战。",
+    process: "后周军初战右翼溃退，柴荣亲临前线督战，赵匡胤等率部反击北汉军并扭转战局。",
+    result: "北汉军败退，辽援自行撤回，后周清理临阵退缩将领并重整禁军。",
     impact: "胜利巩固柴荣权威，成为其整军、改革和推进统一战争的起点。",
     personIds: ["chai-rong", "liu-chong", "zhao-kuangyin"], dynastyIds: ["later-zhou", "northern-han", "liao"], locationIds: ["gaoping"], causeEventIds: ["later-zhou-founded", "northern-han-founded"], consequenceEventIds: ["chai-rong-reforms"],
     sourceRefs: ["《资治通鉴》卷二百九十一《后周纪二》", "《新五代史》卷十二《周本纪第十二》"], verificationStatus: "reviewed", ...mixed([6]),
@@ -303,7 +303,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     process: "后周军沿水陆北进，多处守军归降；柴荣病重后停止进攻幽州并返回开封。",
     result: "后周取得部分关南州县，但未能收复幽州，幼主继位造成新的权力过渡。",
     impact: "柴荣去世中断北征，后周积累的军政力量随后由北宋继承。",
-    personIds: ["chai-rong", "zhao-kuangyin", "fan-zhi"], dynastyIds: ["later-zhou", "liao"], locationIds: ["youzhou", "kaifeng"], causeEventIds: ["sixteen-prefectures-ceded", "chai-rong-reforms"], consequenceEventIds: ["chenqiao-mutiny"],
+    personIds: ["chai-rong", "zhao-kuangyin", "fan-zhi"], dynastyIds: ["later-zhou", "liao"], locationIds: ["yingzhou", "mozhou"], causeEventIds: ["sixteen-prefectures-ceded", "chai-rong-reforms"], consequenceEventIds: ["chenqiao-mutiny"],
     sourceRefs: ["《资治通鉴》卷二百九十四《后周纪五》", "《新五代史》卷十二《周本纪第十二》"], verificationStatus: "reviewed", ...mixed([6]),
   },
 ];

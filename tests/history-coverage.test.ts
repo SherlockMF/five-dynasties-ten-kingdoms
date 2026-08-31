@@ -169,6 +169,111 @@ describe("expanded northern history corpus", () => {
     }
   });
 
+  it("orders the Shiling Pass battle before the fall of Northern Han", () => {
+    const battle = events.find((event) => event.id === "battle-shiling-pass")!;
+    const fall = events.find((event) => event.id === "northern-han-falls")!;
+
+    expect(battle.causeEventIds).not.toContain("northern-han-falls");
+    expect(battle.consequenceEventIds).toContain("northern-han-falls");
+    expect(fall.causeEventIds).toContain("battle-shiling-pass");
+    expect(fall.consequenceEventIds).not.toContain("battle-shiling-pass");
+    expect(battle.locationIds).toEqual([]);
+  });
+
+  it("uses only historically applicable locations for corrected campaigns", () => {
+    const event = (id: string) => events.find((item) => item.id === id)!;
+    const yanyunIds = [
+      "youzhou", "jizhou", "yingzhou", "mozhou", "zhuozhou", "tanzhou-yanyun",
+      "shunzhou", "xinzhou", "guizhou", "ruzhou", "wuzhou", "yunzhou",
+      "yingzhou-shanxi", "huanzhou", "shuozhou", "weizhou-yanyun",
+    ];
+
+    for (const id of ["abaoyi-khagan", "liao-founded", "liao-destroys-balhae"]) {
+      expect(event(id).locationIds, id).toEqual([]);
+    }
+    expect(event("song-conquers-later-shu").locationIds).toEqual(["chengdu", "fengzhou"]);
+    expect(event("song-conquers-later-shu").personIds).not.toContain("li-chuyun");
+    expect(event("southern-tang-destroys-min").locationIds).not.toContain("fuzhou");
+    expect(event("sixteen-prefectures-ceded").locationIds).toEqual(yanyunIds);
+    expect(event("later-zhou-northern-campaign").locationIds).toEqual(
+      expect.arrayContaining(["yingzhou", "mozhou"]),
+    );
+    expect(event("later-zhou-northern-campaign").locationIds).not.toContain("youzhou");
+  });
+
+  it("records the corrected Wuping and Gaoping narratives", () => {
+    const wupingFormation = events.find((event) => event.id === "wuping-regime-forms")!;
+    const wupingConquest = events.find((event) => event.id === "song-takes-wuping")!;
+    const gaopingAid = events.find((event) => event.id === "liao-aids-northern-han-gaoping")!;
+    const gaopingBattle = events.find((event) => event.id === "battle-gaoping")!;
+
+    expect(wupingFormation.dynastyIds).not.toContain("northern-song");
+    expect(wupingConquest.process).not.toMatch(/击败张文表|镇压张文表/);
+    expect(`${wupingConquest.background}${wupingConquest.process}`).toContain("杨师璠");
+    expect(wupingConquest.process).toContain("张从富");
+    expect(gaopingAid.process).toContain("不敢救");
+    expect(gaopingAid.process).not.toMatch(/辽军.*交战|联军.*败退/);
+    expect(`${gaopingBattle.summary}${gaopingBattle.process}`).not.toContain("辽军联军");
+    expect(`${gaopingBattle.summary}${gaopingBattle.process}`).not.toContain("北汉联军");
+    expect(`${gaopingBattle.background}${gaopingBattle.process}`).toMatch(/辽援.*未参战|杨衮.*未.*参战/);
+  });
+
+  it("never assigns an event to someone already deceased", () => {
+    const peopleById = new Map(people.map((person) => [person.id, person]));
+
+    for (const event of events) {
+      for (const personId of event.personIds) {
+        const deathYear = peopleById.get(personId)?.deathYear;
+        if (deathYear !== undefined) {
+          expect(deathYear, `${event.id}:${personId}`).toBeGreaterThanOrEqual(event.startYear);
+        }
+      }
+    }
+    expect(events.find((event) => event.id === "abaoyi-khagan")?.causeEventIds)
+      .not.toContain("later-liang-founded");
+  });
+
+  it("maps transcript episode five and six subjects exactly", () => {
+    const episodeFiveIds = [
+      "yang-xingmi-prince-wu", "wu-kingdom-established", "wu-emperor-yang-pu", "southern-tang-replaces-wu",
+    ];
+    const episodeSixIds = [
+      "song-takes-jingnan", "song-takes-wuping", "song-conquers-later-shu",
+      "song-conquers-southern-han", "song-attacks-southern-tang", "southern-tang-falls",
+      "wuyue-submits", "northern-han-falls", "battle-shiling-pass",
+    ];
+    const personEpisodeFiveIds = ["yang-xingmi", "xu-wen", "li-bian"];
+    const personEpisodeSixIds = ["li-yu", "qian-chu", "zhao-guangyi", "cao-bin", "pan-mei", "li-chuyun"];
+    const assertMixed = (entity: { contentOrigin: string; transcriptEpisodeIds: readonly number[] }, episode: number, id: string) => {
+      expect(entity.contentOrigin, `${id}:origin`).toBe("mixed");
+      expect(entity.transcriptEpisodeIds, `${id}:episodes`).toContain(episode);
+    };
+
+    for (const id of episodeFiveIds) assertMixed(events.find((event) => event.id === id)!, 5, id);
+    for (const id of episodeSixIds) assertMixed(events.find((event) => event.id === id)!, 6, id);
+    for (const id of personEpisodeFiveIds) assertMixed(people.find((person) => person.id === id)!, 5, id);
+    for (const id of personEpisodeSixIds) assertMixed(people.find((person) => person.id === id)!, 6, id);
+  });
+
+  it("scopes Yanyun-specific research references to Yanyun locations", () => {
+    const yanyunIds = new Set([
+      "youzhou", "jizhou", "yingzhou", "mozhou", "zhuozhou", "tanzhou-yanyun",
+      "shunzhou", "xinzhou", "guizhou", "ruzhou", "wuzhou", "yunzhou",
+      "yingzhou-shanxi", "huanzhou", "shuozhou", "weizhou-yanyun",
+    ]);
+    const mentionsYanyunStudy = (sourceRefs: string[]) =>
+      sourceRefs.some((source) => source.includes("考古学视野下的燕云十六州"));
+
+    for (const location of locations) {
+      expect(mentionsYanyunStudy(location.sourceRefs), location.id).toBe(yanyunIds.has(location.id));
+    }
+    for (const region of regions.filter((item) =>
+      ["wu", "wuyue", "min", "chu", "former-shu", "later-shu", "southern-han", "southern-tang", "jingnan"].includes(item.dynastyId),
+    )) {
+      expect(mentionsYanyunStudy(region.sourceRefs), region.id).toBe(false);
+    }
+  });
+
   it("records source and provenance invariants for every person", () => {
     for (const person of people) {
       expect(person.summary.trim(), `${person.id}:summary`).not.toBe("");
