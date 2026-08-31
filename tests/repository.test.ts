@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { LocalHistoryRepository } from "@/lib/repositories/local-history-repository";
+import {
+  isPersonRelationActive,
+  LocalHistoryRepository,
+} from "@/lib/repositories/local-history-repository";
 
 const repository = new LocalHistoryRepository();
 
@@ -195,6 +198,66 @@ describe("expanded history repository", () => {
     expect(xuWenAt883.relations.map((relation) => relation.id)).toContain(
       "yang-xingmi-xu-wen",
     );
+  });
+
+  it("keeps family relations active with partial or unknown life spans", async () => {
+    for (const year of [900, 912]) {
+      const graph = await repository.getFirstDegreeRelations("zhu-wen", year);
+      expect(graph.relations.map((relation) => relation.id)).toContain(
+        "zhu-wen-zhu-yougui",
+      );
+    }
+
+    for (const year of [953, 954]) {
+      const graph = await repository.getFirstDegreeRelations("liu-chong", year);
+      expect(graph.relations.map((relation) => relation.id)).toContain(
+        "liu-chong-liu-jiyuan",
+      );
+    }
+
+    const familyRelation = { type: "family" as const };
+    expect(
+      isPersonRelationActive(
+        familyRelation,
+        { deathYear: 930 },
+        {},
+        930,
+      ),
+    ).toBe(true);
+    expect(
+      isPersonRelationActive(
+        familyRelation,
+        { deathYear: 930 },
+        {},
+        931,
+      ),
+    ).toBe(false);
+    expect(isPersonRelationActive(familyRelation, {}, {}, 900)).toBe(true);
+
+    const explicitBounds = {
+      type: "family" as const,
+      startYear: 900,
+      endYear: 940,
+    };
+    expect(
+      isPersonRelationActive(
+        explicitBounds,
+        { birthYear: 850, deathYear: 950 },
+        { birthYear: 860, deathYear: 960 },
+        899,
+      ),
+    ).toBe(false);
+    expect(
+      isPersonRelationActive(
+        explicitBounds,
+        { birthYear: 850, deathYear: 950 },
+        { birthYear: 860, deathYear: 960 },
+        941,
+      ),
+    ).toBe(false);
+    expect(
+      isPersonRelationActive(explicitBounds, {}, {}, undefined),
+    ).toBe(true);
   });
 
   it("keeps at least 25 derived event relations available", async () => {

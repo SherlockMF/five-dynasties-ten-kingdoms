@@ -1,7 +1,48 @@
 import { seedData } from "@/data/seed";
 import { deepFreeze } from "@/lib/deep-freeze";
 import type { HistoryRepository } from "@/types/repository";
-import type { HistoricalEventDetail, PersonGraphData } from "@/types/history";
+import type {
+  HistoricalEventDetail,
+  Person,
+  PersonGraphData,
+  PersonRelation,
+} from "@/types/history";
+
+type PersonLifeSpan = Pick<Person, "birthYear" | "deathYear">;
+type TemporalPersonRelation = Pick<
+  PersonRelation,
+  "type" | "startYear" | "endYear"
+>;
+
+export function isPersonRelationActive(
+  relation: TemporalPersonRelation,
+  source: PersonLifeSpan | undefined,
+  target: PersonLifeSpan | undefined,
+  year: number | undefined,
+): boolean {
+  if (year === undefined) return true;
+  if (relation.type !== "family") {
+    return (
+      relation.startYear !== undefined &&
+      relation.startYear <= year &&
+      (relation.endYear ?? Infinity) >= year
+    );
+  }
+
+  const birthYears = [source?.birthYear, target?.birthYear].filter(
+    (value): value is number => value !== undefined,
+  );
+  const deathYears = [source?.deathYear, target?.deathYear].filter(
+    (value): value is number => value !== undefined,
+  );
+  const startYear =
+    relation.startYear ??
+    (birthYears.length > 0 ? Math.max(...birthYears) : -Infinity);
+  const endYear =
+    relation.endYear ??
+    (deathYears.length > 0 ? Math.min(...deathYears) : Infinity);
+  return startYear <= year && endYear >= year;
+}
 
 export class LocalHistoryRepository implements HistoryRepository {
   async getDynastiesByYear(year: number) {
@@ -89,22 +130,10 @@ export class LocalHistoryRepository implements HistoryRepository {
     const relations = seedData.personRelations.filter((relation) => {
       const connected = relation.sourcePersonId === id || relation.targetPersonId === id;
       if (!connected) return false;
-      if (year === undefined) return true;
 
       const source = peopleById.get(relation.sourcePersonId);
       const target = peopleById.get(relation.targetPersonId);
-      const inferredFamilyStart =
-        relation.type === "family" && source?.birthYear !== undefined && target?.birthYear !== undefined
-          ? Math.max(source.birthYear, target.birthYear)
-          : undefined;
-      const inferredFamilyEnd =
-        relation.type === "family" && source?.deathYear !== undefined && target?.deathYear !== undefined
-          ? Math.min(source.deathYear, target.deathYear)
-          : undefined;
-      const startYear = relation.startYear ?? inferredFamilyStart;
-      const endYear = relation.endYear ?? inferredFamilyEnd;
-      const active = startYear !== undefined && startYear <= year && (endYear ?? Infinity) >= year;
-      return connected && active;
+      return isPersonRelationActive(relation, source, target, year);
     });
     const relatedIds = new Set(relations.flatMap((relation) => [relation.sourcePersonId, relation.targetPersonId]));
     return deepFreeze({ center, people: seedData.people.filter((person) => relatedIds.has(person.id)), relations });
