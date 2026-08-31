@@ -81,7 +81,7 @@ export function PersonFilters({
         className="flex flex-wrap items-center gap-2"
         role="group"
       >
-        <span className="mr-1 text-[10px] tracking-[0.14em] text-muted uppercase">
+        <span className="mr-1 text-[10px] tracking-[0.14em] text-ink/70 uppercase">
           类别
         </span>
         {PERSON_CATEGORY_FILTERS.map((filter) => {
@@ -97,7 +97,7 @@ export function PersonFilters({
                 "min-h-10 rounded-full border px-4 py-2 text-xs transition-[background,color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
                 active
                   ? "border-ink bg-ink text-paper"
-                  : "border-ink/20 bg-paper/60 text-muted hover:border-cinnabar hover:text-cinnabar",
+                  : "border-ink/20 bg-paper/60 text-ink/70 hover:border-cinnabar hover:text-cinnabar",
               )}
             >
               {filter.label}
@@ -110,7 +110,7 @@ export function PersonFilters({
         className="flex flex-wrap items-center gap-2"
         role="group"
       >
-        <span className="mr-1 text-[10px] tracking-[0.14em] text-muted uppercase">
+        <span className="mr-1 text-[10px] tracking-[0.14em] text-ink/70 uppercase">
           角色
         </span>
         {PERSON_ROLE_FILTERS.map((filter) => {
@@ -126,7 +126,7 @@ export function PersonFilters({
                 "min-h-10 rounded-full border px-4 py-2 text-xs transition-[background,color,border-color] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar focus-visible:ring-offset-2 focus-visible:ring-offset-paper",
                 active
                   ? "border-cinnabar bg-cinnabar text-white"
-                  : "border-ink/20 bg-paper/60 text-muted hover:border-cinnabar hover:text-cinnabar",
+                  : "border-ink/20 bg-paper/60 text-ink/70 hover:border-cinnabar hover:text-cinnabar",
               )}
             >
               {filter.label}

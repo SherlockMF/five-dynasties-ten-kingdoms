@@ -48,19 +48,30 @@ export function SourceMarker({
 }: SourceMarkerProps) {
   const label = getSourceMarkerLabel(entity);
   const marker = (
-    <sup
-      aria-label={label}
-      className={cn(
-        "cursor-help rounded-sm text-[0.7em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-        variant === "inverse"
-          ? "text-paper focus-visible:ring-paper focus-visible:ring-offset-ink"
-          : "text-cinnabar focus-visible:ring-cinnabar focus-visible:ring-offset-paper",
-      )}
-      tabIndex={0}
-      title={label}
-    >
-      {getSourceMarkerText(entity)}
-    </sup>
+    <span className="group/source-marker relative inline-flex max-w-full items-baseline">
+      <sup
+        aria-label={label}
+        className={cn(
+          "cursor-help rounded-sm text-[0.7em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+          variant === "inverse"
+            ? "text-paper focus-visible:ring-paper focus-visible:ring-offset-ink"
+            : "text-cinnabar focus-visible:ring-cinnabar focus-visible:ring-offset-paper",
+        )}
+        tabIndex={0}
+      >
+        {getSourceMarkerText(entity)}
+      </sup>
+      <span
+        aria-hidden="true"
+        role="tooltip"
+        className={cn(
+          "pointer-events-none invisible fixed inset-x-4 bottom-4 z-50 mx-auto max-w-md whitespace-normal rounded-lg px-3 py-2 text-center text-xs leading-5 opacity-0 shadow-xl transition-[opacity,visibility] group-hover/source-marker:visible group-hover/source-marker:opacity-100 group-focus-within/source-marker:visible group-focus-within/source-marker:opacity-100",
+          variant === "inverse" ? "bg-paper text-ink" : "bg-ink text-paper",
+        )}
+      >
+        {label}
+      </span>
+    </span>
   );
 
   if (!showLegend) {

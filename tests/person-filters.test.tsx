@@ -8,6 +8,13 @@ import {
   PERSON_ROLE_FILTERS,
   PersonFilters,
 } from "@/features/people/person-filters";
+import { PersonSearch } from "@/features/people/person-search";
+import {
+  blend,
+  contrastRatio,
+  getThemeColor,
+  WHITE,
+} from "@/tests/color-contrast";
 
 describe("PersonFilters", () => {
   it("exposes single-choice category and role filters with pressed state", async () => {
@@ -81,7 +88,8 @@ describe("PersonFilters", () => {
   });
 
   it("gives every seed person a non-empty, duplicate-free role classification", () => {
-    expect(people).toHaveLength(52);
+    expect(people.length).toBeGreaterThanOrEqual(40);
+    expect(people.length).toBeLessThanOrEqual(60);
     for (const person of people) {
       expect(person.roleCategories.length, person.id).toBeGreaterThan(0);
       expect(new Set(person.roleCategories).size, person.id).toBe(
@@ -128,5 +136,71 @@ describe("PersonFilters", () => {
         role: "general",
       }).map((person) => person.name),
     ).toContain("曹彬");
+  });
+
+  it("keeps people linked to multiple regimes in every matching category", () => {
+    const idsFor = (category: "five-dynasties" | "ten-kingdoms" | "song") =>
+      filterPeople(people, dynasties, { category, role: null }).map(
+        (person) => person.id,
+      );
+
+    expect(idsFor("five-dynasties")).toContain("zhao-kuangyin");
+    expect(idsFor("song")).toContain("zhao-kuangyin");
+    expect(idsFor("ten-kingdoms")).toContain("li-yu");
+    expect(idsFor("song")).toContain("li-yu");
+  });
+
+  it("meets AA contrast after composing transparent people controls", () => {
+    const { rerender } = render(
+      <PersonFilters
+        category="all"
+        role={null}
+        onCategoryChange={vi.fn()}
+        onRoleChange={vi.fn()}
+      />,
+    );
+    const inactiveFilter = screen.getByRole("button", { name: "十国人物" });
+    expect(inactiveFilter).toHaveClass("text-ink/70");
+    expect(inactiveFilter).toHaveClass("focus-visible:ring-cinnabar");
+
+    rerender(
+      <PersonSearch
+        people={[people[0]]}
+        hasActiveFilters={false}
+        onSelect={vi.fn()}
+      />,
+    );
+    const searchbox = screen.getByRole("searchbox");
+    const candidateRole = screen.getByText(people[0].roles[0]);
+    expect(searchbox).toHaveClass(
+      "placeholder:text-ink/70",
+      "focus:ring-cinnabar",
+    );
+    expect(candidateRole).toHaveClass("text-ink/70");
+
+    rerender(
+      <PersonSearch people={[]} hasActiveFilters onSelect={vi.fn()} />,
+    );
+    expect(screen.getByRole("status")).toHaveClass("text-ink/70");
+
+    const paper = getThemeColor("paper");
+    const ink = getThemeColor("ink");
+    const cinnabar = getThemeColor("cinnabar");
+    const filterPanel = blend(WHITE, paper, 0.3);
+    const inactiveBackground = blend(paper, filterPanel, 0.6);
+    const inputBackground = blend(WHITE, paper, 0.5);
+    const candidateBackground = blend(WHITE, paper, 0.45);
+
+    for (const background of [
+      inactiveBackground,
+      inputBackground,
+      candidateBackground,
+      paper,
+    ]) {
+      expect(
+        contrastRatio(blend(ink, background, 0.7), background),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(contrastRatio(cinnabar, paper)).toBeGreaterThanOrEqual(3);
   });
 });

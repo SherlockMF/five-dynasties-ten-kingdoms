@@ -1,7 +1,5 @@
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -9,42 +7,7 @@ import {
   SourceMarker,
 } from "@/components/history/source-marker";
 import type { ContentProvenance } from "@/types/history";
-
-function getThemeColor(name: string) {
-  const css = readFileSync(resolve(process.cwd(), "app/globals.css"), "utf8");
-  const value = css.match(new RegExp(`--${name}:\\s*(#[0-9a-f]{6})`, "i"))?.[1];
-  if (!value) throw new Error(`Missing theme color: ${name}`);
-  return value;
-}
-
-function toRgb(hex: string) {
-  return [1, 3, 5].map((index) => Number.parseInt(hex.slice(index, index + 2), 16));
-}
-
-function blend(foreground: string, background: string, alpha: number) {
-  const foregroundRgb = toRgb(foreground);
-  const backgroundRgb = toRgb(background);
-  return foregroundRgb.map((channel, index) =>
-    Math.round(channel * alpha + backgroundRgb[index]! * (1 - alpha)),
-  );
-}
-
-function contrastRatio(foreground: string | number[], background: string) {
-  const luminance = (rgb: number[]) => {
-    const [red, green, blue] = rgb.map((channel) => {
-      const value = channel / 255;
-      return value <= 0.04045
-        ? value / 12.92
-        : ((value + 0.055) / 1.055) ** 2.4;
-    });
-    return 0.2126 * red! + 0.7152 * green! + 0.0722 * blue!;
-  };
-  const first = luminance(
-    typeof foreground === "string" ? toRgb(foreground) : foreground,
-  );
-  const second = luminance(toRgb(background));
-  return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
-}
+import { blend, contrastRatio, getThemeColor } from "@/tests/color-contrast";
 
 const markerCases = [
   {
@@ -150,6 +113,49 @@ describe("SourceMarker", () => {
       screen.getByText("¹ 六集主线 · ² 史料扩展 · ³ 存在异说"),
     ).toHaveClass("text-paper");
   });
+
+  it.each(["default", "inverse"] as const)(
+    "provides a visible, non-interactive %s tooltip on hover and focus",
+    async (variant) => {
+      const user = userEvent.setup();
+      render(
+        <div>
+          <SourceMarker
+            entity={{ contentOrigin: "mixed", transcriptEpisodeIds: [4] }}
+            variant={variant}
+          />
+          <button type="button">之后</button>
+        </div>,
+      );
+
+      const marker = screen.getByLabelText("第04集主线、史料扩展");
+      const tooltip = screen.getByRole("tooltip", { hidden: true });
+      const wrapper = marker.parentElement;
+
+      expect(wrapper).toContainElement(tooltip);
+      expect(tooltip).toHaveTextContent("第04集主线、史料扩展");
+      expect(tooltip).toHaveAttribute("aria-hidden", "true");
+      expect(tooltip).toHaveClass(
+        "pointer-events-none",
+        "group-hover/source-marker:visible",
+        "group-focus-within/source-marker:visible",
+        "fixed",
+        "inset-x-4",
+        "max-w-md",
+        "whitespace-normal",
+        ...(variant === "inverse"
+          ? ["bg-paper", "text-ink"]
+          : ["bg-ink", "text-paper"]),
+      );
+
+      await user.hover(marker);
+      expect(tooltip).toBeInTheDocument();
+      await user.tab();
+      expect(marker).toHaveFocus();
+      await user.tab();
+      expect(screen.getByRole("button", { name: "之后" })).toHaveFocus();
+    },
+  );
 
   it("meets WCAG AA contrast for marker text, 12px legends, and focus rings", () => {
     const ink = getThemeColor("ink");
