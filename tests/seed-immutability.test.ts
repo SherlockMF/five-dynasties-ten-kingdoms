@@ -7,6 +7,8 @@ describe("seed runtime immutability", () => {
   it("deep-freezes seed arrays, source metadata, and GeoJSON coordinates", () => {
     expect(Object.isFrozen(seedData)).toBe(true);
     expect(Object.isFrozen(seedData.events)).toBe(true);
+    expect(Object.isFrozen(seedData.dynasties[0]!.rulerPeriods)).toBe(true);
+    expect(Object.isFrozen(seedData.dynasties[0]!.rulerPeriods[0])).toBe(true);
     expect(Object.isFrozen(events[0]!.tracks)).toBe(true);
     expect(Object.isFrozen(events[0]!.sourceRefs)).toBe(true);
     expect(people[0]).toHaveProperty("roleCategories");
@@ -15,6 +17,13 @@ describe("seed runtime immutability", () => {
     expect(() => (events[0]!.tracks as string[]).push("liao-north")).toThrow();
     expect(() => events[0]!.sourceRefs.push("mutation")).toThrow();
     expect(() => people[0]!.roleCategories.push("official")).toThrow();
+    expect(() =>
+      seedData.dynasties[0]!.rulerPeriods.push({
+        name: "mutation",
+        startYear: 907,
+        endYear: 907,
+      }),
+    ).toThrow();
 
     const polygon = regions[0]!.geometry;
     expect(polygon.type).toBe("Polygon");

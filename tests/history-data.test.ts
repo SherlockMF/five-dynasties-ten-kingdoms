@@ -538,6 +538,90 @@ describe("history seed data", () => {
     ).toContain("dynasty:northern-song:invalid-years");
   });
 
+  it("requires validated ruler periods with complete map-year coverage", () => {
+    for (const dynasty of seedData.dynasties) {
+      const rulerPeriods = dynasty.rulerPeriods;
+      const firstMapYear = Math.max(907, dynasty.startYear);
+      const lastMapYear = Math.min(979, dynasty.endYear);
+      expect(rulerPeriods.length, dynasty.id).toBeGreaterThan(0);
+      for (let year = firstMapYear; year <= lastMapYear; year += 1) {
+        expect(
+          rulerPeriods.some(
+            (period) => period.startYear <= year && period.endYear >= year,
+          ),
+          `${dynasty.id}:${year}`,
+        ).toBe(true);
+      }
+    }
+
+    const laterJin = seedData.dynasties.find(
+      (dynasty) => dynasty.id === "later-jin",
+    )!;
+    const replaceLaterJinPeriods = (rulerPeriods: typeof laterJin.rulerPeriods) => ({
+      ...seedData,
+      dynasties: seedData.dynasties.map((dynasty) =>
+        dynasty.id === laterJin.id ? { ...dynasty, rulerPeriods } : dynasty,
+      ),
+    });
+    const validPeriod = laterJin.rulerPeriods[0];
+
+    expect(validateHistoryData(replaceLaterJinPeriods([]))).toContain(
+      "dynasty:later-jin:ruler-coverage-gap:936",
+    );
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([{ ...validPeriod, name: " " }]),
+      ),
+    ).toContain("dynasty:later-jin:ruler-period:0:missing-name");
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([
+          validPeriod,
+          { ...validPeriod },
+        ]),
+      ),
+    ).toContain("dynasty:later-jin:ruler-period:1:duplicate");
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([
+          { ...validPeriod, personId: "missing-person" },
+        ]),
+      ),
+    ).toContain(
+      "dynasty:later-jin:ruler-period:0:missing-person:missing-person",
+    );
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([
+          { ...validPeriod, startYear: 935 },
+        ]),
+      ),
+    ).toContain("dynasty:later-jin:ruler-period:0:outside-dynasty-years");
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([
+          { ...validPeriod, startYear: 936.5 },
+        ]),
+      ),
+    ).toContain("dynasty:later-jin:ruler-period:0:invalid-years");
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([
+          { ...validPeriod, startYear: 943, endYear: 942 },
+        ]),
+      ),
+    ).toContain("dynasty:later-jin:ruler-period:0:invalid-years");
+    expect(
+      validateHistoryData(
+        replaceLaterJinPeriods([
+          { ...validPeriod, personId: "zhu-wen" },
+        ]),
+      ),
+    ).toContain(
+      "dynasty:later-jin:ruler-period:0:person-outside-dynasty:zhu-wen",
+    );
+  });
+
   it("uses corrected traceable citations for Du Chongwei and Northern Han", () => {
     const allSourceRefs = Object.values(seedData)
       .flat()

@@ -50,6 +50,7 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   const errors: string[] = [];
   const dynastyIds = new Set(data.dynasties.map(({ id }) => id));
   const personIds = new Set(data.people.map(({ id }) => id));
+  const peopleById = new Map(data.people.map((person) => [person.id, person]));
   const eventIds = new Set(data.events.map(({ id }) => id));
   const locationIds = new Set(data.locations.map(({ id }) => id));
 
@@ -96,6 +97,70 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
     }
     if (dynasty.founderPersonId && !personIds.has(dynasty.founderPersonId)) {
       errors.push(`dynasty:${dynasty.id}:missing-founder`);
+    }
+    const rulerPeriods = Array.isArray(dynasty.rulerPeriods)
+      ? dynasty.rulerPeriods
+      : [];
+    const seenRulerPeriods = new Set<string>();
+    const validRulerPeriods = [];
+    for (const [index, period] of rulerPeriods.entries()) {
+      if (typeof period.name !== "string" || !period.name.trim()) {
+        errors.push(`dynasty:${dynasty.id}:ruler-period:${index}:missing-name`);
+      }
+      const validPeriodYears =
+        isIntegerYear(period.startYear) &&
+        isIntegerYear(period.endYear) &&
+        period.startYear <= period.endYear;
+      if (!validPeriodYears) {
+        errors.push(`dynasty:${dynasty.id}:ruler-period:${index}:invalid-years`);
+      } else if (
+        validStartYear &&
+        validEndYear &&
+        (period.startYear < dynasty.startYear ||
+          period.endYear > dynasty.endYear)
+      ) {
+        errors.push(
+          `dynasty:${dynasty.id}:ruler-period:${index}:outside-dynasty-years`,
+        );
+      } else {
+        validRulerPeriods.push(period);
+      }
+      if (period.personId) {
+        const person = peopleById.get(period.personId);
+        if (!person) {
+          errors.push(
+            `dynasty:${dynasty.id}:ruler-period:${index}:missing-person:${period.personId}`,
+          );
+        } else if (!person.dynastyIds.includes(dynasty.id)) {
+          errors.push(
+            `dynasty:${dynasty.id}:ruler-period:${index}:person-outside-dynasty:${period.personId}`,
+          );
+        }
+      }
+      const duplicateKey = JSON.stringify([
+        period.name,
+        period.startYear,
+        period.endYear,
+        period.personId ?? null,
+        period.note ?? null,
+      ]);
+      if (seenRulerPeriods.has(duplicateKey)) {
+        errors.push(`dynasty:${dynasty.id}:ruler-period:${index}:duplicate`);
+      }
+      seenRulerPeriods.add(duplicateKey);
+    }
+    if (validStartYear && validEndYear) {
+      const firstMapYear = Math.max(907, dynasty.startYear);
+      const lastMapYear = Math.min(MAX_YEAR, dynasty.endYear);
+      for (let year = firstMapYear; year <= lastMapYear; year += 1) {
+        if (
+          !validRulerPeriods.some(
+            (period) => period.startYear <= year && period.endYear >= year,
+          )
+        ) {
+          errors.push(`dynasty:${dynasty.id}:ruler-coverage-gap:${year}`);
+        }
+      }
     }
     validateReferences(
       `dynasty:${dynasty.id}:predecessor`,

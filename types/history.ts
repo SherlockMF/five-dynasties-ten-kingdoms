@@ -63,6 +63,14 @@ export type SourcedEntity = ContentProvenance & {
   disputedNote?: string;
 };
 
+export type DynastyRulerPeriod = {
+  name: string;
+  startYear: number;
+  endYear: number;
+  personId?: string;
+  note?: string;
+};
+
 export type Dynasty = SourcedEntity & {
   id: string;
   name: string;
@@ -76,6 +84,7 @@ export type Dynasty = SourcedEntity & {
   predecessorIds: string[];
   successorIds: string[];
   color: string;
+  rulerPeriods: DynastyRulerPeriod[];
 };
 
 export type Person = SourcedEntity & {

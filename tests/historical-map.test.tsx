@@ -46,6 +46,30 @@ describe("HistoricalMap", () => {
     ).toBeVisible();
   });
 
+  it("clears the shared event context when a marker dialog closes or expires", async () => {
+    const user = userEvent.setup();
+    render(
+      <HistoricalMap
+        regions={regions}
+        dynasties={dynasties}
+        events={events}
+        locations={locations}
+      />,
+    );
+    const marker = screen.getByRole("button", {
+      name: /太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
+    });
+
+    await user.click(marker);
+    expect(useHistoryStore.getState().selectedEvent).toBe("founding-later-jin");
+    await user.keyboard("{Escape}");
+    expect(useHistoryStore.getState().selectedEvent).toBeUndefined();
+
+    await user.click(marker);
+    act(() => useHistoryStore.getState().setCurrentYear(937));
+    expect(useHistoryStore.getState().selectedEvent).toBeUndefined();
+  });
+
   it("explains sourced key events and region accuracy from both map views", async () => {
     const user = userEvent.setup();
     render(
@@ -59,9 +83,15 @@ describe("HistoricalMap", () => {
 
     const listButton = screen.getByRole("button", { name: "查看后晋" });
     expect(within(listButton).getByText("疆域：示意")).toBeVisible();
+    expect(within(listButton).getByText("当年君主：石敬瑭")).toBeVisible();
     await user.click(listButton);
 
     const dialog = screen.getByRole("dialog", { name: "后晋详情" });
+    expect(within(dialog).getByText("当年君主（年内）")).toBeVisible();
+    expect(within(dialog).getByRole("link", { name: "石敬瑭" })).toHaveAttribute(
+      "href",
+      "/people?year=936&person=shi-jingtang",
+    );
     expect(within(dialog).getByText("疆域精度")).toBeVisible();
     expect(within(dialog).getByText("示意").closest("li")).toHaveTextContent(
       "示意：依据史料概括绘制，不代表可精确复原的行政边界。",
@@ -125,6 +155,23 @@ describe("HistoricalMap", () => {
     expect(within(dialog).getByText("约略").closest("li")).toHaveTextContent(
       "区域 2 · 约略",
     );
+  });
+
+  it("shows every ruler recorded within a transition year", () => {
+    useHistoryStore.getState().reset({
+      currentYear: 942,
+      selectedDynasty: "later-jin",
+    });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    const dialog = screen.getByRole("dialog", { name: "后晋详情" });
+    expect(within(dialog).getByRole("link", { name: "石敬瑭" })).toBeVisible();
+    expect(within(dialog).getByRole("link", { name: "石重贵" })).toBeVisible();
+    expect(
+      within(screen.getByRole("button", { name: "查看后晋" })).getByText(
+        "当年君主：石敬瑭、石重贵",
+      ),
+    ).toBeVisible();
   });
 
   it("does not infer accuracy when a selected dynasty has no active region", () => {

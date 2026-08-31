@@ -121,7 +121,7 @@ export function HistoricalMap({
         </div>
         <aside className="border-t border-white/10 bg-paper p-4 lg:border-l lg:border-t-0">
           <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">当前政权 · {visibleDynasties.length}</p>
-          <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} onSelect={handleSelect} />
+          <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={handleSelect} />
         </aside>
       </div>
     </section>

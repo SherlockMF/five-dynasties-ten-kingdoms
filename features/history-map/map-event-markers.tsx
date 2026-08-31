@@ -21,19 +21,19 @@ interface MapEventMarkersProps {
   year: number;
   events: HistoricalEvent[];
   locations: HistoricalLocation[];
-  onSelect: (eventId: string) => void;
+  onSelect: (eventId?: string) => void;
   projectLocation?: (
     location: HistoricalLocation,
   ) => [number, number] | null;
 }
 
-interface MarkerGroup {
+export interface MapEventMarkerGroup {
   location: HistoricalLocation;
   events: HistoricalEvent[];
   point: [number, number];
 }
 
-interface PositionedMarkerGroup extends MarkerGroup {
+export interface PositionedMapEventMarkerGroup extends MapEventMarkerGroup {
   anchorPoint: readonly [number, number];
   markerPoint: readonly [number, number];
 }
@@ -64,15 +64,17 @@ function getScreenPoint(
   ] as const;
 }
 
-function positionMarkerGroups(
-  groups: MarkerGroup[],
+export function positionMapEventMarkerGroups(
+  groups: MapEventMarkerGroup[],
   viewport: { width: number; height: number },
-): PositionedMarkerGroup[] {
+): PositionedMapEventMarkerGroup[] {
   const placed: Array<readonly [number, number]> = [];
   const halfSize = MARKER_SIZE / 2;
   const step = MARKER_SIZE + MARKER_GAP;
 
-  return groups.map((group) => {
+  return [...groups]
+    .sort((left, right) => left.location.id.localeCompare(right.location.id))
+    .map((group) => {
     const anchorPoint = getScreenPoint(group.point, viewport);
     if (!viewport.width || !viewport.height) {
       return { ...group, anchorPoint, markerPoint: anchorPoint };
@@ -80,7 +82,10 @@ function positionMarkerGroups(
 
     let markerPoint = anchorPoint;
     let found = false;
-    for (let ring = 0; ring <= 8 && !found; ring += 1) {
+    const maximumRing = Math.ceil(
+      Math.max(viewport.width, viewport.height) / step,
+    ) + 1;
+    for (let ring = 0; ring <= maximumRing && !found; ring += 1) {
       for (let row = -ring; row <= ring && !found; row += 1) {
         for (let column = -ring; column <= ring; column += 1) {
           if (ring && Math.abs(row) !== ring && Math.abs(column) !== ring) {
@@ -112,7 +117,60 @@ function positionMarkerGroups(
     }
     placed.push(markerPoint);
     return { ...group, anchorPoint, markerPoint };
-  });
+    });
+}
+
+function compareEvents(left: HistoricalEvent, right: HistoricalEvent) {
+  return (
+    left.startYear - right.startYear ||
+    (left.endYear ?? left.startYear) - (right.endYear ?? right.startYear) ||
+    left.id.localeCompare(right.id)
+  );
+}
+
+export function buildMapEventMarkerGroups({
+  year,
+  events,
+  locations,
+  projectLocation = defaultProjectLocation,
+}: Pick<MapEventMarkersProps, "year" | "events" | "locations" | "projectLocation">) {
+  const locationsById = new Map(
+    [...locations]
+      .sort((left, right) => left.id.localeCompare(right.id))
+      .map((location) => [location.id, location]),
+  );
+  const groups = new Map<string, MapEventMarkerGroup>();
+
+  for (const event of [...events].sort(compareEvents)) {
+    if (event.startYear > year || (event.endYear ?? event.startYear) < year) {
+      continue;
+    }
+    for (const locationId of [...event.locationIds].sort()) {
+      const location = locationsById.get(locationId);
+      if (
+        !location ||
+        !Number.isFinite(location.longitude) ||
+        !Number.isFinite(location.latitude) ||
+        location.longitude < -180 ||
+        location.longitude > 180 ||
+        location.latitude < -90 ||
+        location.latitude > 90
+      ) {
+        continue;
+      }
+      const point = projectLocation(location);
+      if (!point || !point.every(Number.isFinite)) continue;
+      const group = groups.get(locationId) ?? { location, events: [], point };
+      if (!group.events.some((groupEvent) => groupEvent.id === event.id)) {
+        group.events.push(event);
+      }
+      groups.set(locationId, group);
+    }
+  }
+
+  return [...groups.values()].sort((left, right) =>
+    left.location.id.localeCompare(right.location.id),
+  );
 }
 
 export function MapEventMarkers({
@@ -133,9 +191,8 @@ export function MapEventMarkers({
     modalHost?: HTMLDivElement;
   }>({});
   const selectedLocationId = selection.locationId;
-  const [viewport, setViewport] = useState({
-    width: 0,
-    height: 0,
+  const [viewportSize, setViewportSize] = useState({ width: 0, height: 0 });
+  const [anchorViewport, setAnchorViewport] = useState({
     left: 0,
     top: 0,
     windowWidth: 0,
@@ -146,11 +203,15 @@ export function MapEventMarkers({
     const layer = layerRef.current;
     if (!layer) return;
 
+    let frame = 0;
     const updateViewport = () => {
       const bounds = layer.getBoundingClientRect();
-      setViewport({
-        width: bounds.width,
-        height: bounds.height,
+      setViewportSize((current) =>
+        current.width === bounds.width && current.height === bounds.height
+          ? current
+          : { width: bounds.width, height: bounds.height },
+      );
+      setAnchorViewport({
         left: bounds.left,
         top: bounds.top,
         windowWidth: window.innerWidth,
@@ -158,73 +219,61 @@ export function MapEventMarkers({
       });
     };
     updateViewport();
-    const observer = new ResizeObserver(updateViewport);
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateViewport);
+    };
+    const observer = new ResizeObserver(scheduleUpdate);
     observer.observe(layer);
-    window.addEventListener("resize", updateViewport);
-    window.addEventListener("scroll", updateViewport, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
     return () => {
+      cancelAnimationFrame(frame);
       observer.disconnect();
-      window.removeEventListener("resize", updateViewport);
-      window.removeEventListener("scroll", updateViewport);
+      window.removeEventListener("resize", scheduleUpdate);
     };
   }, []);
 
-  const markerGroups = useMemo(() => {
-    const locationsById = new Map(
-      locations.map((location) => [location.id, location]),
-    );
-    const groups = new Map<string, MarkerGroup>();
-
-    for (const event of events) {
-      if (
-        event.startYear > year ||
-        (event.endYear ?? event.startYear) < year
-      ) {
-        continue;
-      }
-      for (const locationId of event.locationIds) {
-        const location = locationsById.get(locationId);
-        if (
-          !location ||
-          !Number.isFinite(location.longitude) ||
-          !Number.isFinite(location.latitude) ||
-          location.longitude < -180 ||
-          location.longitude > 180 ||
-          location.latitude < -90 ||
-          location.latitude > 90
-        ) {
-          continue;
-        }
-        const point = projectLocation(location);
-        if (!point || !point.every(Number.isFinite)) continue;
-        const group = groups.get(locationId) ?? {
-          location,
-          events: [],
-          point,
-        };
-        if (!group.events.some((groupEvent) => groupEvent.id === event.id)) {
-          group.events.push(event);
-        }
-        groups.set(locationId, group);
-      }
-    }
-
-    return [...groups.values()];
-  }, [events, locations, projectLocation, year]);
+  const markerGroups = useMemo(
+    () => buildMapEventMarkerGroups({ year, events, locations, projectLocation }),
+    [events, locations, projectLocation, year],
+  );
 
   const positionedGroups = useMemo(
-    () => positionMarkerGroups(markerGroups, viewport),
-    [markerGroups, viewport],
+    () => positionMapEventMarkerGroups(markerGroups, viewportSize),
+    [markerGroups, viewportSize],
   );
   const selectedGroup = positionedGroups.find(
     (group) => group.location.id === selectedLocationId,
   );
-  if (selectedLocationId && !selectedGroup) {
-    setSelection({ invalidated: true, modalHost: selection.modalHost });
-  }
-
   const modalHost = selection.modalHost;
   const selectedGroupId = selectedGroup?.location.id;
+  if (selectedLocationId && !selectedGroup && !selection.invalidated) {
+    setSelection({ invalidated: true });
+  }
+
+  useEffect(() => {
+    if (!modalHost || !selectedGroupId) return;
+    let frame = 0;
+    const updateAnchor = () => {
+      const bounds = layerRef.current?.getBoundingClientRect();
+      if (!bounds) return;
+      setAnchorViewport({
+        left: bounds.left,
+        top: bounds.top,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+      });
+    };
+    const scheduleUpdate = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateAnchor);
+    };
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", scheduleUpdate);
+    };
+  }, [modalHost, selectedGroupId]);
   useLayoutEffect(() => {
     if (!modalHost || !selectedGroupId) return;
 
@@ -265,6 +314,7 @@ export function MapEventMarkers({
 
   useLayoutEffect(() => {
     if (!selection.invalidated) return;
+    onSelect(undefined);
     activeTriggerRef.current = null;
     const activeElement = document.activeElement as HTMLElement | null;
     if (
@@ -274,10 +324,11 @@ export function MapEventMarkers({
     ) {
       layerRef.current?.focus();
     }
-  }, [selection.invalidated]);
+  }, [onSelect, selection.invalidated]);
 
   const closeDialog = (restoreFocus = true) => {
     restoreFocusOnCloseRef.current = restoreFocus;
+    onSelect(undefined);
     setSelection({});
   };
 
@@ -387,10 +438,10 @@ export function MapEventMarkers({
         />
         {(() => {
         const anchor = {
-          x: viewport.left + selectedGroup.markerPoint[0],
-          y: viewport.top + selectedGroup.markerPoint[1],
-          viewportWidth: viewport.windowWidth,
-          viewportHeight: viewport.windowHeight,
+          x: anchorViewport.left + selectedGroup.markerPoint[0],
+          y: anchorViewport.top + selectedGroup.markerPoint[1],
+          viewportWidth: anchorViewport.windowWidth,
+          viewportHeight: anchorViewport.windowHeight,
         };
         const popupLeft = anchor.viewportWidth
           ? Math.min(
@@ -439,7 +490,8 @@ export function MapEventMarkers({
               >
                 <div className="flex items-start gap-1">
                   <Link
-                    href={`/explore/${event.id}?year=${year}`}
+                    href={`/explore/${event.id}?year=${year}&event=${event.id}`}
+                    onClick={() => onSelect(event.id)}
                     className="min-w-0 font-serif text-sm underline decoration-cinnabar/30 underline-offset-4 hover:text-cinnabar"
                   >
                     {event.title}

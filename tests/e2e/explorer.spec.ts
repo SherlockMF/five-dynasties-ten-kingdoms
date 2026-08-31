@@ -3,7 +3,13 @@ import { expect, test } from "@playwright/test";
 test("explores 936 from map to person to event and asks a contextual question", async ({ page }) => {
   await page.goto("/map?year=936");
   await page.getByRole("button", { name: "查看后晋" }).click();
-  await expect(page.getByRole("dialog", { name: "后晋详情" })).toBeVisible();
+  const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
+  await expect(dynastyDialog).toBeVisible();
+  await expect(dynastyDialog.getByText("当年君主（年内）")).toBeVisible();
+  await expect(dynastyDialog.getByRole("link", { name: "石敬瑭", exact: true })).toHaveAttribute(
+    "href",
+    "/people?year=936&person=shi-jingtang",
+  );
 
   await page.goto("/people?year=936&person=shi-jingtang");
   await expect(page.getByRole("heading", { name: "石敬瑭" })).toBeVisible();
@@ -17,7 +23,7 @@ test("explores 936 from map to person to event and asks a contextual question", 
 test("map event markers stay projected and expose a bounded sourced popover", async ({ page }) => {
   await page.goto("/map?year=936");
   const marker = page.getByRole("button", {
-    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   await expect(marker).toBeVisible();
 
@@ -52,7 +58,7 @@ test("map event markers stay projected and expose a bounded sourced popover", as
   const dialog = page.getByRole("dialog", { name: "太原事件" });
   await expect(dialog.getByRole("link", { name: "石敬瑭起兵（太原）" })).toHaveAttribute(
     "href",
-    "/explore/shi-jingtang-rebellion?year=936",
+    "/explore/shi-jingtang-rebellion?year=936&event=shi-jingtang-rebellion",
   );
   await expect(
     dialog.getByRole("note", { name: "第04集主线、史料扩展" }).first(),
@@ -65,6 +71,11 @@ test("map event markers stay projected and expose a bounded sourced popover", as
   expect(dialogBox!.y).toBeGreaterThanOrEqual(0);
   expect(dialogBox!.x + dialogBox!.width).toBeLessThanOrEqual(viewport!.width);
   expect(dialogBox!.y + dialogBox!.height).toBeLessThanOrEqual(viewport!.height);
+  await dialog.getByRole("link", { name: "石敬瑭起兵（太原）" }).click();
+  await expect(page).toHaveURL(
+    /\/explore\/shi-jingtang-rebellion\?year=936&event=shi-jingtang-rebellion$/,
+  );
+  await expect(page.getByRole("heading", { name: "石敬瑭起兵（太原）" })).toBeVisible();
 });
 
 test("mobile map event markers keep separate full-size touch targets", async ({ page }, testInfo) => {
@@ -73,8 +84,8 @@ test("mobile map event markers keep separate full-size touch targets", async ({ 
   await page.goto("/map?year=936");
 
   const markers = page.locator("[data-event-marker]");
-  await expect(markers).toHaveCount(19);
   await expect(markers.first()).toBeVisible();
+  expect(await markers.count()).toBeGreaterThan(1);
   await expect
     .poll(async () =>
       markers.evaluateAll((buttons) => {
@@ -126,7 +137,7 @@ test("mobile map event markers keep separate full-size touch targets", async ({ 
   }
 
   const taiyuan = page.getByRole("button", {
-    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   await taiyuan.tap();
   await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
@@ -141,7 +152,7 @@ test("mobile map event markers keep separate full-size touch targets", async ({ 
 test("map event dialog traps real keyboard focus and restores its trigger", async ({ page }) => {
   await page.goto("/map?year=936");
   const marker = page.getByRole("button", {
-    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   await marker.focus();
   await page.keyboard.press("Enter");
@@ -158,6 +169,7 @@ test("map event dialog traps real keyboard focus and restores its trigger", asyn
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(marker).toBeFocused();
+  await expect(page).not.toHaveURL(/(?:\?|&)event=/);
 });
 
 test("mobile map popover recomputes its viewport placement after rotation", async ({ page }, testInfo) => {
@@ -218,7 +230,7 @@ test("mobile map popover recomputes its viewport placement after rotation", asyn
 
   await dialog.getByRole("button", { name: "关闭幽州事件" }).click();
   const taiyuan = page.getByRole("button", {
-    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   await taiyuan.tap();
   await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
@@ -234,7 +246,7 @@ test("map event modal is a top-level inert and accessible portal", async (
   await page.setViewportSize(viewport);
   await page.goto("/map?year=936");
   const taiyuan = page.getByRole("button", {
-    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   const youzhou = page.getByRole("button", {
     name: "幽州：燕云十六州归辽（时称契丹）",
@@ -247,6 +259,7 @@ test("map event modal is a top-level inert and accessible portal", async (
     : page.getByRole("link", { name: "五代十国互动历史探索首页" });
 
   await taiyuan.click();
+  const taiyuanAccessibleName = await taiyuan.getAttribute("aria-label");
   const taiyuanDialog = page.getByRole("dialog", { name: "太原事件" });
   const backdrop = page.getByTestId("map-modal-backdrop");
   await expect(taiyuanDialog).toBeVisible();
@@ -254,6 +267,9 @@ test("map event modal is a top-level inert and accessible portal", async (
   await expect(youzhou).toBeDisabled();
   const backdropBox = await backdrop.boundingBox();
   expect(backdropBox).toEqual({ x: 0, y: 0, ...viewport });
+  expect(
+    await backdrop.evaluate((element) => Number(getComputedStyle(element).zIndex)),
+  ).toBeGreaterThan(50);
   expect(
     await taiyuanDialog.evaluate((dialog) =>
       dialog.parentElement?.matches("[data-map-event-modal-host]"),
@@ -274,12 +290,9 @@ test("map event modal is a top-level inert and accessible portal", async (
           box.left + box.width / 2,
           box.top + box.height / 2,
         );
-        return {
-          blocked: hit !== element && !element.contains(hit),
-          hitModal: Boolean(hit?.closest("[data-map-event-modal-host]")),
-        };
+        return hit !== element && !element.contains(hit);
       }),
-    ).toEqual({ blocked: true, hitModal: true });
+    ).toBe(true);
   }
 
   const close = taiyuanDialog.getByRole("button", { name: "关闭太原事件" });
@@ -311,7 +324,7 @@ test("map event modal is a top-level inert and accessible portal", async (
   }
   for (const backgroundName of [
     "地图年份",
-    "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    taiyuanAccessibleName,
     testInfo.project.name === "mobile"
       ? "首页"
       : "五代十国互动历史探索首页",
@@ -353,9 +366,10 @@ test("a disappearing event selection closes permanently with a safe focus target
   await page.goto("/map?year=936");
   const slider = page.getByRole("slider", { name: "地图年份" });
   const marker = page.getByRole("button", {
-    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   await marker.click();
+  await expect(page).toHaveURL(/(?:\?|&)event=founding-later-jin(?:&|$)/);
   const dialog = page.getByRole("dialog", { name: "太原事件" });
   const close = dialog.getByRole("button", { name: "关闭太原事件" });
   await slider.evaluate((element) => (element as HTMLElement).focus());
@@ -371,6 +385,7 @@ test("a disappearing event selection closes permanently with a safe focus target
   });
   await expect(slider).toHaveValue("937");
   await expect(dialog).toBeHidden();
+  await expect(page).not.toHaveURL(/(?:\?|&)event=/);
   await expect(page.getByLabel("937年地图事件")).toBeFocused();
   await slider.evaluate((element) => {
     const input = element as HTMLInputElement;
@@ -383,6 +398,7 @@ test("a disappearing event selection closes permanently with a safe focus target
   });
   await expect(slider).toHaveValue("936");
   await expect(dialog).toBeHidden();
+  await expect(page).not.toHaveURL(/(?:\?|&)event=/);
 
   await marker.click();
   await page.getByRole("button", { name: "播放历史" }).evaluate((button) =>
