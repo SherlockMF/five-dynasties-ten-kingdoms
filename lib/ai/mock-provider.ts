@@ -1,45 +1,47 @@
 import "server-only";
 
 import type { LlmProvider } from "./provider";
-import type { AiAnswer, AiProviderRequest, AiStreamEvent } from "@/types/ai";
-
-interface RetrievedEventEvidence {
-  eventId: string;
-  title: string;
-  year: number;
-  summary: string;
-}
-
-function parseRetrievedExcerpt(
-  excerpt: string,
-): RetrievedEventEvidence | undefined {
-  const header = excerpt.match(
-    /^\[事件 ([^\]]+)] (.+)（(\d{3,4})）[¹²³]+/m,
-  );
-  if (!header) return undefined;
-
-  const summary = excerpt.match(/^事实摘要：(.+)$/m)?.[1]?.trim();
-  if (!summary) return undefined;
-
-  return {
-    eventId: header[1],
-    title: header[2],
-    year: Number(header[3]),
-    summary,
-  };
-}
+import type {
+  AiAnswer,
+  AiProviderRequest,
+  AiStreamEvent,
+  RetrievedEvidence,
+} from "@/types/ai";
 
 function unique<T>(values: T[]): T[] {
   return [...new Set(values)];
 }
 
+function isUsableEvidence(
+  evidence: RetrievedEvidence,
+): evidence is RetrievedEvidence {
+  return Boolean(
+    evidence.eventId.trim() &&
+      evidence.title.trim() &&
+      evidence.summary.trim() &&
+      evidence.sourceRefs.length,
+  );
+}
+
+function answerSection(evidence: RetrievedEvidence): string {
+  const details = [
+    `${evidence.title}（${evidence.year}）${evidence.marker}：${evidence.summary}`,
+  ];
+  if (evidence.matchedEvidence?.text.trim()) {
+    details.push(
+      `命中证据（${evidence.matchedEvidence.label}）：${evidence.matchedEvidence.text}`,
+    );
+  }
+  if (evidence.disputedNote?.trim()) {
+    details.push(`史料异说：${evidence.disputedNote}`);
+  }
+  return details.join("\n");
+}
+
 export class MockLlmProvider implements LlmProvider {
   async generateAnswer(input: AiProviderRequest): Promise<AiAnswer> {
     input.signal?.throwIfAborted();
-    const evidence = (input.retrievedExcerpts ?? [])
-      .filter((excerpt) => excerpt.trim())
-      .map(parseRetrievedExcerpt)
-      .filter((item): item is RetrievedEventEvidence => Boolean(item));
+    const evidence = (input.retrievedEvidence ?? []).filter(isUsableEvidence);
 
     if (!evidence.length && !input.allowGeneralKnowledge) {
       return {
@@ -65,25 +67,24 @@ export class MockLlmProvider implements LlmProvider {
       };
     }
 
-    const selected = evidence.slice(0, 2);
-    const eventIds = unique(evidence.map((item) => item.eventId));
+    const selected = evidence
+      .filter(
+        (item, index, items) =>
+          items.findIndex((candidate) => candidate.eventId === item.eventId) ===
+          index,
+      )
+      .slice(0, 2);
     return {
-      answer: selected
-        .map((item) => `${item.title}（${item.year}）：${item.summary}`)
-        .join("\n"),
+      answer: selected.map(answerSection).join("\n\n"),
       provenance: "knowledge-base",
       relatedPeople: [],
-      relatedEvents: eventIds,
-      relatedYears: unique(evidence.map((item) => item.year)),
-      sources: eventIds.map((eventId) => {
-        const item = evidence.find(
-          (candidate) => candidate.eventId === eventId,
-        )!;
-        return {
-          sourceId: `history-event:${eventId}`,
-          title: item.title,
-        };
-      }),
+      relatedEvents: selected.map((item) => item.eventId),
+      relatedYears: unique(selected.map((item) => item.year)),
+      sources: selected.map((item) => ({
+        sourceId: `history-event:${item.eventId}`,
+        title: item.title,
+        references: [...item.sourceRefs],
+      })),
     };
   }
 

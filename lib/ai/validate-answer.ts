@@ -8,5 +8,12 @@ export const aiAnswerSchema = z.object({
   relatedPeople: z.array(z.string()),
   relatedEvents: z.array(z.string()),
   relatedYears: z.array(z.number().int().min(TIMELINE_MIN_YEAR).max(MAX_YEAR)),
-  sources: z.array(z.object({ sourceId: z.string(), title: z.string(), episode: z.string().optional() })),
+  sources: z.array(
+    z.object({
+      sourceId: z.string(),
+      title: z.string(),
+      episode: z.string().optional(),
+      references: z.array(z.string()).optional(),
+    }),
+  ),
 });

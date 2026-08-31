@@ -2,6 +2,7 @@ import "server-only";
 
 import { seedData } from "@/data/seed";
 import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
+import type { RetrievedEvidence } from "@/types/ai";
 import type { HistoricalEvent, SourcedEntity } from "@/types/history";
 
 import type {
@@ -34,6 +35,7 @@ const BODY_FIELD_LABELS: Record<BodyField, string> = {
   impact: "影响",
 };
 const MIN_BODY_MATCH_LENGTH = 4;
+const MIN_TITLE_MATCH_LENGTH = 4;
 
 const ALIAS_GROUPS = [
   ["十六州", "燕云", "幽云"],
@@ -142,6 +144,19 @@ function longestContainedTerm(query: string, text: string): number {
   return 0;
 }
 
+function titleMatchRank(query: string, rawTitle: string): number {
+  const title = normalize(rawTitle);
+  if (query === title) return 3;
+  if (query.includes(title) || title.includes(query)) return 2;
+
+  const fragments = rawTitle
+    .split(/[\p{P}\p{S}\s]+/u)
+    .map(normalize)
+    .filter((fragment) => fragment.length >= MIN_TITLE_MATCH_LENGTH);
+  if (fragments.some((fragment) => query.includes(fragment))) return 2;
+  return longestContainedTerm(query, title) >= MIN_TITLE_MATCH_LENGTH ? 2 : 0;
+}
+
 function scoreEvent(
   event: HistoricalEvent,
   query: string,
@@ -150,16 +165,14 @@ function scoreEvent(
   pureYearQuery: boolean,
   context: LocalHistoryRetrievalContext,
 ): { score: number; bodyField?: BodyField; matchedYears: number[] } {
-  const title = normalize(event.title);
   const bodyQuery = narrativeQuery(query, queryYears);
-  const titleRank =
-    query === title
-      ? 3
-      : query.includes(title) || title.includes(query)
-        ? 2
-        : terms.some((term) => title.includes(term))
-          ? 1
-          : 0;
+  const title = normalize(event.title);
+  const strongTitleRank = titleMatchRank(query, event.title);
+  const titleRank = strongTitleRank
+    ? strongTitleRank
+    : terms.some((term) => title.includes(term))
+      ? 1
+      : 0;
 
   const relatedNames = [
     ...event.personIds.map(
@@ -267,6 +280,30 @@ function excerptFor(event: HistoricalEvent, bodyField?: BodyField): string {
   );
 }
 
+function evidenceFor(
+  event: HistoricalEvent,
+  bodyField?: BodyField,
+): RetrievedEvidence {
+  return {
+    eventId: event.id,
+    sourceId: `history-event:${event.id}`,
+    title: event.title,
+    year: event.startYear,
+    summary: bounded(event.summary, 300),
+    matchedEvidence: bodyField
+      ? {
+          label: BODY_FIELD_LABELS[bodyField],
+          text: bounded(event[bodyField], 300),
+        }
+      : undefined,
+    sourceRefs: event.sourceRefs.map((source) => bounded(source, 240)),
+    marker: markerFor(event),
+    disputedNote: event.disputedNote?.trim()
+      ? bounded(event.disputedNote.trim(), 300)
+      : undefined,
+  };
+}
+
 export class LocalHistoryRetriever implements KnowledgeRetriever {
   async retrieve(
     rawQuery: string,
@@ -285,7 +322,7 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
       resultLimit === 0 ||
       (pureYearQuery && queryYears.length === 0)
     ) {
-      return { chunks: [], excerptsForServerPrompt: [] };
+      return { chunks: [], excerptsForServerPrompt: [], evidence: [] };
     }
 
     const terms = queryTerms(query, queryYears, boundedQuery);
@@ -349,6 +386,9 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
       })),
       excerptsForServerPrompt: matches.map(({ event, bodyField }) =>
         excerptFor(event, bodyField),
+      ),
+      evidence: matches.map(({ event, bodyField }) =>
+        evidenceFor(event, bodyField),
       ),
     };
   }

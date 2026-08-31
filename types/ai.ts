@@ -12,9 +12,26 @@ export interface AiRequest {
   allowGeneralKnowledge?: boolean;
 }
 
+/** Structured history evidence produced and consumed only on the server. */
+export interface RetrievedEvidence {
+  eventId: string;
+  sourceId: string;
+  title: string;
+  year: number;
+  summary: string;
+  matchedEvidence?: {
+    label: string;
+    text: string;
+  };
+  sourceRefs: string[];
+  marker: string;
+  disputedNote?: string;
+}
+
 /** Internal server-to-provider request. This is not accepted from API clients. */
 export interface AiProviderRequest extends AiRequest {
   retrievedExcerpts?: string[];
+  retrievedEvidence?: RetrievedEvidence[];
   signal?: AbortSignal;
 }
 
@@ -22,6 +39,7 @@ export interface AiSource {
   sourceId: string;
   title: string;
   episode?: string;
+  references?: string[];
 }
 
 export interface AiAnswer {

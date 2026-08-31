@@ -5,10 +5,20 @@ import { MockLlmProvider } from "@/lib/ai/mock-provider";
 import { aiAnswerSchema } from "@/lib/ai/validate-answer";
 import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import { LocalHistoryRetriever } from "@/lib/rag/local-history-retriever";
+import type { RetrievedEvidence } from "@/types/ai";
 
 const MAX_RETRIEVED_EXCERPTS = 5;
 const MAX_RETRIEVED_EXCERPT_LENGTH = 900;
 const MAX_RETRIEVED_TOTAL_LENGTH = 3600;
+const MAX_EVIDENCE_ID_LENGTH = 100;
+const MAX_EVIDENCE_TITLE_LENGTH = 120;
+const MAX_EVIDENCE_SUMMARY_LENGTH = 300;
+const MAX_EVIDENCE_LABEL_LENGTH = 20;
+const MAX_EVIDENCE_TEXT_LENGTH = 300;
+const MAX_EVIDENCE_SOURCE_REFS = 3;
+const MAX_EVIDENCE_SOURCE_REF_LENGTH = 240;
+const MAX_EVIDENCE_MARKER_LENGTH = 4;
+const MAX_EVIDENCE_DISPUTE_LENGTH = 300;
 const SERVER_TIMEOUT_MS = 5_000;
 
 const requestSchema = z.object({
@@ -39,6 +49,49 @@ function boundRetrievedExcerpts(excerpts: string[]): string[] {
   }
 
   return bounded;
+}
+
+function boundRetrievedEvidence(
+  evidence: RetrievedEvidence[],
+): RetrievedEvidence[] {
+  return evidence.slice(0, MAX_RETRIEVED_EXCERPTS).flatMap((item) => {
+    const eventId = item.eventId.trim().slice(0, MAX_EVIDENCE_ID_LENGTH);
+    const title = item.title.trim().slice(0, MAX_EVIDENCE_TITLE_LENGTH);
+    const summary = item.summary.trim().slice(0, MAX_EVIDENCE_SUMMARY_LENGTH);
+    const sourceRefs = item.sourceRefs
+      .map((source) =>
+        source.trim().slice(0, MAX_EVIDENCE_SOURCE_REF_LENGTH),
+      )
+      .filter(Boolean)
+      .slice(0, MAX_EVIDENCE_SOURCE_REFS);
+    if (!eventId || !title || !summary || !sourceRefs.length) return [];
+
+    const matchedLabel = item.matchedEvidence?.label
+      .trim()
+      .slice(0, MAX_EVIDENCE_LABEL_LENGTH);
+    const matchedText = item.matchedEvidence?.text
+      .trim()
+      .slice(0, MAX_EVIDENCE_TEXT_LENGTH);
+    return [
+      {
+        eventId,
+        sourceId: `history-event:${eventId}`,
+        title,
+        year: item.year,
+        summary,
+        matchedEvidence:
+          matchedLabel && matchedText
+            ? { label: matchedLabel, text: matchedText }
+            : undefined,
+        sourceRefs,
+        marker: item.marker.slice(0, MAX_EVIDENCE_MARKER_LENGTH),
+        disputedNote:
+          item.disputedNote
+            ?.trim()
+            .slice(0, MAX_EVIDENCE_DISPUTE_LENGTH) || undefined,
+      },
+    ];
+  });
 }
 
 function abortError(signal: AbortSignal): unknown {
@@ -80,9 +133,20 @@ export async function POST(request: Request) {
 
   try {
     controller.signal.throwIfAborted();
-    const input = requestSchema.parse(
-      await abortable(request.json(), controller.signal),
-    );
+    let input: z.infer<typeof requestSchema>;
+    try {
+      input = requestSchema.parse(
+        await abortable(request.json(), controller.signal),
+      );
+    } catch (error) {
+      if (error instanceof z.ZodError || error instanceof SyntaxError) {
+        return NextResponse.json(
+          { code: "INVALID_REQUEST", message: "请求内容不完整" },
+          { status: 400 },
+        );
+      }
+      throw error;
+    }
     const retrieval = await new LocalHistoryRetriever().retrieve(
       input.message,
       input.context,
@@ -95,19 +159,19 @@ export async function POST(request: Request) {
         retrievedExcerpts: boundRetrievedExcerpts(
           retrieval.excerptsForServerPrompt,
         ),
+        retrievedEvidence: boundRetrievedEvidence(retrieval.evidence),
         signal: controller.signal,
       }),
       controller.signal,
     );
     return NextResponse.json(aiAnswerSchema.parse(answer));
-  } catch (error) {
-    const invalid = error instanceof z.ZodError || error instanceof SyntaxError;
+  } catch {
     return NextResponse.json(
       {
-        code: invalid ? "INVALID_REQUEST" : "PROVIDER_UNAVAILABLE",
-        message: invalid ? "请求内容不完整" : "问史暂时不可用",
+        code: "PROVIDER_UNAVAILABLE",
+        message: "问史暂时不可用",
       },
-      { status: invalid ? 400 : 503 },
+      { status: 503 },
     );
   } finally {
     clearTimeout(timeout);

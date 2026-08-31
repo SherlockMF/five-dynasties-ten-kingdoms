@@ -1,6 +1,6 @@
 import "server-only";
 
-import type { AiContext } from "@/types/ai";
+import type { AiContext, RetrievedEvidence } from "@/types/ai";
 import type { TranscriptChunk } from "@/types/knowledge";
 
 export type RetrievalContext = Partial<Omit<AiContext, "currentYear">> & {
@@ -11,6 +11,7 @@ export type RetrievalContext = Partial<Omit<AiContext, "currentYear">> & {
 export interface RetrievalResult {
   chunks: Omit<TranscriptChunk, "text">[];
   excerptsForServerPrompt: string[];
+  evidence: RetrievedEvidence[];
 }
 
 export interface KnowledgeRetriever {
