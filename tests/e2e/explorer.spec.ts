@@ -21,3 +21,127 @@ test("primary pages never overflow the viewport", async ({ page }) => {
     expect(dimensions.scrollWidth, `${path} overflows horizontally`).toBeLessThanOrEqual(dimensions.clientWidth + 1);
   }
 });
+
+test("timeline source markers expose a usable browser tooltip", async (
+  { context, page },
+  testInfo,
+) => {
+  const label = "第04集主线、史料扩展";
+  await page.goto("/timeline?year=936");
+
+  const article = page
+    .getByRole("article")
+    .filter({ has: page.getByRole("link", { name: "查看后晋建立详情" }) });
+  const detailLink = article.getByRole("link", { name: "查看后晋建立详情" });
+  const trigger = article.getByLabel(label);
+  const tooltip = article.getByRole("tooltip", { includeHidden: true });
+
+  const triggerBox = await trigger.boundingBox();
+  const triggerLineHeight = await trigger.evaluate((element) =>
+    Number.parseFloat(getComputedStyle(element).lineHeight),
+  );
+  expect(triggerBox).not.toBeNull();
+  expect(triggerLineHeight).toBeGreaterThan(0);
+  expect(triggerBox!.height).toBeGreaterThanOrEqual(24);
+  expect(triggerBox!.width).toBeGreaterThanOrEqual(24);
+  await expect(trigger).toHaveAccessibleName(label);
+
+  const tooltipId = await tooltip.getAttribute("id");
+  expect(tooltipId).toBeTruthy();
+  await expect(trigger).toHaveAttribute("aria-controls", tooltipId!);
+  expect(
+    await tooltip.locator("a, button, input, [tabindex]").count(),
+  ).toBe(0);
+  await expect(tooltip).toHaveCSS("position", "absolute");
+  await expect(tooltip).toHaveCSS("visibility", "hidden");
+  await expect(tooltip).toHaveCSS("opacity", "0");
+
+  if (testInfo.project.name === "mobile") {
+    await trigger.tap();
+  } else {
+    await trigger.hover();
+  }
+  await expect(tooltip).toHaveCSS("visibility", "visible");
+  await expect(tooltip).toHaveCSS("opacity", "1");
+
+  const tooltipBox = await tooltip.boundingBox();
+  const viewport = page.viewportSize();
+  expect(tooltipBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(tooltipBox!.x).toBeGreaterThanOrEqual(0);
+  expect(tooltipBox!.y).toBeGreaterThanOrEqual(0);
+  expect(tooltipBox!.x + tooltipBox!.width).toBeLessThanOrEqual(
+    viewport!.width,
+  );
+  expect(tooltipBox!.y + tooltipBox!.height).toBeLessThanOrEqual(
+    viewport!.height,
+  );
+
+  if (testInfo.project.name !== "mobile") {
+    await page.mouse.move(0, 0);
+    await expect(tooltip).toHaveCSS("visibility", "hidden");
+    await detailLink.focus();
+    await page.keyboard.press("Tab");
+    await expect(trigger).toBeFocused();
+    await expect(tooltip).toHaveCSS("visibility", "visible");
+    await page.keyboard.press("Tab");
+    await expect(tooltip).toHaveCSS("visibility", "hidden");
+  }
+
+  const client = await context.newCDPSession(page);
+  const axTree = await client.send("Accessibility.getFullAXTree");
+  expect(
+    axTree.nodes.some(
+      (node) => !node.ignored && node.name?.value === label,
+    ),
+  ).toBe(true);
+
+  await detailLink.click();
+  await expect(page).toHaveURL(/\/explore\/founding-later-jin\?year=936$/);
+});
+
+test("inverse source markers retain their legend and mobile focus behavior", async (
+  { page },
+  testInfo,
+) => {
+  const label = "第03、04、05集主线、史料扩展";
+  await page.goto("/people?year=936&person=shi-jingtang");
+
+  const panel = page.getByRole("region", { name: "石敬瑭" });
+  const trigger = panel.getByRole("note", { name: label });
+  const tooltip = panel.getByRole("tooltip", { includeHidden: true });
+  await expect(
+    panel.getByText("¹ 六集主线 · ² 史料扩展 · ³ 存在异说"),
+  ).toBeVisible();
+
+  const triggerBox = await trigger.boundingBox();
+  expect(triggerBox).not.toBeNull();
+  expect(triggerBox!.height).toBeGreaterThanOrEqual(24);
+  expect(triggerBox!.width).toBeGreaterThanOrEqual(24);
+
+  if (testInfo.project.name === "mobile") {
+    await trigger.tap();
+  } else {
+    await trigger.focus();
+  }
+  await expect(tooltip).toHaveCSS("visibility", "visible");
+  await expect(tooltip).toHaveCSS("opacity", "1");
+  await expect(tooltip).toHaveCSS("background-color", "rgb(243, 240, 231)");
+  await expect(tooltip).toHaveCSS("color", "rgb(23, 40, 36)");
+
+  const tooltipBox = await tooltip.boundingBox();
+  const viewport = page.viewportSize();
+  expect(tooltipBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(tooltipBox!.x).toBeGreaterThanOrEqual(0);
+  expect(tooltipBox!.y).toBeGreaterThanOrEqual(0);
+  expect(tooltipBox!.x + tooltipBox!.width).toBeLessThanOrEqual(
+    viewport!.width,
+  );
+  expect(tooltipBox!.y + tooltipBox!.height).toBeLessThanOrEqual(
+    viewport!.height,
+  );
+
+  await trigger.evaluate((element) => (element as HTMLElement).blur());
+  await expect(tooltip).toHaveCSS("visibility", "hidden");
+});

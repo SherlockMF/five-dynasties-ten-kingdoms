@@ -135,13 +135,20 @@ describe("SourceMarker", () => {
       expect(wrapper).toContainElement(tooltip);
       expect(tooltip).toHaveTextContent("第04集主线、史料扩展");
       expect(tooltip).toHaveAttribute("aria-hidden", "true");
+      expect(tooltip).toHaveAttribute("id");
+      expect(marker).toHaveAttribute("aria-controls", tooltip.id);
+      expect(marker).toHaveAttribute("role", "note");
+      expect(marker).not.toHaveAttribute("title");
+      expect(marker).toHaveClass("min-h-6", "min-w-6", "leading-none");
       expect(tooltip).toHaveClass(
         "pointer-events-none",
         "group-hover/source-marker:visible",
         "group-focus-within/source-marker:visible",
-        "fixed",
-        "inset-x-4",
-        "max-w-md",
+        "absolute",
+        "top-full",
+        "right-0",
+        "w-28",
+        "max-w-[calc(100vw-2rem)]",
         "whitespace-normal",
         ...(variant === "inverse"
           ? ["bg-paper", "text-ink"]
