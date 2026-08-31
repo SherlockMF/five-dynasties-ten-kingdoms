@@ -17,9 +17,14 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   }
   for (const event of data.events) {
     if (event.startYear < TIMELINE_MIN_YEAR || event.startYear > MAX_YEAR) errors.push(`event:${event.id}:year-out-of-range`);
+    for (const field of ["summary", "background", "process", "result", "impact"] as const) {
+      if (typeof event[field] !== "string" || !event[field].trim()) errors.push(`event:${event.id}:missing-${field}`);
+    }
     for (const id of event.personIds) if (!personIds.has(id)) errors.push(`event:${event.id}:missing-person:${id}`);
     for (const id of event.dynastyIds) if (!dynastyIds.has(id)) errors.push(`event:${event.id}:missing-dynasty:${id}`);
     for (const id of event.locationIds) if (!locationIds.has(id)) errors.push(`event:${event.id}:missing-location:${id}`);
+    for (const id of event.causeEventIds) if (!eventIds.has(id)) errors.push(`event:${event.id}:missing-cause:${id}`);
+    for (const id of event.consequenceEventIds) if (!eventIds.has(id)) errors.push(`event:${event.id}:missing-consequence:${id}`);
   }
   for (const relation of data.personRelations) {
     if (relation.sourcePersonId === relation.targetPersonId) errors.push(`person-relation:${relation.id}:self-reference`);

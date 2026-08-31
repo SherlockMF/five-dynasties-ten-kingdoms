@@ -2,8 +2,8 @@ import type { HistoricalEvent, NarrativeTrack } from "@/types/history";
 
 import { mixed } from "../provenance";
 
-const fiveDynasties: NarrativeTrack[] = ["five-dynasties"];
-const fiveDynastiesAndLiao: NarrativeTrack[] = ["five-dynasties", "liao-north"];
+const fiveDynasties: readonly NarrativeTrack[] = ["five-dynasties"];
+const fiveDynastiesAndLiao: readonly NarrativeTrack[] = ["five-dynasties", "liao-north"];
 
 export const fiveDynastiesEvents: HistoricalEvent[] = [
   {

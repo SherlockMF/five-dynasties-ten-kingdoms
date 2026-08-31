@@ -34,9 +34,43 @@ describe("LocalHistoryRepository", () => {
   });
 
   it("derives event causes and consequences from normalized relations", async () => {
-    const event = await repository.getEvent("founding-later-jin");
+    const expectations = [
+      {
+        id: "huang-chao-enters-changan",
+        causes: ["huang-chao-rebellion"],
+        consequences: ["zhu-wen-submits-tang", "tang-recovers-changan"],
+      },
+      {
+        id: "later-liang-founded",
+        causes: [
+          "zhu-wen-li-keyong-feud",
+          "emperor-zhaozong-killed",
+          "white-horse-disaster",
+        ],
+        consequences: ["li-cunxu-succeeds-jin", "battle-baixiang"],
+      },
+      {
+        id: "later-tang-founded",
+        causes: ["weibo-joins-jin"],
+        consequences: ["later-liang-falls", "former-shu-falls"],
+      },
+      {
+        id: "chai-rong-reforms",
+        causes: ["later-zhou-founded", "battle-gaoping"],
+        consequences: ["later-zhou-northern-campaign"],
+      },
+    ];
 
-    expect(event?.causeEventIds).toContain("shi-jingtang-rebellion");
-    expect(event?.consequenceEventIds).toContain("sixteen-prefectures-ceded");
+    for (const expected of expectations) {
+      const event = await repository.getEvent(expected.id);
+
+      expect(event?.causeEventIds.sort(), `${expected.id}:causes`).toEqual(
+        expected.causes.sort(),
+      );
+      expect(
+        event?.consequenceEventIds.sort(),
+        `${expected.id}:consequences`,
+      ).toEqual(expected.consequences.sort());
+    }
   });
 });

@@ -2,8 +2,10 @@ import type {
   DynastySuccession,
   EventRelation,
   PersonRelation,
+  TranscriptEpisodeIds,
 } from "@/types/history";
 
+import { events } from "./events/index";
 import {
   historicalExtension,
   mixed as transcript,
@@ -21,12 +23,65 @@ export const personRelations: PersonRelation[] = [
   { id: "chai-rong-zhao-kuangyin", sourcePersonId: "chai-rong", targetPersonId: "zhao-kuangyin", type: "ruler-subject", description: "赵匡胤在后周军中逐步成为高级将领。", startYear: 954, endYear: 959, ...verified, ...transcript([6]) },
 ];
 
-export const eventRelations: EventRelation[] = [
-  { id: "rebellion-to-jin", sourceEventId: "shi-jingtang-rebellion", targetEventId: "founding-later-jin", type: "cause", description: "太原起兵与契丹援助直接促成后晋建立。", ...verified, ...transcript([4]) },
-  { id: "jin-to-prefectures", sourceEventId: "founding-later-jin", targetEventId: "sixteen-prefectures-ceded", type: "consequence", description: "获得契丹支持与燕云十六州的转移相互关联。", ...verified, ...transcript([4]) },
-  { id: "jin-fall-to-han", sourceEventId: "later-jin-falls", targetEventId: "later-han-founded", type: "cause", ...verified, ...transcript([5]) },
-  { id: "han-to-zhou", sourceEventId: "later-han-founded", targetEventId: "later-zhou-founded", type: "context", ...verified, ...transcript([5]) },
-];
+const eventRelationDescriptions: Record<string, string> = {
+  "shi-jingtang-rebellion->founding-later-jin":
+    "太原起兵与契丹援助直接促成后晋建立。",
+  "founding-later-jin->sixteen-prefectures-ceded":
+    "获得契丹支持与燕云十六州的转移相互关联。",
+  "later-jin-falls->later-han-founded":
+    "后晋覆亡与辽军北撤为刘知远建立后汉创造了条件。",
+};
+
+const eventById = new Map(events.map((event) => [event.id, event]));
+const eventRelationByEdge = new Map<string, EventRelation>();
+
+function declareEventRelation(sourceEventId: string, targetEventId: string) {
+  const edge = `${sourceEventId}->${targetEventId}`;
+  if (eventRelationByEdge.has(edge)) return;
+
+  const sourceEvent = eventById.get(sourceEventId);
+  const targetEvent = eventById.get(targetEventId);
+  if (!sourceEvent || !targetEvent) {
+    throw new Error(`Invalid event relation declaration: ${edge}`);
+  }
+
+  const transcriptEpisodeIds = [
+    ...new Set([
+      ...sourceEvent.transcriptEpisodeIds,
+      ...targetEvent.transcriptEpisodeIds,
+    ]),
+  ].sort((left, right) => left - right);
+  const mixedEpisodes: TranscriptEpisodeIds | null = transcriptEpisodeIds.length
+    ? [transcriptEpisodeIds[0]!, ...transcriptEpisodeIds.slice(1)]
+    : null;
+  const provenance = mixedEpisodes
+    ? transcript(mixedEpisodes)
+    : historicalExtension();
+
+  eventRelationByEdge.set(edge, {
+    id: `event-${sourceEventId}-to-${targetEventId}`,
+    sourceEventId,
+    targetEventId,
+    type: "cause",
+    description: eventRelationDescriptions[edge],
+    sourceRefs: [
+      ...new Set([...sourceEvent.sourceRefs, ...targetEvent.sourceRefs]),
+    ],
+    verificationStatus: "reviewed",
+    ...provenance,
+  });
+}
+
+for (const event of events) {
+  for (const causeEventId of event.causeEventIds) {
+    declareEventRelation(causeEventId, event.id);
+  }
+  for (const consequenceEventId of event.consequenceEventIds) {
+    declareEventRelation(event.id, consequenceEventId);
+  }
+}
+
+export const eventRelations = [...eventRelationByEdge.values()];
 
 export const dynastySuccessions: DynastySuccession[] = [
   { id: "later-liang-later-tang", predecessorId: "later-liang", successorId: "later-tang", ...verified, ...transcript([3]) },
