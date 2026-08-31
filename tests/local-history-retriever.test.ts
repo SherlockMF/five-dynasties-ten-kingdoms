@@ -1,3 +1,6 @@
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+
 import { describe, expect, it } from "vitest";
 
 import { LocalHistoryRetriever } from "@/lib/rag/local-history-retriever";
@@ -28,6 +31,54 @@ describe("LocalHistoryRetriever", () => {
     expect(result.chunks[0]?.yearStart).toBe(936);
     expect(result.chunks).toHaveLength(5);
     expect(result.chunks.every((chunk) => chunk.yearStart === 936)).toBe(true);
+  });
+
+  it.each([
+    ["875", 875],
+    ["936", 936],
+    ["936年", 936],
+    [" ？936 年！", 936],
+    ["979", 979],
+  ])("keeps a pure year query %s within that exact year", async (query, year) => {
+    const result = await new LocalHistoryRetriever().retrieve(query, {});
+
+    expect(result.chunks.length).toBeGreaterThan(0);
+    expect(
+      result.chunks.every(
+        (chunk) =>
+          (chunk.yearStart ?? Number.POSITIVE_INFINITY) <= year &&
+          (chunk.yearEnd ?? chunk.yearStart ?? Number.NEGATIVE_INFINITY) >= year,
+      ),
+    ).toBe(true);
+  });
+
+  it.each(["1936", "9360"])(
+    "does not split an out-of-range year token %s into 936",
+    async (query) => {
+      await expect(
+        new LocalHistoryRetriever().retrieve(query, {}),
+      ).resolves.toEqual({ chunks: [], excerptsForServerPrompt: [] });
+    },
+  );
+
+  it("retrieves an event for a year inside its multi-year interval", async () => {
+    const result = await new LocalHistoryRetriever().retrieve("956 年", {});
+
+    expect(result.chunks.map((chunk) => chunk.id)).toContain(
+      "later-zhou-southern-tang-war",
+    );
+  });
+
+  it("combines an independent year token with entity matching", async () => {
+    const result = await new LocalHistoryRetriever().retrieve(
+      "936，石敬瑭",
+      { selectedEvent: "sixteen-prefectures-ceded" },
+    );
+
+    expect(result.chunks.map((chunk) => chunk.id)).toContain(
+      "sixteen-prefectures-ceded",
+    );
+    expect(result.chunks[0]?.yearStart).toBe(936);
   });
 
   it("normalizes punctuation and expands historical aliases", async () => {
@@ -93,5 +144,38 @@ describe("LocalHistoryRetriever", () => {
 
     expect(first.chunks[0]?.id).toBe("sixteen-prefectures-ceded");
     expect(second).toEqual(first);
+  });
+});
+
+function sourceFiles(directory: string): string[] {
+  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const absolutePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) return sourceFiles(absolutePath);
+    return /\.[jt]sx?$/.test(entry.name) ? [absolutePath] : [];
+  });
+}
+
+describe("local history retrieval server boundary", () => {
+  it("declares server-only and is not imported by Client Components", () => {
+    const projectRoot = process.cwd();
+    const retrieverSource = readFileSync(
+      path.join(projectRoot, "lib/rag/local-history-retriever.ts"),
+      "utf8",
+    );
+    expect(retrieverSource).toMatch(/^import "server-only";/);
+
+    const clientImports = ["app", "components", "features", "lib"]
+      .flatMap((directory) => sourceFiles(path.join(projectRoot, directory)))
+      .filter((filename) => {
+        const source = readFileSync(filename, "utf8");
+        return (
+          /^\s*["']use client["'];/m.test(source) &&
+          /(?:@\/lib\/rag\/local-history-retriever|local-history-retriever)/.test(
+            source,
+          )
+        );
+      });
+
+    expect(clientImports).toEqual([]);
   });
 });

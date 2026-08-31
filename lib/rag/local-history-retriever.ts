@@ -1,4 +1,7 @@
+import "server-only";
+
 import { seedData } from "@/data/seed";
+import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import type { HistoricalEvent, SourcedEntity } from "@/types/history";
 
 import type {
@@ -48,6 +51,24 @@ function normalize(value: string): string {
     .replace(/[\p{P}\p{S}\s]+/gu, "");
 }
 
+function extractQueryYears(value: string): number[] {
+  const years = new Set<number>();
+  const normalized = value.normalize("NFKC");
+  for (const match of normalized.matchAll(/(?:^|[^\d])(\d{3,4})(?!\d)/g)) {
+    const token = match[1];
+    const year = Number(token);
+    if (String(year) !== token) continue;
+    if (year >= TIMELINE_MIN_YEAR && year <= MAX_YEAR) years.add(year);
+  }
+  return [...years];
+}
+
+function isYearOnlyQuery(value: string): boolean {
+  return /^[\p{P}\p{S}\s]*\d{3,4}\s*年?[\p{P}\p{S}\s]*$/u.test(
+    value.normalize("NFKC"),
+  );
+}
+
 function markerFor(entity: SourcedEntity): string {
   const marker = {
     "transcript-core": "¹",
@@ -61,8 +82,13 @@ function bounded(value: string, length: number): string {
   return value.length <= length ? value : `${value.slice(0, length - 1)}…`;
 }
 
-function queryTerms(query: string): string[] {
+function queryTerms(query: string, years: number[]): string[] {
   const terms = new Set([query]);
+  const withoutYears = years.reduce(
+    (value, year) => value.replaceAll(String(year), ""),
+    query,
+  );
+  if (withoutYears) terms.add(withoutYears);
   for (const aliases of ALIAS_GROUPS) {
     if (aliases.some((alias) => query.includes(normalize(alias)))) {
       aliases.forEach((alias) => terms.add(normalize(alias)));
@@ -71,10 +97,14 @@ function queryTerms(query: string): string[] {
   return [...terms].filter((term) => term.length >= 2);
 }
 
-function narrativeQuery(query: string): string {
+function narrativeQuery(query: string, years: number[]): string {
+  const withoutYears = years.reduce(
+    (value, year) => value.replaceAll(String(year), ""),
+    query,
+  ).replace(/\d+/g, "");
   return QUESTION_FILLERS.reduce(
     (value, filler) => value.replaceAll(normalize(filler), ""),
-    query,
+    withoutYears,
   );
 }
 
@@ -93,10 +123,12 @@ function scoreEvent(
   event: HistoricalEvent,
   query: string,
   terms: string[],
+  queryYears: number[],
+  pureYearQuery: boolean,
   context: LocalHistoryRetrievalContext,
 ): number {
   const title = normalize(event.title);
-  const bodyQuery = narrativeQuery(query);
+  const bodyQuery = narrativeQuery(query, queryYears);
   const titleRank =
     query === title
       ? 3
@@ -120,13 +152,20 @@ function scoreEvent(
     return normalizedName.length >= 2 && terms.some((term) => term.includes(normalizedName) || normalizedName.includes(term));
   }).length;
 
-  const yearHit = query.includes(String(event.startYear));
-
-  const bodyMatch = Math.max(
-    ...BODY_FIELDS.map((field) =>
-      bodyQuery.length >= 2 ? longestContainedTerm(bodyQuery, event[field]) : 0,
-    ),
+  const yearHit = queryYears.some(
+    (year) =>
+      year >= event.startYear && year <= (event.endYear ?? event.startYear),
   );
+
+  const bodyMatch = pureYearQuery
+    ? 0
+    : Math.max(
+        ...BODY_FIELDS.map((field) =>
+          bodyQuery.length >= 2
+            ? longestContainedTerm(bodyQuery, event[field])
+            : 0,
+        ),
+      );
   const relevanceLevel = titleRank
     ? 4
     : entityHits
@@ -177,15 +216,32 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
     context: LocalHistoryRetrievalContext,
     limit = MAX_RESULTS,
   ): Promise<RetrievalResult> {
-    const query = normalize(rawQuery.slice(0, MAX_QUERY_LENGTH));
+    const boundedQuery = rawQuery.slice(0, MAX_QUERY_LENGTH);
+    const query = normalize(boundedQuery);
+    const queryYears = extractQueryYears(boundedQuery);
+    const pureYearQuery = isYearOnlyQuery(boundedQuery);
     const resultLimit = Math.min(MAX_RESULTS, Math.max(0, Math.floor(limit)));
-    if (!query || resultLimit === 0) {
+    if (
+      !query ||
+      resultLimit === 0 ||
+      (pureYearQuery && queryYears.length === 0)
+    ) {
       return { chunks: [], excerptsForServerPrompt: [] };
     }
 
-    const terms = queryTerms(query);
+    const terms = queryTerms(query, queryYears);
     const matches = seedData.events
-      .map((event) => ({ event, score: scoreEvent(event, query, terms, context) }))
+      .map((event) => ({
+        event,
+        score: scoreEvent(
+          event,
+          query,
+          terms,
+          queryYears,
+          pureYearQuery,
+          context,
+        ),
+      }))
       .filter((match) => match.score > 0)
       .sort((left, right) =>
         right.score - left.score ||
