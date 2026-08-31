@@ -15,6 +15,7 @@ export interface AiRequest {
 /** Internal server-to-provider request. This is not accepted from API clients. */
 export interface AiProviderRequest extends AiRequest {
   retrievedExcerpts?: string[];
+  signal?: AbortSignal;
 }
 
 export interface AiSource {

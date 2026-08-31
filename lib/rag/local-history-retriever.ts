@@ -15,10 +15,25 @@ export type LocalHistoryRetrievalContext = RetrievalContext;
 const MAX_RESULTS = 5;
 const MAX_QUERY_LENGTH = 1000;
 const MAX_EXCERPT_LENGTH = 900;
-const BODY_FIELDS: (keyof Pick<
+type BodyField = keyof Pick<
   HistoricalEvent,
   "summary" | "background" | "process" | "result" | "impact"
->)[] = ["summary", "background", "process", "result", "impact"];
+>;
+const BODY_FIELDS: BodyField[] = [
+  "summary",
+  "background",
+  "process",
+  "result",
+  "impact",
+];
+const BODY_FIELD_LABELS: Record<BodyField, string> = {
+  summary: "摘要",
+  background: "背景",
+  process: "过程",
+  result: "结果",
+  impact: "影响",
+};
+const MIN_BODY_MATCH_LENGTH = 4;
 
 const ALIAS_GROUPS = [
   ["十六州", "燕云", "幽云"],
@@ -82,13 +97,19 @@ function bounded(value: string, length: number): string {
   return value.length <= length ? value : `${value.slice(0, length - 1)}…`;
 }
 
-function queryTerms(query: string, years: number[]): string[] {
+function queryTerms(query: string, years: number[], rawQuery: string): string[] {
   const terms = new Set([query]);
   const withoutYears = years.reduce(
     (value, year) => value.replaceAll(String(year), ""),
     query,
   );
   if (withoutYears) terms.add(withoutYears);
+  for (const token of rawQuery
+    .normalize("NFKC")
+    .match(/[\p{Script=Han}A-Za-z0-9]+/gu) ?? []) {
+    const normalizedToken = normalize(token);
+    if (normalizedToken.length >= 2) terms.add(normalizedToken);
+  }
   for (const aliases of ALIAS_GROUPS) {
     if (aliases.some((alias) => query.includes(normalize(alias)))) {
       aliases.forEach((alias) => terms.add(normalize(alias)));
@@ -113,7 +134,9 @@ function longestContainedTerm(query: string, text: string): number {
   const maximum = Math.min(8, normalizedText.length);
   for (let length = maximum; length >= 2; length -= 1) {
     for (let index = 0; index <= normalizedText.length - length; index += 1) {
-      if (query.includes(normalizedText.slice(index, index + length))) return length;
+      if (query.includes(normalizedText.slice(index, index + length))) {
+        return length;
+      }
     }
   }
   return 0;
@@ -126,7 +149,7 @@ function scoreEvent(
   queryYears: number[],
   pureYearQuery: boolean,
   context: LocalHistoryRetrievalContext,
-): number {
+): { score: number; bodyField?: BodyField; matchedYears: number[] } {
   const title = normalize(event.title);
   const bodyQuery = narrativeQuery(query, queryYears);
   const titleRank =
@@ -139,49 +162,73 @@ function scoreEvent(
           : 0;
 
   const relatedNames = [
-    ...event.personIds.map((id) => seedData.people.find((person) => person.id === id)?.name),
+    ...event.personIds.map(
+      (id) => seedData.people.find((person) => person.id === id)?.name,
+    ),
     ...event.dynastyIds.flatMap((id) => {
       const dynasty = seedData.dynasties.find((candidate) => candidate.id === id);
       return dynasty ? [dynasty.name, dynasty.shortName] : [];
     }),
-    ...event.locationIds.map((id) => seedData.locations.find((location) => location.id === id)?.name),
+    ...event.locationIds.map(
+      (id) =>
+        seedData.locations.find((location) => location.id === id)?.name,
+    ),
   ].filter((name): name is string => Boolean(name));
 
   const entityHits = relatedNames.filter((name) => {
     const normalizedName = normalize(name);
-    return normalizedName.length >= 2 && terms.some((term) => term.includes(normalizedName) || normalizedName.includes(term));
+    return (
+      normalizedName.length >= 2 &&
+      terms.some(
+        (term) =>
+          term.includes(normalizedName) || normalizedName.includes(term),
+      )
+    );
   }).length;
 
-  const yearHit = queryYears.some(
+  const matchedYears = queryYears.filter(
     (year) =>
       year >= event.startYear && year <= (event.endYear ?? event.startYear),
   );
+  const yearHit = matchedYears.length > 0;
 
-  const bodyMatch = pureYearQuery
-    ? 0
-    : Math.max(
-        ...BODY_FIELDS.map((field) =>
-          bodyQuery.length >= 2
-            ? longestContainedTerm(bodyQuery, event[field])
-            : 0,
-        ),
-      );
+  const bodyMatches = BODY_FIELDS.map((field) => ({
+    field,
+    length:
+      !pureYearQuery && bodyQuery.length >= MIN_BODY_MATCH_LENGTH
+        ? longestContainedTerm(bodyQuery, event[field])
+        : 0,
+  }));
+  const bestBodyMatch = bodyMatches.reduce((best, candidate) =>
+    candidate.length > best.length ? candidate : best,
+  );
+  const bodyMatch = bestBodyMatch.length;
   const relevanceLevel = titleRank
     ? 4
     : entityHits
       ? 3
       : yearHit
         ? 2
-        : bodyMatch >= 2
+        : bodyMatch >= MIN_BODY_MATCH_LENGTH
           ? 1
           : 0;
-  if (relevanceLevel === 0) return 0;
+  if (relevanceLevel === 0) return { score: 0, matchedYears: [] };
 
   const contextYear = context.year ?? context.currentYear;
   let contextBoost = 0;
   if (context.selectedEvent === event.id) contextBoost += 60;
-  if (context.selectedPerson && event.personIds.includes(context.selectedPerson)) contextBoost += 20;
-  if (context.selectedDynasty && event.dynastyIds.includes(context.selectedDynasty)) contextBoost += 10;
+  if (
+    context.selectedPerson &&
+    event.personIds.includes(context.selectedPerson)
+  ) {
+    contextBoost += 20;
+  }
+  if (
+    context.selectedDynasty &&
+    event.dynastyIds.includes(context.selectedDynasty)
+  ) {
+    contextBoost += 10;
+  }
   if (
     contextYear !== undefined &&
     contextYear >= event.startYear &&
@@ -190,22 +237,32 @@ function scoreEvent(
     contextBoost += 5;
   }
 
-  return (
-    relevanceLevel * 1_000_000 +
-    titleRank * 100_000 +
-    Math.min(entityHits, 99) * 1000 +
-    Number(yearHit) * 100 +
-    bodyMatch * 10 +
-    contextBoost
-  );
+  return {
+    score:
+      relevanceLevel * 1_000_000 +
+      titleRank * 100_000 +
+      Math.min(entityHits, 99) * 1000 +
+      Number(yearHit) * 100 +
+      bodyMatch * 10 +
+      contextBoost,
+    bodyField:
+      bodyMatch >= MIN_BODY_MATCH_LENGTH ? bestBodyMatch.field : undefined,
+    matchedYears,
+  };
 }
 
-function excerptFor(event: HistoricalEvent): string {
+function excerptFor(event: HistoricalEvent, bodyField?: BodyField): string {
   const disputed = event.disputedNote?.trim() || "无";
+  const evidence = bodyField
+    ? `\n命中证据（${BODY_FIELD_LABELS[bodyField]}）：${bounded(event[bodyField], 130)}`
+    : "";
   return bounded(
     `[事件 ${event.id}] ${event.title}（${event.startYear}）${markerFor(event)}\n` +
-      `事实摘要：${event.summary}\n背景：${event.background}\n结果：${event.result}\n` +
-      `书目：${event.sourceRefs.join("；")}\n异说提示：${disputed}`,
+      `事实摘要：${bounded(event.summary, 130)}${evidence}\n` +
+      `背景：${bounded(event.background, 100)}\n` +
+      `结果：${bounded(event.result, 100)}\n` +
+      `书目：${bounded(event.sourceRefs.join("；"), 160)}\n` +
+      `异说提示：${bounded(disputed, 100)}`,
     MAX_EXCERPT_LENGTH,
   );
 }
@@ -215,7 +272,9 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
     rawQuery: string,
     context: LocalHistoryRetrievalContext,
     limit = MAX_RESULTS,
+    signal?: AbortSignal,
   ): Promise<RetrievalResult> {
+    signal?.throwIfAborted();
     const boundedQuery = rawQuery.slice(0, MAX_QUERY_LENGTH);
     const query = normalize(boundedQuery);
     const queryYears = extractQueryYears(boundedQuery);
@@ -229,38 +288,68 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
       return { chunks: [], excerptsForServerPrompt: [] };
     }
 
-    const terms = queryTerms(query, queryYears);
-    const matches = seedData.events
-      .map((event) => ({
-        event,
-        score: scoreEvent(
+    const terms = queryTerms(query, queryYears, boundedQuery);
+    const rankedMatches = seedData.events
+      .map((event) => {
+        signal?.throwIfAborted();
+        return {
           event,
-          query,
-          terms,
-          queryYears,
-          pureYearQuery,
-          context,
-        ),
-      }))
+          ...scoreEvent(
+            event,
+            query,
+            terms,
+            queryYears,
+            pureYearQuery,
+            context,
+          ),
+        };
+      })
       .filter((match) => match.score > 0)
       .sort((left, right) =>
         right.score - left.score ||
         left.event.startYear - right.event.startYear ||
-        (left.event.id < right.event.id ? -1 : left.event.id > right.event.id ? 1 : 0),
-      )
-      .slice(0, resultLimit);
+        (left.event.id < right.event.id
+          ? -1
+          : left.event.id > right.event.id
+            ? 1
+            : 0),
+      );
+
+    const matches: typeof rankedMatches = [];
+    const selectedIds = new Set<string>();
+    for (const year of queryYears) {
+      signal?.throwIfAborted();
+      if (matches.length >= resultLimit) break;
+      const match = rankedMatches.find(
+        (candidate) =>
+          candidate.matchedYears.includes(year) &&
+          !selectedIds.has(candidate.event.id),
+      );
+      if (!match) continue;
+      matches.push(match);
+      selectedIds.add(match.event.id);
+    }
+    for (const match of rankedMatches) {
+      signal?.throwIfAborted();
+      if (matches.length >= resultLimit) break;
+      if (selectedIds.has(match.event.id)) continue;
+      matches.push(match);
+      selectedIds.add(match.event.id);
+    }
 
     return {
       chunks: matches.map(({ event }) => ({
         id: event.id,
-        sourceId: event.sourceRefs[0] ?? `history-event:${event.id}`,
+        sourceId: `history-event:${event.id}`,
         people: [...event.personIds],
         dynasties: [...event.dynastyIds],
         events: [event.id],
         yearStart: event.startYear,
         yearEnd: event.endYear ?? event.startYear,
       })),
-      excerptsForServerPrompt: matches.map(({ event }) => excerptFor(event)),
+      excerptsForServerPrompt: matches.map(({ event, bodyField }) =>
+        excerptFor(event, bodyField),
+      ),
     };
   }
 }

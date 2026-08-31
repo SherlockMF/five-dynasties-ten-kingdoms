@@ -18,5 +18,6 @@ export interface KnowledgeRetriever {
     query: string,
     context: AiContext | RetrievalContext,
     limit?: number,
+    signal?: AbortSignal,
   ): Promise<RetrievalResult>;
 }

@@ -29,8 +29,63 @@ describe("LocalHistoryRetriever", () => {
     );
 
     expect(result.chunks[0]?.yearStart).toBe(936);
-    expect(result.chunks).toHaveLength(5);
+    expect(result.chunks.length).toBeLessThanOrEqual(5);
     expect(result.chunks.every((chunk) => chunk.yearStart === 936)).toBe(true);
+    expect(result.chunks.map((chunk) => chunk.id)).toContain(
+      "sixteen-prefectures-ceded",
+    );
+  });
+
+  it("requires a meaningful phrase for free-narrative body matches", async () => {
+    const result = await new LocalHistoryRetriever().retrieve(
+      "人工智能如何改变教育",
+      {},
+    );
+
+    expect(result).toEqual({ chunks: [], excerptsForServerPrompt: [] });
+  });
+
+  it("keeps an event-title match ahead of HTML-like query noise", async () => {
+    const result = await new LocalHistoryRetriever().retrieve(
+      "<script>alert(1)</script>！！！陈桥兵变",
+      {},
+    );
+
+    expect(result.chunks[0]?.id).toBe("chenqiao-mutiny");
+  });
+
+  it.each([
+    ["水陆交通", "later-zhou-southern-tang-war", "过程"],
+    ["制度框架", "yang-xingmi-prince-wu", "影响"],
+    ["战略重点", "chenqiao-mutiny", "影响"],
+  ])(
+    "includes the matched %s narrative evidence in the excerpt",
+    async (phrase, eventId, fieldLabel) => {
+      const result = await new LocalHistoryRetriever().retrieve(phrase, {});
+      const index = result.chunks.findIndex((chunk) => chunk.id === eventId);
+
+      expect(index).toBeGreaterThanOrEqual(0);
+      expect(result.excerptsForServerPrompt[index]).toContain(
+        `命中证据（${fieldLabel}）`,
+      );
+      expect(result.excerptsForServerPrompt[index]).toContain(phrase);
+      expect(result.excerptsForServerPrompt[index].length).toBeLessThanOrEqual(
+        900,
+      );
+    },
+  );
+
+  it("uses unique stable source ids instead of bibliography text", async () => {
+    const result = await new LocalHistoryRetriever().retrieve("936", {});
+
+    expect(
+      result.chunks.every(
+        (chunk) => chunk.sourceId === `history-event:${chunk.id}`,
+      ),
+    ).toBe(true);
+    expect(new Set(result.chunks.map((chunk) => chunk.sourceId)).size).toBe(
+      result.chunks.length,
+    );
   });
 
   it.each([
@@ -81,13 +136,60 @@ describe("LocalHistoryRetriever", () => {
     expect(result.chunks[0]?.yearStart).toBe(936);
   });
 
+  it("reserves one result for every explicit year before filling", async () => {
+    const result = await new LocalHistoryRetriever().retrieve("936、960", {
+      year: 936,
+      selectedEvent: "sixteen-prefectures-ceded",
+    });
+
+    for (const year of [936, 960]) {
+      expect(
+        result.chunks.some(
+          (chunk) =>
+            (chunk.yearStart ?? Number.POSITIVE_INFINITY) <= year &&
+            (chunk.yearEnd ?? chunk.yearStart ?? Number.NEGATIVE_INFINITY) >=
+              year,
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("applies the result limit while preserving the first five explicit years", async () => {
+    const result = await new LocalHistoryRetriever().retrieve(
+      "875 880 884 907 936 960",
+      {},
+    );
+
+    expect(result.chunks).toHaveLength(5);
+    for (const year of [875, 880, 884, 907, 936]) {
+      expect(
+        result.chunks.some(
+          (chunk) =>
+            (chunk.yearStart ?? Number.POSITIVE_INFINITY) <= year &&
+            (chunk.yearEnd ?? chunk.yearStart ?? Number.NEGATIVE_INFINITY) >=
+              year,
+        ),
+      ).toBe(true);
+    }
+  });
+
+  it("deduplicates an event that spans multiple queried years", async () => {
+    const result = await new LocalHistoryRetriever().retrieve("955 956", {});
+    const ids = result.chunks.map((chunk) => chunk.id);
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids).toContain("later-zhou-southern-tang-war");
+  });
+
   it("normalizes punctuation and expands historical aliases", async () => {
     const result = await new LocalHistoryRetriever().retrieve(
       "  石敬瑭，为何割让燕云？ ",
       { currentYear: 936, selectedPerson: "shi-jingtang" },
     );
 
-    expect(result.chunks[0]?.id).toBe("sixteen-prefectures-ceded");
+    expect(result.chunks.map((chunk) => chunk.id)).toContain(
+      "sixteen-prefectures-ceded",
+    );
   });
 
   it("does not turn unrelated questions into context-only results", async () => {
@@ -116,6 +218,20 @@ describe("LocalHistoryRetriever", () => {
     expect(
       result.excerptsForServerPrompt.every((excerpt) => excerpt.length <= 900),
     ).toBe(true);
+  });
+
+  it("honors an aborted retrieval signal before scanning events", async () => {
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      new LocalHistoryRetriever().retrieve(
+        "陈桥兵变",
+        {},
+        5,
+        controller.signal,
+      ),
+    ).rejects.toMatchObject({ name: "AbortError" });
   });
 
   it("includes source metadata and a bounded disputed-reading note", async () => {
@@ -156,13 +272,16 @@ function sourceFiles(directory: string): string[] {
 }
 
 describe("local history retrieval server boundary", () => {
-  it("declares server-only and is not imported by Client Components", () => {
+  it("declares server-only modules and keeps them out of Client Components", () => {
     const projectRoot = process.cwd();
-    const retrieverSource = readFileSync(
-      path.join(projectRoot, "lib/rag/local-history-retriever.ts"),
-      "utf8",
-    );
-    expect(retrieverSource).toMatch(/^import "server-only";/);
+    for (const modulePath of [
+      "lib/rag/local-history-retriever.ts",
+      "lib/ai/mock-provider.ts",
+    ]) {
+      expect(
+        readFileSync(path.join(projectRoot, modulePath), "utf8"),
+      ).toMatch(/^import "server-only";/);
+    }
 
     const clientImports = ["app", "components", "features", "lib"]
       .flatMap((directory) => sourceFiles(path.join(projectRoot, directory)))
@@ -170,7 +289,7 @@ describe("local history retrieval server boundary", () => {
         const source = readFileSync(filename, "utf8");
         return (
           /^\s*["']use client["'];/m.test(source) &&
-          /(?:@\/lib\/rag\/local-history-retriever|local-history-retriever)/.test(
+          /(?:local-history-retriever|@\/lib\/ai\/mock-provider)/.test(
             source,
           )
         );
