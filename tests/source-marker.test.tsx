@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   getSourceMarkerText,
@@ -48,6 +48,11 @@ const markerCases = [
   entity: ContentProvenance & { disputedNote?: string };
   expected: string;
 }[];
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+});
 
 describe("getSourceMarkerText", () => {
   it.each(markerCases)("marks $name as $expected", ({ entity, expected }) => {
@@ -161,6 +166,53 @@ describe("SourceMarker", () => {
       expect(marker).toHaveFocus();
       await user.tab();
       expect(screen.getByRole("button", { name: "之后" })).toHaveFocus();
+    },
+  );
+
+  it.each([
+    { horizontal: "left", vertical: "below", left: 24, top: 24 },
+    { horizontal: "right", vertical: "below", left: 260, top: 24 },
+    { horizontal: "left", vertical: "above", left: 24, top: 252 },
+    { horizontal: "right", vertical: "above", left: 260, top: 252 },
+  ] as const)(
+    "places the tooltip $horizontal and $vertical for the available viewport quadrant",
+    ({ horizontal, vertical, left, top }) => {
+      vi.stubGlobal("innerWidth", 300);
+      vi.stubGlobal("innerHeight", 300);
+      render(
+        <SourceMarker
+          entity={{ contentOrigin: "mixed", transcriptEpisodeIds: [4] }}
+        />,
+      );
+
+      const marker = screen.getByRole("note", {
+        name: "第04集主线、史料扩展",
+      });
+      const wrapper = marker.parentElement!;
+      const tooltip = screen.getByRole("tooltip", { hidden: true });
+      vi.spyOn(wrapper, "getBoundingClientRect").mockReturnValue({
+        x: left,
+        y: top,
+        left,
+        top,
+        right: left + 24,
+        bottom: top + 24,
+        width: 24,
+        height: 24,
+        toJSON: () => ({}),
+      });
+      Object.defineProperty(tooltip, "offsetHeight", {
+        configurable: true,
+        value: 40,
+      });
+
+      fireEvent.pointerEnter(wrapper);
+
+      expect(tooltip).toHaveClass(
+        horizontal === "left" ? "left-0" : "right-0",
+        vertical === "above" ? "bottom-full" : "top-full",
+        vertical === "above" ? "mb-2" : "mt-2",
+      );
     },
   );
 

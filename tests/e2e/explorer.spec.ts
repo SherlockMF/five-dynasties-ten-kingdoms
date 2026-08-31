@@ -145,3 +145,100 @@ test("inverse source markers retain their legend and mobile focus behavior", asy
   await trigger.evaluate((element) => (element as HTMLElement).blur());
   await expect(tooltip).toHaveCSS("visibility", "hidden");
 });
+
+test("timeline source markers flip above at the viewport bottom", async (
+  { page },
+  testInfo,
+) => {
+  const label = "第04集主线、史料扩展";
+  await page.goto("/timeline?year=936");
+
+  const article = page
+    .getByRole("article")
+    .filter({ has: page.getByRole("link", { name: "查看后晋建立详情" }) });
+  const trigger = article.getByRole("note", { name: label });
+  const tooltip = article.getByRole("tooltip", { includeHidden: true });
+
+  await trigger.evaluate((element) => {
+    document.documentElement.style.scrollBehavior = "auto";
+    const box = element.getBoundingClientRect();
+    window.scrollBy(0, box.bottom - window.innerHeight + 8);
+  });
+
+  const triggerBox = await trigger.boundingBox();
+  const viewport = page.viewportSize();
+  expect(triggerBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(triggerBox!.y + triggerBox!.height).toBeGreaterThan(
+    viewport!.height - 16,
+  );
+
+  if (testInfo.project.name === "mobile") {
+    await trigger.evaluate((element) =>
+      (element as HTMLElement).focus({ preventScroll: true }),
+    );
+  } else {
+    await page.mouse.move(
+      triggerBox!.x + triggerBox!.width / 2,
+      triggerBox!.y + triggerBox!.height / 2,
+    );
+  }
+
+  await expect(tooltip).toHaveCSS("visibility", "visible");
+  await expect(tooltip).toHaveCSS("opacity", "1");
+  const visibleTriggerBox = await trigger.boundingBox();
+  const tooltipBox = await tooltip.boundingBox();
+  expect(visibleTriggerBox).not.toBeNull();
+  expect(tooltipBox).not.toBeNull();
+  expect(tooltipBox!.y).toBeGreaterThanOrEqual(0);
+  expect(tooltipBox!.y + tooltipBox!.height).toBeLessThanOrEqual(
+    viewport!.height,
+  );
+  expect(tooltipBox!.y + tooltipBox!.height).toBeLessThanOrEqual(
+    visibleTriggerBox!.y,
+  );
+});
+
+test("inverse source markers flip above at the viewport bottom", async ({
+  page,
+}) => {
+  const label = "第03、04、05集主线、史料扩展";
+  await page.goto("/people?year=936&person=shi-jingtang");
+
+  const panel = page.getByRole("region", { name: "石敬瑭" });
+  const trigger = panel.getByRole("note", { name: label });
+  const tooltip = panel.getByRole("tooltip", { includeHidden: true });
+  await trigger.evaluate((element) => {
+    document.documentElement.style.scrollBehavior = "auto";
+    const box = element.getBoundingClientRect();
+    window.scrollBy(0, box.bottom - window.innerHeight + 8);
+  });
+
+  const triggerBox = await trigger.boundingBox();
+  const viewport = page.viewportSize();
+  expect(triggerBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(triggerBox!.y + triggerBox!.height).toBeGreaterThan(
+    viewport!.height - 16,
+  );
+
+  await trigger.evaluate((element) =>
+    (element as HTMLElement).focus({ preventScroll: true }),
+  );
+  await expect(tooltip).toHaveCSS("visibility", "visible");
+  await expect(tooltip).toHaveCSS("opacity", "1");
+  const visibleTriggerBox = await trigger.boundingBox();
+  const tooltipBox = await tooltip.boundingBox();
+  expect(visibleTriggerBox).not.toBeNull();
+  expect(tooltipBox).not.toBeNull();
+  expect(tooltipBox!.y).toBeGreaterThanOrEqual(0);
+  expect(tooltipBox!.y + tooltipBox!.height).toBeLessThanOrEqual(
+    viewport!.height,
+  );
+  expect(tooltipBox!.y + tooltipBox!.height).toBeLessThanOrEqual(
+    visibleTriggerBox!.y,
+  );
+
+  await trigger.evaluate((element) => (element as HTMLElement).blur());
+  await expect(tooltip).toHaveCSS("visibility", "hidden");
+});

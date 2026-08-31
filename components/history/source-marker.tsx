@@ -53,17 +53,39 @@ export function SourceMarker({
   const label = getSourceMarkerLabel(entity);
   const tooltipId = useId();
   const markerRef = useRef<HTMLSpanElement>(null);
-  const [tooltipSide, setTooltipSide] = useState<"left" | "right">("right");
+  const tooltipRef = useRef<HTMLSpanElement>(null);
+  const [tooltipPosition, setTooltipPosition] = useState<{
+    horizontal: "left" | "right";
+    vertical: "above" | "below";
+  }>({ horizontal: "right", vertical: "below" });
 
   function placeTooltipWithinViewport() {
     const markerBox = markerRef.current?.getBoundingClientRect();
     if (!markerBox) return;
     const viewportGutter = 16;
+    const tooltipGap = 8;
     const tooltipWidth = Math.min(112, window.innerWidth - viewportGutter * 2);
-    setTooltipSide(
-      markerBox.left + tooltipWidth <= window.innerWidth - viewportGutter
-        ? "left"
-        : "right",
+    const tooltipHeight = tooltipRef.current?.offsetHeight ?? 0;
+    const spaceBelow =
+      window.innerHeight - markerBox.bottom - tooltipGap - viewportGutter;
+    const spaceAbove = markerBox.top - tooltipGap - viewportGutter;
+    const nextPosition = {
+      horizontal:
+        markerBox.left + tooltipWidth <= window.innerWidth - viewportGutter
+          ? ("left" as const)
+          : ("right" as const),
+      vertical:
+        tooltipHeight > 0 &&
+        spaceBelow < tooltipHeight &&
+        spaceAbove >= tooltipHeight
+          ? ("above" as const)
+          : ("below" as const),
+    };
+    setTooltipPosition((current) =>
+      current.horizontal === nextPosition.horizontal &&
+      current.vertical === nextPosition.vertical
+        ? current
+        : nextPosition,
     );
   }
 
@@ -89,12 +111,16 @@ export function SourceMarker({
         {getSourceMarkerText(entity)}
       </sup>
       <span
+        ref={tooltipRef}
         id={tooltipId}
         aria-hidden="true"
         role="tooltip"
         className={cn(
-          "pointer-events-none invisible absolute top-full z-50 mt-2 w-28 max-w-[calc(100vw-2rem)] whitespace-normal rounded-lg px-3 py-2 text-center text-xs leading-5 opacity-0 shadow-xl transition-[opacity,visibility] group-hover/source-marker:visible group-hover/source-marker:opacity-100 group-focus-within/source-marker:visible group-focus-within/source-marker:opacity-100",
-          tooltipSide === "left" ? "left-0" : "right-0",
+          "pointer-events-none invisible absolute z-50 w-28 max-w-[calc(100vw-2rem)] whitespace-normal rounded-lg px-3 py-2 text-center text-xs leading-5 opacity-0 shadow-xl transition-[opacity,visibility] group-hover/source-marker:visible group-hover/source-marker:opacity-100 group-focus-within/source-marker:visible group-focus-within/source-marker:opacity-100",
+          tooltipPosition.horizontal === "left" ? "left-0" : "right-0",
+          tooltipPosition.vertical === "above"
+            ? "bottom-full mb-2"
+            : "top-full mt-2",
           variant === "inverse" ? "bg-paper text-ink" : "bg-ink text-paper",
         )}
       >
