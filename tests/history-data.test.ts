@@ -2,7 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import { seedData } from "@/data/seed";
 import { validateHistoryData } from "@/lib/validation/history-data";
-import type { SourcedEntity } from "@/types/history";
+import type {
+  HistoricalEvent,
+  HistoryDataSet,
+  SourcedEntity,
+} from "@/types/history";
 
 const invalidHistoricalExtension: SourcedEntity = {
   sourceRefs: [],
@@ -45,9 +49,189 @@ void invalidMixedContent;
 void invalidTranscriptCore;
 void rejectEpisodeMutation;
 
+function replaceFirstEvent(
+  overrides: Partial<HistoricalEvent>,
+): HistoryDataSet {
+  return {
+    ...seedData,
+    events: [
+      {
+        ...seedData.events[0],
+        id: "test",
+        ...overrides,
+      } as HistoricalEvent,
+      ...seedData.events.slice(1),
+    ],
+  };
+}
+
 describe("history seed data", () => {
   it("has no dangling ids or invalid year ranges", () => {
     expect(validateHistoryData(seedData)).toEqual([]);
+  });
+
+  it("validates source and transcript provenance centrally", () => {
+    expect(
+      validateHistoryData(replaceFirstEvent({ sourceRefs: [] })),
+    ).toContain("event:test:missing-sources");
+
+    expect(
+      validateHistoryData(
+        replaceFirstEvent({
+          contentOrigin: "historical-extension",
+          transcriptEpisodeIds: [1],
+        } as unknown as Partial<HistoricalEvent>),
+      ),
+    ).toContain("event:test:extension-has-transcript");
+
+    expect(
+      validateHistoryData(
+        replaceFirstEvent({
+          contentOrigin: "transcript-core",
+          transcriptEpisodeIds: [],
+        } as unknown as Partial<HistoricalEvent>),
+      ),
+    ).toContain("event:test:transcript-origin-without-episode");
+
+    expect(
+      validateHistoryData(
+        replaceFirstEvent({
+          contentOrigin: "unknown",
+          transcriptEpisodeIds: [],
+        } as unknown as Partial<HistoricalEvent>),
+      ),
+    ).toContain("event:test:invalid-content-origin");
+  });
+
+  it("requires transcript episodes to be unique, ordered, and within 1 through 6", () => {
+    const duplicateEpisodes = validateHistoryData(
+      replaceFirstEvent({
+        transcriptEpisodeIds: [2, 1, 1, 7],
+      } as unknown as Partial<HistoricalEvent>),
+    );
+
+    expect(duplicateEpisodes).toContain("event:test:invalid-transcript-episode:7");
+    expect(duplicateEpisodes).toContain("event:test:duplicate-transcript-episode:1");
+    expect(duplicateEpisodes).toContain("event:test:unordered-transcript-episodes");
+  });
+
+  it("validates collection ids, counts, and historical coverage", () => {
+    const duplicateEvent = {
+      ...seedData,
+      events: [...seedData.events, seedData.events[0]],
+    };
+    expect(validateHistoryData(duplicateEvent)).toContain(
+      `event:${seedData.events[0].id}:duplicate-id`,
+    );
+
+    const missingWindow = {
+      ...seedData,
+      events: seedData.events.filter(
+        (event) => event.startYear < 917 || event.startYear > 926,
+      ),
+    };
+    expect(validateHistoryData(missingWindow)).toContain(
+      "events:coverage-gap:917-926",
+    );
+    expect(validateHistoryData(seedData).some((error) => error.includes("coverage-gap"))).toBe(false);
+  });
+
+  it("validates event tracks and relation graph invariants", () => {
+    expect(
+      validateHistoryData(
+        replaceFirstEvent({ tracks: [] }),
+      ),
+    ).toContain("event:test:missing-track");
+
+    const invalidPersonRelations: HistoryDataSet = {
+      ...seedData,
+      personRelations: [
+        ...seedData.personRelations,
+        {
+          ...seedData.personRelations[0],
+          id: "self",
+          targetPersonId: seedData.personRelations[0].sourcePersonId,
+        },
+        {
+          ...seedData.personRelations[0],
+          id: "missing",
+          targetPersonId: "missing-person",
+        },
+        {
+          ...seedData.personRelations[0],
+          id: "invalid-years",
+          startYear: 950,
+          endYear: 949,
+        },
+        {
+          ...seedData.personRelations[0],
+          id: "duplicate-edge",
+        },
+      ],
+    };
+    const personErrors = validateHistoryData(invalidPersonRelations);
+    expect(personErrors).toContain("person-relation:self:self-reference");
+    expect(personErrors).toContain("person-relation:missing:missing-person");
+    expect(personErrors).toContain("person-relation:invalid-years:invalid-interval");
+    expect(personErrors).toContain("person-relation:duplicate-edge:duplicate-edge");
+
+    const invalidEventRelations: HistoryDataSet = {
+      ...seedData,
+      eventRelations: [
+        ...seedData.eventRelations,
+        {
+          ...seedData.eventRelations[0],
+          id: "event-self",
+          targetEventId: seedData.eventRelations[0].sourceEventId,
+        },
+        {
+          ...seedData.eventRelations[0],
+          id: "event-duplicate-edge",
+        },
+      ],
+    };
+    const eventErrors = validateHistoryData(invalidEventRelations);
+    expect(eventErrors).toContain("event-relation:event-self:self-reference");
+    expect(eventErrors).toContain("event-relation:event-duplicate-edge:duplicate-edge");
+  });
+
+  it("validates dynasty succession references and required historical chains", () => {
+    const missingReference: HistoryDataSet = {
+      ...seedData,
+      dynastySuccessions: [
+        ...seedData.dynastySuccessions,
+        {
+          ...seedData.dynastySuccessions[0],
+          id: "missing-dynasty",
+          successorId: "missing-dynasty",
+        },
+      ],
+    };
+
+    expect(validateHistoryData(missingReference)).toContain(
+      "dynasty-succession:missing-dynasty:missing-dynasty",
+    );
+    expect(
+      validateHistoryData({
+        ...seedData,
+        dynastySuccessions: seedData.dynastySuccessions.filter(
+          (succession) => succession.id !== "later-han-northern-han",
+        ),
+      }),
+    ).toContain(
+      "dynasty-successions:missing-required-edge:later-han->northern-han",
+    );
+    expect(seedData.dynastySuccessions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ predecessorId: "later-liang", successorId: "later-tang" }),
+        expect.objectContaining({ predecessorId: "later-tang", successorId: "later-jin" }),
+        expect.objectContaining({ predecessorId: "later-jin", successorId: "later-han" }),
+        expect.objectContaining({ predecessorId: "later-han", successorId: "later-zhou" }),
+        expect.objectContaining({ predecessorId: "later-han", successorId: "northern-han" }),
+        expect.objectContaining({ predecessorId: "later-zhou", successorId: "northern-song" }),
+        expect.objectContaining({ predecessorId: "wu", successorId: "southern-tang" }),
+      ]),
+    );
   });
 
   it("validates event years against 875 through 979", () => {

@@ -1,5 +1,30 @@
-import type { HistoryDataSet } from "@/types/history";
 import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
+import type { HistoryDataSet, SourcedEntity } from "@/types/history";
+
+type EntityWithId = SourcedEntity & { id: string };
+
+const CRITICAL_EVENT_YEARS = [
+  907, 923, 936, 947, 951, 960, 971, 975, 978, 979,
+] as const;
+
+const REQUIRED_SUCCESSION_EDGES = [
+  "later-liang->later-tang",
+  "later-tang->later-jin",
+  "later-jin->later-han",
+  "later-han->later-zhou",
+  "later-han->northern-han",
+  "later-zhou->northern-song",
+  "wu->southern-tang",
+] as const;
+
+const COLLECTION_LIMITS = {
+  dynasties: [17, 17],
+  events: [60, 80],
+  people: [40, 60],
+  locations: [25, 35],
+  personRelations: [45, Number.POSITIVE_INFINITY],
+  eventRelations: [25, Number.POSITIVE_INFINITY],
+} as const;
 
 export function validateHistoryData(data: HistoryDataSet): string[] {
   const errors: string[] = [];
@@ -8,34 +33,331 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   const eventIds = new Set(data.events.map(({ id }) => id));
   const locationIds = new Set(data.locations.map(({ id }) => id));
 
-  for (const dynasty of data.dynasties) {
-    if (dynasty.startYear > dynasty.endYear) errors.push(`dynasty:${dynasty.id}:invalid-years`);
-    if (dynasty.founderPersonId && !personIds.has(dynasty.founderPersonId)) errors.push(`dynasty:${dynasty.id}:missing-founder`);
+  const sourcedCollections: ReadonlyArray<
+    readonly [string, readonly EntityWithId[]]
+  > = [
+    ["dynasty", data.dynasties],
+    ["person", data.people],
+    ["event", data.events],
+    ["person-relation", data.personRelations],
+    ["event-relation", data.eventRelations],
+    ["dynasty-succession", data.dynastySuccessions],
+    ["location", data.locations],
+    ["region", data.regions],
+  ];
+
+  for (const [kind, entities] of sourcedCollections) {
+    validateUniqueIds(kind, entities, errors);
+    for (const entity of entities) validateSources(kind, entity, errors);
   }
-  for (const person of data.people) {
-    for (const id of person.dynastyIds) if (!dynastyIds.has(id)) errors.push(`person:${person.id}:missing-dynasty:${id}`);
-  }
-  for (const event of data.events) {
-    if (event.startYear < TIMELINE_MIN_YEAR || event.startYear > MAX_YEAR) errors.push(`event:${event.id}:year-out-of-range`);
-    for (const field of ["summary", "background", "process", "result", "impact"] as const) {
-      if (typeof event[field] !== "string" || !event[field].trim()) errors.push(`event:${event.id}:missing-${field}`);
+
+  for (const [collectionName, [minimum, maximum]] of Object.entries(
+    COLLECTION_LIMITS,
+  )) {
+    const count = data[collectionName as keyof typeof COLLECTION_LIMITS].length;
+    if (count < minimum || count > maximum) {
+      errors.push(`${collectionName}:count-out-of-range:${count}`);
     }
-    for (const id of event.personIds) if (!personIds.has(id)) errors.push(`event:${event.id}:missing-person:${id}`);
-    for (const id of event.dynastyIds) if (!dynastyIds.has(id)) errors.push(`event:${event.id}:missing-dynasty:${id}`);
-    for (const id of event.locationIds) if (!locationIds.has(id)) errors.push(`event:${event.id}:missing-location:${id}`);
-    for (const id of event.causeEventIds) if (!eventIds.has(id)) errors.push(`event:${event.id}:missing-cause:${id}`);
-    for (const id of event.consequenceEventIds) if (!eventIds.has(id)) errors.push(`event:${event.id}:missing-consequence:${id}`);
   }
-  for (const relation of data.personRelations) {
-    if (relation.sourcePersonId === relation.targetPersonId) errors.push(`person-relation:${relation.id}:self-reference`);
-    if (!personIds.has(relation.sourcePersonId) || !personIds.has(relation.targetPersonId)) errors.push(`person-relation:${relation.id}:missing-person`);
+
+  for (const dynasty of data.dynasties) {
+    if (
+      dynasty.startYear > dynasty.endYear ||
+      dynasty.startYear < TIMELINE_MIN_YEAR ||
+      dynasty.endYear > 1127
+    ) {
+      errors.push(`dynasty:${dynasty.id}:invalid-years`);
+    }
+    if (dynasty.founderPersonId && !personIds.has(dynasty.founderPersonId)) {
+      errors.push(`dynasty:${dynasty.id}:missing-founder`);
+    }
+    validateReferences(
+      `dynasty:${dynasty.id}:predecessor`,
+      dynasty.predecessorIds,
+      dynastyIds,
+      dynasty.id,
+      errors,
+    );
+    validateReferences(
+      `dynasty:${dynasty.id}:successor`,
+      dynasty.successorIds,
+      dynastyIds,
+      dynasty.id,
+      errors,
+    );
   }
-  for (const relation of data.eventRelations) {
-    if (!eventIds.has(relation.sourceEventId) || !eventIds.has(relation.targetEventId)) errors.push(`event-relation:${relation.id}:missing-event`);
+
+  for (const person of data.people) {
+    if (
+      person.birthYear !== undefined &&
+      person.deathYear !== undefined &&
+      person.birthYear > person.deathYear
+    ) {
+      errors.push(`person:${person.id}:invalid-years`);
+    }
+    for (const id of person.dynastyIds) {
+      if (!dynastyIds.has(id)) errors.push(`person:${person.id}:missing-dynasty:${id}`);
+    }
   }
+
+  for (const event of data.events) {
+    const endYear = event.endYear ?? event.startYear;
+    if (
+      event.startYear < TIMELINE_MIN_YEAR ||
+      event.startYear > MAX_YEAR ||
+      endYear < event.startYear ||
+      endYear > MAX_YEAR
+    ) {
+      errors.push(`event:${event.id}:year-out-of-range`);
+    }
+    if (!event.tracks.length) errors.push(`event:${event.id}:missing-track`);
+    for (const field of [
+      "summary",
+      "background",
+      "process",
+      "result",
+      "impact",
+    ] as const) {
+      if (typeof event[field] !== "string" || !event[field].trim()) {
+        errors.push(`event:${event.id}:missing-${field}`);
+      }
+    }
+    validateReferences(
+      `event:${event.id}:person`,
+      event.personIds,
+      personIds,
+      undefined,
+      errors,
+    );
+    validateReferences(
+      `event:${event.id}:dynasty`,
+      event.dynastyIds,
+      dynastyIds,
+      undefined,
+      errors,
+    );
+    validateReferences(
+      `event:${event.id}:location`,
+      event.locationIds,
+      locationIds,
+      undefined,
+      errors,
+    );
+    validateReferences(
+      `event:${event.id}:cause`,
+      event.causeEventIds,
+      eventIds,
+      event.id,
+      errors,
+    );
+    validateReferences(
+      `event:${event.id}:consequence`,
+      event.consequenceEventIds,
+      eventIds,
+      event.id,
+      errors,
+    );
+  }
+
+  validateEventCoverage(data, errors);
+  validatePersonRelations(data, personIds, errors);
+  validateEventRelations(data, eventIds, errors);
+  validateDynastySuccessions(data, dynastyIds, errors);
+
   for (const region of data.regions) {
-    if (!dynastyIds.has(region.dynastyId)) errors.push(`region:${region.id}:missing-dynasty`);
-    if (region.validFromYear >= region.validToYearExclusive) errors.push(`region:${region.id}:invalid-interval`);
+    if (!dynastyIds.has(region.dynastyId)) {
+      errors.push(`region:${region.id}:missing-dynasty`);
+    }
+    if (region.validFromYear >= region.validToYearExclusive) {
+      errors.push(`region:${region.id}:invalid-interval`);
+    }
   }
+
   return errors;
+}
+
+function validateSources(
+  kind: string,
+  entity: EntityWithId,
+  errors: string[],
+) {
+  const entityId = entity.id;
+
+  if (
+    !Array.isArray(entity.sourceRefs) ||
+    !entity.sourceRefs.length ||
+    entity.sourceRefs.some((source) => !source.trim())
+  ) {
+    errors.push(`${kind}:${entity.id}:missing-sources`);
+  }
+
+  if (
+    entity.contentOrigin !== "historical-extension" &&
+    entity.contentOrigin !== "transcript-core" &&
+    entity.contentOrigin !== "mixed"
+  ) {
+    errors.push(`${kind}:${entityId}:invalid-content-origin`);
+  }
+
+  const episodes = Array.isArray(entity.transcriptEpisodeIds)
+    ? entity.transcriptEpisodeIds
+    : [];
+  if (entity.contentOrigin === "historical-extension" && episodes.length) {
+    errors.push(`${kind}:${entity.id}:extension-has-transcript`);
+  }
+  if (entity.contentOrigin !== "historical-extension" && !episodes.length) {
+    errors.push(`${kind}:${entity.id}:transcript-origin-without-episode`);
+  }
+
+  const seenEpisodes = new Set<number>();
+  let previousEpisode = Number.NEGATIVE_INFINITY;
+  let unordered = false;
+  for (const episode of episodes) {
+    if (!Number.isInteger(episode) || episode < 1 || episode > 6) {
+      errors.push(`${kind}:${entity.id}:invalid-transcript-episode:${episode}`);
+    }
+    if (seenEpisodes.has(episode)) {
+      errors.push(`${kind}:${entity.id}:duplicate-transcript-episode:${episode}`);
+    }
+    if (episode <= previousEpisode) unordered = true;
+    seenEpisodes.add(episode);
+    previousEpisode = episode;
+  }
+  if (unordered) errors.push(`${kind}:${entity.id}:unordered-transcript-episodes`);
+}
+
+function validateUniqueIds(
+  kind: string,
+  entities: readonly { id: string }[],
+  errors: string[],
+) {
+  const seen = new Set<string>();
+  for (const entity of entities) {
+    if (seen.has(entity.id)) errors.push(`${kind}:${entity.id}:duplicate-id`);
+    seen.add(entity.id);
+  }
+}
+
+function validateReferences(
+  prefix: string,
+  references: readonly string[],
+  knownIds: ReadonlySet<string>,
+  selfId: string | undefined,
+  errors: string[],
+) {
+  const seen = new Set<string>();
+  for (const id of references) {
+    if (!knownIds.has(id)) errors.push(`${prefix}:missing:${id}`);
+    if (selfId === id) errors.push(`${prefix}:self-reference`);
+    if (seen.has(id)) errors.push(`${prefix}:duplicate:${id}`);
+    seen.add(id);
+  }
+}
+
+function validateEventCoverage(data: HistoryDataSet, errors: string[]) {
+  if (
+    !data.events.some(
+      (event) => event.startYear >= TIMELINE_MIN_YEAR && event.startYear < 907,
+    )
+  ) {
+    errors.push(`events:coverage-gap:${TIMELINE_MIN_YEAR}-906`);
+  }
+
+  for (let startYear = 907; startYear <= MAX_YEAR; startYear += 10) {
+    const endYear = Math.min(startYear + 9, MAX_YEAR);
+    if (
+      !data.events.some(
+        (event) => event.startYear >= startYear && event.startYear <= endYear,
+      )
+    ) {
+      errors.push(`events:coverage-gap:${startYear}-${endYear}`);
+    }
+  }
+
+  for (const year of CRITICAL_EVENT_YEARS) {
+    if (!data.events.some((event) => event.startYear === year)) {
+      errors.push(`events:coverage-gap:critical-year:${year}`);
+    }
+  }
+}
+
+function validatePersonRelations(
+  data: HistoryDataSet,
+  personIds: ReadonlySet<string>,
+  errors: string[],
+) {
+  const edges = new Set<string>();
+  for (const relation of data.personRelations) {
+    if (relation.sourcePersonId === relation.targetPersonId) {
+      errors.push(`person-relation:${relation.id}:self-reference`);
+    }
+    if (
+      !personIds.has(relation.sourcePersonId) ||
+      !personIds.has(relation.targetPersonId)
+    ) {
+      errors.push(`person-relation:${relation.id}:missing-person`);
+    }
+    if (
+      relation.startYear !== undefined &&
+      relation.endYear !== undefined &&
+      relation.startYear > relation.endYear
+    ) {
+      errors.push(`person-relation:${relation.id}:invalid-interval`);
+    }
+    const pair = [relation.sourcePersonId, relation.targetPersonId].sort().join("<->");
+    const edge = `${pair}:${relation.type}`;
+    if (edges.has(edge)) errors.push(`person-relation:${relation.id}:duplicate-edge`);
+    edges.add(edge);
+  }
+}
+
+function validateEventRelations(
+  data: HistoryDataSet,
+  eventIds: ReadonlySet<string>,
+  errors: string[],
+) {
+  const edges = new Set<string>();
+  for (const relation of data.eventRelations) {
+    if (relation.sourceEventId === relation.targetEventId) {
+      errors.push(`event-relation:${relation.id}:self-reference`);
+    }
+    if (
+      !eventIds.has(relation.sourceEventId) ||
+      !eventIds.has(relation.targetEventId)
+    ) {
+      errors.push(`event-relation:${relation.id}:missing-event`);
+    }
+    const edge = `${relation.sourceEventId}->${relation.targetEventId}`;
+    if (edges.has(edge)) errors.push(`event-relation:${relation.id}:duplicate-edge`);
+    edges.add(edge);
+  }
+}
+
+function validateDynastySuccessions(
+  data: HistoryDataSet,
+  dynastyIds: ReadonlySet<string>,
+  errors: string[],
+) {
+  const edges = new Set<string>();
+  for (const succession of data.dynastySuccessions) {
+    if (succession.predecessorId === succession.successorId) {
+      errors.push(`dynasty-succession:${succession.id}:self-reference`);
+    }
+    if (
+      !dynastyIds.has(succession.predecessorId) ||
+      !dynastyIds.has(succession.successorId)
+    ) {
+      errors.push(`dynasty-succession:${succession.id}:missing-dynasty`);
+    }
+    const edge = `${succession.predecessorId}->${succession.successorId}`;
+    if (edges.has(edge)) {
+      errors.push(`dynasty-succession:${succession.id}:duplicate-edge`);
+    }
+    edges.add(edge);
+  }
+  for (const edge of REQUIRED_SUCCESSION_EDGES) {
+    if (!edges.has(edge)) {
+      errors.push(`dynasty-successions:missing-required-edge:${edge}`);
+    }
+  }
 }
