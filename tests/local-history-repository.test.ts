@@ -47,30 +47,39 @@ describe("LocalHistoryRepository", () => {
           "emperor-zhaozong-killed",
           "white-horse-disaster",
         ],
-        consequences: ["li-cunxu-succeeds-jin", "battle-baixiang"],
+        consequences: [
+          "li-cunxu-succeeds-jin",
+          "battle-baixiang",
+          "chu-founded",
+          "former-shu-founded",
+          "min-founded",
+          "southern-han-founded",
+          "wuyue-founded",
+        ],
       },
       {
         id: "later-tang-founded",
         causes: ["weibo-joins-jin"],
-        consequences: ["later-liang-falls", "former-shu-falls"],
+        consequences: ["later-liang-falls", "former-shu-falls", "jingnan-founded"],
       },
       {
         id: "chai-rong-reforms",
-        causes: ["later-zhou-founded", "battle-gaoping"],
-        consequences: ["later-zhou-northern-campaign"],
+        causes: ["later-zhou-founded", "battle-gaoping", "liao-aids-northern-han-gaoping"],
+        consequences: ["later-zhou-northern-campaign", "chenqiao-mutiny", "later-zhou-southern-tang-war"],
       },
     ];
 
     for (const expected of expectations) {
       const event = await repository.getEvent(expected.id);
 
-      expect(event?.causeEventIds, `${expected.id}:causes`).toEqual(
-        expect.arrayContaining(expected.causes),
-      );
+      expect(
+        event && [...event.causeEventIds].sort(),
+        `${expected.id}:causes`,
+      ).toEqual([...expected.causes].sort());
       expect(
         event && [...event.consequenceEventIds].sort(),
         `${expected.id}:consequences`,
-      ).toEqual(expect.arrayContaining(expected.consequences));
+      ).toEqual([...expected.consequences].sort());
     }
   });
 });

@@ -327,7 +327,10 @@ describe("expanded northern history corpus", () => {
     const liYu = people.find((person) => person.id === "li-yu")!;
     const liuYan = people.find((person) => person.id === "liu-yan")!;
 
-    expect(liYu.sourceRefs).toContain("《李煜死因叙事的文献分歧研究》");
+    expect(liYu.sourceRefs).toContain(
+      "方震华〈悲剧故事的形成——李煜之死与相关传说〉，《臺大文史哲學報》第102期（2024），页1–23，DOI:10.6258/bcla.202411_(102).01",
+    );
+    expect(liYu.sourceRefs).not.toContain("《李煜死因叙事的文献分歧研究》");
     expect(liuYan.disputedNote).toBeUndefined();
   });
 
