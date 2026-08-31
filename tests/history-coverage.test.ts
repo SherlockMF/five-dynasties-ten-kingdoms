@@ -178,6 +178,9 @@ describe("expanded northern history corpus", () => {
     expect(fall.causeEventIds).toContain("battle-shiling-pass");
     expect(fall.consequenceEventIds).not.toContain("battle-shiling-pass");
     expect(battle.locationIds).toEqual([]);
+    expect(`${battle.summary}${battle.background}${battle.process}${battle.result}${battle.impact}`)
+      .not.toContain("未能进入北汉境内");
+    expect(battle.summary).toContain("未能抵达太原解围");
   });
 
   it("uses only historically applicable locations for corrected campaigns", () => {
