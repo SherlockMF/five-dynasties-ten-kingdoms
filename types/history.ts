@@ -1,6 +1,17 @@
 import type { Geometry } from "geojson";
 
 export type VerificationStatus = "verified" | "reviewed" | "illustrative";
+export type ContentOrigin =
+  | "transcript-core"
+  | "historical-extension"
+  | "mixed";
+export type TranscriptEpisodeId = 1 | 2 | 3 | 4 | 5 | 6;
+export type NarrativeTrack =
+  | "late-tang"
+  | "five-dynasties"
+  | "ten-kingdoms"
+  | "liao-north"
+  | "song-unification";
 export type DynastyCategory =
   | "five-dynasties"
   | "ten-kingdoms"
@@ -17,11 +28,14 @@ export type PersonRelationType =
   | "ally"
   | "enemy"
   | "ruler-subject"
-  | "political";
+  | "political"
+  | "succession";
 
 export interface SourcedEntity {
   sourceRefs: string[];
   verificationStatus: VerificationStatus;
+  contentOrigin: ContentOrigin;
+  transcriptEpisodeIds: TranscriptEpisodeId[];
   disputedNote?: string;
 }
 

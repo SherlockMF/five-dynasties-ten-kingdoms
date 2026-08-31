@@ -1,12 +1,31 @@
-import type { HistoricalRegion } from "@/types/history";
+import type { HistoricalRegion, TranscriptEpisodeId } from "@/types/history";
 
 const sourceRefs = ["中国历史地图集（MVP 简化示意）"];
 const base = { temporalBasis: "year-end" as const, accuracyLevel: "illustrative" as const, sourceRefs, verificationStatus: "illustrative" as const, version: "mvp-1" };
+const transcriptEpisodesByDynasty: Record<string, TranscriptEpisodeId[]> = {
+  "later-liang": [2, 3],
+  "later-tang": [3, 4],
+  "later-jin": [4, 5],
+  "later-han": [5],
+  "later-zhou": [5, 6],
+  "northern-song": [6],
+  liao: [3, 4, 5, 6],
+  "northern-han": [5, 6],
+};
+const extension = {
+  contentOrigin: "historical-extension" as const,
+  transcriptEpisodeIds: [],
+};
 
 type RegionInput = Pick<HistoricalRegion, "dynastyId" | "validFromYear" | "validToYearExclusive" | "labelPoint"> & { coordinates: number[][] };
 
 function region(input: RegionInput): HistoricalRegion {
-  return { id: `${input.dynastyId}-${input.validFromYear}`, dynastyId: input.dynastyId, validFromYear: input.validFromYear, validToYearExclusive: input.validToYearExclusive, labelPoint: input.labelPoint, geometry: { type: "Polygon", coordinates: [input.coordinates] }, ...base };
+  const transcriptEpisodeIds = transcriptEpisodesByDynasty[input.dynastyId];
+  const provenance = transcriptEpisodeIds
+    ? { contentOrigin: "mixed" as const, transcriptEpisodeIds }
+    : extension;
+
+  return { id: `${input.dynastyId}-${input.validFromYear}`, dynastyId: input.dynastyId, validFromYear: input.validFromYear, validToYearExclusive: input.validToYearExclusive, labelPoint: input.labelPoint, geometry: { type: "Polygon", coordinates: [input.coordinates] }, ...base, ...provenance };
 }
 
 const north = [[104, 32], [111, 31], [118, 33], [119, 38], [115, 40], [108, 40], [103, 36], [104, 32]];

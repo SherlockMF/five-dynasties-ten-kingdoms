@@ -6,6 +6,7 @@ export const relationLabels: Record<PersonRelationType, string> = {
   enemy: "敌人",
   "ruler-subject": "君臣",
   political: "政治关系",
+  succession: "继承",
 };
 
 export function RelationLegend() {
