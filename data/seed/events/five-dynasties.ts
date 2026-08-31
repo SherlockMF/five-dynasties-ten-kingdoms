@@ -157,7 +157,7 @@ export const fiveDynastiesEvents: HistoricalEvent[] = [
     sourceRefs: ["《资治通鉴》卷二百八十《后晋纪一》", "《新五代史》卷八《晋本纪第八》"], verificationStatus: "reviewed", ...mixed([4]),
   },
   {
-    id: "later-tang-falls", title: "后唐灭亡", eventType: "collapse", tracks: fiveDynasties, startYear: 936,
+    id: "later-tang-falls", title: "后唐灭亡", eventType: "collapse", tracks: fiveDynastiesAndLiao, startYear: 936,
     summary: "契丹与石敬瑭联军突破后唐防线，李从珂在洛阳自焚，后唐灭亡。",
     background: "太原之围失败后，后唐军队发生瓦解，将领接连降于石敬瑭。",
     process: "石敬瑭军向洛阳推进，后唐末帝失去外援与退路，最终举族自焚。",

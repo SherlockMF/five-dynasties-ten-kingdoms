@@ -65,6 +65,17 @@ describe("expanded northern history corpus", () => {
     }
   });
 
+  it("classifies every Liao-related event on the northern narrative track", () => {
+    const liaoRelatedEvents = events.filter((event) =>
+      event.dynastyIds.includes("liao"),
+    );
+
+    expect(liaoRelatedEvents.length).toBeGreaterThan(0);
+    for (const event of liaoRelatedEvents) {
+      expect(event.tracks, event.id).toContain("liao-north");
+    }
+  });
+
   it("contains the twenty-eight northern people exactly once", () => {
     expect(people).toHaveLength(28);
     expect(people.some((person) => person.id === "li-keyong")).toBe(true);
