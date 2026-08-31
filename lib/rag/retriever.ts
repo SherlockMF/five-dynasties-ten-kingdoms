@@ -3,11 +3,20 @@ import "server-only";
 import type { AiContext } from "@/types/ai";
 import type { TranscriptChunk } from "@/types/knowledge";
 
+export type RetrievalContext = Partial<Omit<AiContext, "currentYear">> & {
+  currentYear?: number;
+  year?: number;
+};
+
 export interface RetrievalResult {
   chunks: Omit<TranscriptChunk, "text">[];
   excerptsForServerPrompt: string[];
 }
 
 export interface KnowledgeRetriever {
-  retrieve(query: string, context: AiContext, limit?: number): Promise<RetrievalResult>;
+  retrieve(
+    query: string,
+    context: AiContext | RetrievalContext,
+    limit?: number,
+  ): Promise<RetrievalResult>;
 }

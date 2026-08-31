@@ -2,7 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { metadata } from "@/app/layout";
+import NotesPage, { metadata as notesMetadata } from "@/app/notes/page";
 import TimelineLoading from "@/app/timeline/loading";
+import { MobileNav } from "@/components/layout/mobile-nav";
 import { SiteHeader } from "@/components/layout/site-header";
 import { TimelinePeriodLabel } from "@/features/timeline/timeline-period-label";
 
@@ -22,11 +24,49 @@ describe("SiteHeader", () => {
       "href",
       "/people",
     );
-    expect(screen.getByRole("link", { name: "笔记" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
       "href",
       "/notes",
     );
+    expect(
+      screen
+        .getByRole("navigation", { name: "主要导航" })
+        .querySelectorAll("a"),
+    ).toHaveLength(4);
+    expect(
+      screen
+        .getByRole("navigation", { name: "主要导航" })
+        .textContent?.replace(/\s/g, ""),
+    ).toBe("时间地图人物资料");
     expect(screen.getByText("875—979")).toBeVisible();
+  });
+});
+
+describe("MobileNav", () => {
+  it("keeps five destinations and labels the supporting material entry", () => {
+    render(<MobileNav />);
+
+    const navigation = screen.getByRole("navigation", {
+      name: "移动端主要导航",
+    });
+    expect(navigation.querySelectorAll("a")).toHaveLength(5);
+    expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
+      "href",
+      "/notes",
+    );
+  });
+});
+
+describe("NotesPage", () => {
+  it("presents notes as a method and source entry rather than the main history", () => {
+    render(<NotesPage />);
+
+    expect(notesMetadata.title).toBe("资料与校勘");
+    expect(
+      screen.getByRole("heading", { name: "资料与校勘" }),
+    ).toBeVisible();
+    expect(screen.getByText(/方法与出处入口/)).toBeVisible();
+    expect(screen.getByText(/时间线、地图、人物与事件/)).toBeVisible();
   });
 });
 

@@ -4,7 +4,7 @@ const links = [
   { href: "/timeline", label: "时间" },
   { href: "/map", label: "地图" },
   { href: "/people", label: "人物" },
-  { href: "/notes", label: "笔记" },
+  { href: "/notes", label: "资料" },
 ];
 
 export function SiteHeader() {

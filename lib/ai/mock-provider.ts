@@ -1,10 +1,10 @@
 import type { LlmProvider } from "./provider";
-import type { AiAnswer, AiRequest, AiStreamEvent } from "@/types/ai";
+import type { AiAnswer, AiProviderRequest, AiStreamEvent } from "@/types/ai";
 
 const source = { sourceId: "mvp-history-seed", title: "MVP 历史事实种子库" };
 
 export class MockLlmProvider implements LlmProvider {
-  async generateAnswer(input: AiRequest): Promise<AiAnswer> {
+  async generateAnswer(input: AiProviderRequest): Promise<AiAnswer> {
     const personInContext = input.context.selectedPerson === "shi-jingtang";
     const knownQuestion =
       /石敬瑭|后晋|燕云|936/.test(input.message) ||
@@ -18,7 +18,7 @@ export class MockLlmProvider implements LlmProvider {
     return { answer: "石敬瑭在后唐末年受到朝廷猜忌，河东军权又使他成为潜在威胁。936 年，他在太原起兵并向契丹求援。援助帮助他建立后晋，但也让燕云十六州转归辽，改变了中原北方的长期战略格局。这里应把他的选择理解为当时君臣冲突、军事压力与外援条件共同作用的结果。", provenance: "knowledge-base", relatedPeople: ["shi-jingtang"], relatedEvents: ["shi-jingtang-rebellion", "founding-later-jin", "sixteen-prefectures-ceded"], relatedYears: [936], sources: [source] };
   }
 
-  async *streamAnswer(input: AiRequest): AsyncIterable<AiStreamEvent> {
+  async *streamAnswer(input: AiProviderRequest): AsyncIterable<AiStreamEvent> {
     const answer = await this.generateAnswer(input);
     yield { type: "text", value: answer.answer };
     yield { type: "complete", value: answer };

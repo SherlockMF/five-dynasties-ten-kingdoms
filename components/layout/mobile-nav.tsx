@@ -6,7 +6,7 @@ const items = [
   { href: "/timeline", label: "时间", icon: Clock3 },
   { href: "/map", label: "地图", icon: Map },
   { href: "/people", label: "人物", icon: Users },
-  { href: "/notes", label: "笔记", icon: BookOpenText },
+  { href: "/notes", label: "资料", icon: BookOpenText },
 ];
 
 export function MobileNav() {

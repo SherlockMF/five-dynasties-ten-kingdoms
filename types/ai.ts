@@ -12,6 +12,11 @@ export interface AiRequest {
   allowGeneralKnowledge?: boolean;
 }
 
+/** Internal server-to-provider request. This is not accepted from API clients. */
+export interface AiProviderRequest extends AiRequest {
+  retrievedExcerpts?: string[];
+}
+
 export interface AiSource {
   sourceId: string;
   title: string;
