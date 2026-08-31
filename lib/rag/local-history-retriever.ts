@@ -164,7 +164,12 @@ function scoreEvent(
   queryYears: number[],
   pureYearQuery: boolean,
   context: LocalHistoryRetrievalContext,
-): { score: number; bodyField?: BodyField; matchedYears: number[] } {
+): {
+  score: number;
+  bodyField?: BodyField;
+  matchedYears: number[];
+  matchKind?: RetrievedEvidence["matchKind"];
+} {
   const bodyQuery = narrativeQuery(query, queryYears);
   const title = normalize(event.title);
   const strongTitleRank = titleMatchRank(query, event.title);
@@ -226,6 +231,13 @@ function scoreEvent(
           ? 1
           : 0;
   if (relevanceLevel === 0) return { score: 0, matchedYears: [] };
+  const matchKind: RetrievedEvidence["matchKind"] = titleRank
+    ? "title"
+    : entityHits
+      ? "entity"
+      : yearHit
+        ? "year"
+        : "body";
 
   const contextYear = context.year ?? context.currentYear;
   let contextBoost = 0;
@@ -261,6 +273,7 @@ function scoreEvent(
     bodyField:
       bodyMatch >= MIN_BODY_MATCH_LENGTH ? bestBodyMatch.field : undefined,
     matchedYears,
+    matchKind,
   };
 }
 
@@ -282,6 +295,8 @@ function excerptFor(event: HistoricalEvent, bodyField?: BodyField): string {
 
 function evidenceFor(
   event: HistoricalEvent,
+  matchKind: RetrievedEvidence["matchKind"],
+  matchedQueryYears: number[],
   bodyField?: BodyField,
 ): RetrievedEvidence {
   return {
@@ -301,6 +316,8 @@ function evidenceFor(
     disputedNote: event.disputedNote?.trim()
       ? bounded(event.disputedNote.trim(), 300)
       : undefined,
+    matchKind,
+    matchedQueryYears: [...matchedQueryYears],
   };
 }
 
@@ -341,7 +358,13 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
           ),
         };
       })
-      .filter((match) => match.score > 0)
+      .filter(
+        (
+          match,
+        ): match is typeof match & {
+          matchKind: RetrievedEvidence["matchKind"];
+        } => match.score > 0 && Boolean(match.matchKind),
+      )
       .sort((left, right) =>
         right.score - left.score ||
         left.event.startYear - right.event.startYear ||
@@ -387,8 +410,8 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
       excerptsForServerPrompt: matches.map(({ event, bodyField }) =>
         excerptFor(event, bodyField),
       ),
-      evidence: matches.map(({ event, bodyField }) =>
-        evidenceFor(event, bodyField),
+      evidence: matches.map(({ event, matchKind, matchedYears, bodyField }) =>
+        evidenceFor(event, matchKind, matchedYears, bodyField),
       ),
     };
   }

@@ -19,6 +19,13 @@ const MAX_EVIDENCE_SOURCE_REFS = 3;
 const MAX_EVIDENCE_SOURCE_REF_LENGTH = 240;
 const MAX_EVIDENCE_MARKER_LENGTH = 4;
 const MAX_EVIDENCE_DISPUTE_LENGTH = 300;
+const MAX_EVIDENCE_MATCHED_YEARS = 5;
+const EVIDENCE_MATCH_KINDS: RetrievedEvidence["matchKind"][] = [
+  "title",
+  "entity",
+  "year",
+  "body",
+];
 const SERVER_TIMEOUT_MS = 5_000;
 
 const requestSchema = z.object({
@@ -64,7 +71,22 @@ function boundRetrievedEvidence(
       )
       .filter(Boolean)
       .slice(0, MAX_EVIDENCE_SOURCE_REFS);
-    if (!eventId || !title || !summary || !sourceRefs.length) return [];
+    const matchKind = EVIDENCE_MATCH_KINDS.includes(item.matchKind)
+      ? item.matchKind
+      : undefined;
+    const matchedQueryYears = [
+      ...new Set(
+        item.matchedQueryYears.filter(
+          (year) =>
+            Number.isInteger(year) &&
+            year >= TIMELINE_MIN_YEAR &&
+            year <= MAX_YEAR,
+        ),
+      ),
+    ].slice(0, MAX_EVIDENCE_MATCHED_YEARS);
+    if (!eventId || !title || !summary || !sourceRefs.length || !matchKind) {
+      return [];
+    }
 
     const matchedLabel = item.matchedEvidence?.label
       .trim()
@@ -89,6 +111,8 @@ function boundRetrievedEvidence(
           item.disputedNote
             ?.trim()
             .slice(0, MAX_EVIDENCE_DISPUTE_LENGTH) || undefined,
+        matchKind,
+        matchedQueryYears,
       },
     ];
   });

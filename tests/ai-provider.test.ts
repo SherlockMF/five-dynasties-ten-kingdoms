@@ -66,6 +66,8 @@ describe("MockLlmProvider", () => {
           sourceRefs: ["《续资治通鉴长编》卷一", "《宋史》卷一《太祖本纪一》"],
           marker: "¹²³",
           disputedNote: "预谋程度史料不足。",
+          matchKind: "title",
+          matchedQueryYears: [],
         },
       ],
     });
@@ -105,6 +107,8 @@ describe("MockLlmProvider", () => {
       summary: `${title}摘要`,
       sourceRefs: [`《${title}书目》`],
       marker: "²",
+      matchKind: "entity" as const,
+      matchedQueryYears: [],
     }));
 
     const answer = await new MockLlmProvider().generateAnswer({
@@ -116,6 +120,44 @@ describe("MockLlmProvider", () => {
     expect(answer.relatedEvents).toEqual(["first", "second"]);
     expect(answer.relatedYears).toEqual([936, 960]);
     expect(answer.sources).toHaveLength(2);
+    expect(answer.answer).not.toContain("高平");
+  });
+
+  it("does not append weaker entity evidence after a strong title match", async () => {
+    const answer = await new MockLlmProvider().generateAnswer({
+      message: "陈桥兵变是不是赵匡胤预谋",
+      context,
+      retrievedEvidence: [
+        {
+          eventId: "chenqiao-mutiny",
+          sourceId: "history-event:chenqiao-mutiny",
+          title: "陈桥兵变、北宋建立",
+          year: 960,
+          summary: "陈桥拥立及北宋建立。",
+          sourceRefs: ["《宋史》卷一"],
+          marker: "¹²³",
+          disputedNote: "预谋程度史料不足。",
+          matchKind: "title",
+          matchedQueryYears: [],
+        },
+        {
+          eventId: "battle-gaoping",
+          sourceId: "history-event:battle-gaoping",
+          title: "高平之战",
+          year: 954,
+          summary: "赵匡胤参与高平之战。",
+          sourceRefs: ["《资治通鉴》卷二百九十一"],
+          marker: "¹²",
+          matchKind: "entity",
+          matchedQueryYears: [],
+        },
+      ],
+    });
+
+    expect(answer.relatedEvents).toEqual(["chenqiao-mutiny"]);
+    expect(answer.sources.map((source) => source.sourceId)).toEqual([
+      "history-event:chenqiao-mutiny",
+    ]);
     expect(answer.answer).not.toContain("高平");
   });
 

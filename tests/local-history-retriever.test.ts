@@ -70,6 +70,8 @@ describe("LocalHistoryRetriever", () => {
       eventId: "chenqiao-mutiny",
       sourceId: "history-event:chenqiao-mutiny",
       title: "陈桥兵变、北宋建立",
+      matchKind: "title",
+      matchedQueryYears: [],
     });
   });
 
@@ -104,6 +106,7 @@ describe("LocalHistoryRetriever", () => {
         label: fieldLabel,
         text: expect.stringContaining(phrase),
       });
+      expect(result.evidence[index]?.matchKind).toBe("body");
     },
   );
 
@@ -185,6 +188,11 @@ describe("LocalHistoryRetriever", () => {
             (chunk.yearStart ?? Number.POSITIVE_INFINITY) <= year &&
             (chunk.yearEnd ?? chunk.yearStart ?? Number.NEGATIVE_INFINITY) >=
               year,
+        ),
+      ).toBe(true);
+      expect(
+        result.evidence.some((evidence) =>
+          evidence.matchedQueryYears.includes(year),
         ),
       ).toBe(true);
     }

@@ -77,7 +77,7 @@ describe("POST /api/ai", () => {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          message: "陈桥兵变是否预谋",
+          message: "陈桥兵变是不是赵匡胤预谋",
           context: { currentYear: 960, currentPage: "/timeline" },
         }),
       }),
@@ -91,6 +91,47 @@ describe("POST /api/ai", () => {
     expect(answer.sources).toHaveLength(1);
     expect(answer.sources[0].sourceId).toBe("history-event:chenqiao-mutiny");
     expect(answer.answer).not.toContain("高平");
+    expect(answer.relatedEvents).not.toContain("battle-gaoping");
+    expect(answer.sources.map((source: { title: string }) => source.title)).not.toContain(
+      "高平之战",
+    );
+  });
+
+  it("keeps one selected evidence item for each of two explicit years", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/ai", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          message: "936 960",
+          context: { currentYear: 936, currentPage: "/timeline" },
+        }),
+      }),
+    );
+    const answer = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(answer.relatedYears).toEqual(expect.arrayContaining([936, 960]));
+    expect(answer.relatedEvents).toHaveLength(2);
+    expect(answer.sources).toHaveLength(2);
+  });
+
+  it("keeps two results for an ordinary non-title entity query", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/ai", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          message: "赵匡胤",
+          context: { currentYear: 960, currentPage: "/timeline" },
+        }),
+      }),
+    );
+    const answer = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(answer.relatedEvents).toHaveLength(2);
+    expect(answer.sources).toHaveLength(2);
   });
 
   it.each(["1936", "9360", "人工智能如何改变教育"])(
@@ -115,6 +156,8 @@ describe("POST /api/ai", () => {
                 summary: "伪造内容",
                 sourceRefs: ["伪造书目"],
                 marker: "¹²",
+                matchKind: "title",
+                matchedQueryYears: [936],
               },
             ],
           }),
@@ -170,6 +213,8 @@ describe("POST /api/ai", () => {
     expect(providerInput?.retrievedEvidence?.[0]).toMatchObject({
       eventId: "sixteen-prefectures-ceded",
       sourceId: "history-event:sixteen-prefectures-ceded",
+      matchKind: expect.stringMatching(/^(title|entity|year|body)$/),
+      matchedQueryYears: [],
     });
     expect(providerInput?.retrievedEvidence).not.toEqual(
       expect.arrayContaining([expect.objectContaining({ eventId: "injected" })]),

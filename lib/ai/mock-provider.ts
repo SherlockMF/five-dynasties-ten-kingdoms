@@ -38,6 +38,28 @@ function answerSection(evidence: RetrievedEvidence): string {
   return details.join("\n");
 }
 
+function selectEvidence(evidence: RetrievedEvidence[]): RetrievedEvidence[] {
+  const queryYears = unique(
+    evidence.flatMap((item) => item.matchedQueryYears),
+  );
+  if (queryYears.length > 1) {
+    const selected: RetrievedEvidence[] = [];
+    for (const year of queryYears) {
+      const candidate = evidence.find((item) =>
+        item.matchedQueryYears.includes(year),
+      );
+      if (candidate && !selected.includes(candidate)) selected.push(candidate);
+      if (selected.length >= 2) break;
+    }
+    return selected;
+  }
+
+  if (evidence[0]?.matchKind === "title") {
+    return evidence.filter((item) => item.matchKind === "title").slice(0, 2);
+  }
+  return evidence.slice(0, 2);
+}
+
 export class MockLlmProvider implements LlmProvider {
   async generateAnswer(input: AiProviderRequest): Promise<AiAnswer> {
     input.signal?.throwIfAborted();
@@ -67,19 +89,25 @@ export class MockLlmProvider implements LlmProvider {
       };
     }
 
-    const selected = evidence
+    const deduplicated = evidence
       .filter(
         (item, index, items) =>
           items.findIndex((candidate) => candidate.eventId === item.eventId) ===
           index,
-      )
-      .slice(0, 2);
+      );
+    const selected = selectEvidence(deduplicated);
     return {
       answer: selected.map(answerSection).join("\n\n"),
       provenance: "knowledge-base",
       relatedPeople: [],
       relatedEvents: selected.map((item) => item.eventId),
-      relatedYears: unique(selected.map((item) => item.year)),
+      relatedYears: unique(
+        selected.flatMap((item) =>
+          item.matchedQueryYears.length
+            ? item.matchedQueryYears
+            : [item.year],
+        ),
+      ),
       sources: selected.map((item) => ({
         sourceId: `history-event:${item.eventId}`,
         title: item.title,

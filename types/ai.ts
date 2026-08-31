@@ -26,6 +26,8 @@ export interface RetrievedEvidence {
   sourceRefs: string[];
   marker: string;
   disputedNote?: string;
+  matchKind: "title" | "entity" | "year" | "body";
+  matchedQueryYears: number[];
 }
 
 /** Internal server-to-provider request. This is not accepted from API clients. */
