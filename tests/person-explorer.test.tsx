@@ -15,6 +15,7 @@ const basePerson = {
   deathYear: 960,
   dynastyIds: ["later-zhou"],
   roles: ["文臣"],
+  roleCategories: ["official"],
   summary: "测试人物摘要",
   biography: "测试人物正文",
   sourceRefs: ["测试史料"],
@@ -187,6 +188,7 @@ describe("PersonExplorer", () => {
     render(<PersonDetailPanel person={{ ...basePerson, ...provenance }} />);
 
     expect(screen.getByLabelText(label)).toHaveTextContent(marker);
+    expect(screen.getByLabelText(label)).toHaveClass("text-paper");
     expect(
       screen.getByText("¹ 六集主线 · ² 史料扩展 · ³ 存在异说"),
     ).toBeVisible();

@@ -1,5 +1,9 @@
 import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
-import type { HistoryDataSet, SourcedEntity } from "@/types/history";
+import type {
+  HistoryDataSet,
+  PersonRoleCategory,
+  SourcedEntity,
+} from "@/types/history";
 
 type EntityWithId = SourcedEntity & { id: string };
 
@@ -25,6 +29,13 @@ const COLLECTION_LIMITS = {
   personRelations: [45, Number.POSITIVE_INFINITY],
   eventRelations: [25, Number.POSITIVE_INFINITY],
 } as const;
+
+const PERSON_ROLE_CATEGORIES = new Set<PersonRoleCategory>([
+  "ruler",
+  "general",
+  "official",
+  "cultural",
+]);
 
 function isIntegerYear(value: unknown): value is number {
   return (
@@ -131,6 +142,26 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
         errors.push(`person:${person.id}:dynasty:duplicate:${id}`);
       }
       seenDynastyIds.add(id);
+    }
+
+    const roleCategories: unknown = person.roleCategories;
+    if (!Array.isArray(roleCategories) || !roleCategories.length) {
+      errors.push(`person:${person.id}:missing-role-category`);
+    } else {
+      const seenRoleCategories = new Set<unknown>();
+      for (const roleCategory of roleCategories) {
+        if (!PERSON_ROLE_CATEGORIES.has(roleCategory as PersonRoleCategory)) {
+          errors.push(
+            `person:${person.id}:invalid-role-category:${formatErrorValue(roleCategory)}`,
+          );
+        }
+        if (seenRoleCategories.has(roleCategory)) {
+          errors.push(
+            `person:${person.id}:duplicate-role-category:${formatErrorValue(roleCategory)}`,
+          );
+        }
+        seenRoleCategories.add(roleCategory);
+      }
     }
   }
 

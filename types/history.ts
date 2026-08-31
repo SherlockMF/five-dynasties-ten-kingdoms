@@ -50,6 +50,11 @@ export type PersonRelationType =
   | "ruler-subject"
   | "political"
   | "succession";
+export type PersonRoleCategory =
+  | "ruler"
+  | "general"
+  | "official"
+  | "cultural";
 
 export type SourcedEntity = ContentProvenance & {
   sourceRefs: string[];
@@ -79,6 +84,7 @@ export type Person = SourcedEntity & {
   deathYear?: number;
   dynastyIds: string[];
   roles: string[];
+  roleCategories: PersonRoleCategory[];
   summary: string;
   biography?: string;
 };

@@ -253,6 +253,27 @@ describe("history seed data", () => {
     );
   });
 
+  it("validates structured person role categories at runtime", () => {
+    const person = seedData.people[0];
+    const withRoleCategories = (roleCategories: unknown) => ({
+      ...seedData,
+      people: [
+        { ...person, roleCategories },
+        ...seedData.people.slice(1),
+      ] as typeof seedData.people,
+    });
+
+    expect(validateHistoryData(withRoleCategories([]))).toContain(
+      `person:${person.id}:missing-role-category`,
+    );
+    expect(
+      validateHistoryData(withRoleCategories(["ruler", "ruler"])),
+    ).toContain(`person:${person.id}:duplicate-role-category:ruler`);
+    expect(
+      validateHistoryData(withRoleCategories(["political"])),
+    ).toContain(`person:${person.id}:invalid-role-category:political`);
+  });
+
   it("validates event tracks and relation graph invariants", () => {
     expect(
       validateHistoryData(

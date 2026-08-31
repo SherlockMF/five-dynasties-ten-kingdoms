@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { Dynasty, Person } from "@/types/history";
+import type { Dynasty, Person, PersonRoleCategory } from "@/types/history";
 
 export const PERSON_CATEGORY_FILTERS = [
   { id: "all", label: "全部", accessibleName: "全部人物" },
@@ -15,25 +15,17 @@ export const PERSON_ROLE_FILTERS = [
   { id: "ruler", label: "君主" },
   { id: "general", label: "将领" },
   { id: "official", label: "文臣" },
-  { id: "culture", label: "文化人物" },
+  { id: "cultural", label: "文化人物" },
 ] as const;
 
 export type PersonCategoryFilter =
   (typeof PERSON_CATEGORY_FILTERS)[number]["id"];
-export type PersonRoleFilter = (typeof PERSON_ROLE_FILTERS)[number]["id"];
+export type PersonRoleFilter = PersonRoleCategory;
 
 export interface PersonFilterState {
   category: PersonCategoryFilter;
   role: PersonRoleFilter | null;
 }
-
-const ROLE_PATTERNS: Record<PersonRoleFilter, RegExp> = {
-  ruler:
-    /皇帝|国主|国王|可汗|太祖|太宗|世宗|建立者|末主|后主|隐帝|末帝|王$/,
-  general: /将领|统帅|节度使|军首领|起事军领袖|藩镇/,
-  official: /宰相|文臣|谋臣|幕僚|枢密|权臣|重臣|战略规划者/,
-  culture: /词人|诗人|文人|文学|书法|画家|文化/,
-};
 
 function matchesCategory(
   person: Person,
@@ -53,7 +45,7 @@ function matchesCategory(
 
 function matchesRole(person: Person, role: PersonRoleFilter | null) {
   if (!role) return true;
-  return person.roles.some((personRole) => ROLE_PATTERNS[role].test(personRole));
+  return person.roleCategories.includes(role);
 }
 
 export function filterPeople(

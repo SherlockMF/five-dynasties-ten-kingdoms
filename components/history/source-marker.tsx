@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import type { ContentProvenance, SourcedEntity } from "@/types/history";
 
 type SourceMarkerEntity = ContentProvenance &
@@ -37,14 +38,24 @@ function getSourceMarkerLabel(entity: SourceMarkerEntity): string {
 interface SourceMarkerProps {
   entity: SourceMarkerEntity;
   showLegend?: boolean;
+  variant?: "default" | "inverse";
 }
 
-export function SourceMarker({ entity, showLegend = false }: SourceMarkerProps) {
+export function SourceMarker({
+  entity,
+  showLegend = false,
+  variant = "default",
+}: SourceMarkerProps) {
   const label = getSourceMarkerLabel(entity);
   const marker = (
     <sup
       aria-label={label}
-      className="cursor-help text-[0.7em] font-semibold text-cinnabar"
+      className={cn(
+        "cursor-help rounded-sm text-[0.7em] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+        variant === "inverse"
+          ? "text-paper focus-visible:ring-paper focus-visible:ring-offset-ink"
+          : "text-cinnabar focus-visible:ring-cinnabar focus-visible:ring-offset-paper",
+      )}
       tabIndex={0}
       title={label}
     >
@@ -59,7 +70,12 @@ export function SourceMarker({ entity, showLegend = false }: SourceMarkerProps) 
   return (
     <span className="inline-flex items-baseline gap-2">
       {marker}
-      <span className="text-xs text-muted">
+      <span
+        className={cn(
+          "text-xs",
+          variant === "inverse" ? "text-paper" : "text-ink/75",
+        )}
+      >
         ¹ 六集主线 · ² 史料扩展 · ³ 存在异说
       </span>
     </span>
