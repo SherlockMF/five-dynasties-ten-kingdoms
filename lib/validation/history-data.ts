@@ -1,4 +1,5 @@
 import type { HistoryDataSet } from "@/types/history";
+import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 
 export function validateHistoryData(data: HistoryDataSet): string[] {
   const errors: string[] = [];
@@ -15,7 +16,7 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
     for (const id of person.dynastyIds) if (!dynastyIds.has(id)) errors.push(`person:${person.id}:missing-dynasty:${id}`);
   }
   for (const event of data.events) {
-    if (event.startYear < 907 || event.startYear > 960) errors.push(`event:${event.id}:year-out-of-range`);
+    if (event.startYear < TIMELINE_MIN_YEAR || event.startYear > MAX_YEAR) errors.push(`event:${event.id}:year-out-of-range`);
     for (const id of event.personIds) if (!personIds.has(id)) errors.push(`event:${event.id}:missing-person:${id}`);
     for (const id of event.dynastyIds) if (!dynastyIds.has(id)) errors.push(`event:${event.id}:missing-dynasty:${id}`);
     for (const id of event.locationIds) if (!locationIds.has(id)) errors.push(`event:${event.id}:missing-location:${id}`);

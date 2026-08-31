@@ -3,10 +3,11 @@ import { z } from "zod";
 
 import { MockLlmProvider } from "@/lib/ai/mock-provider";
 import { aiAnswerSchema } from "@/lib/ai/validate-answer";
+import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 
 const requestSchema = z.object({
   message: z.string().trim().min(1).max(1000),
-  context: z.object({ currentYear: z.number().int().min(907).max(960), selectedDynasty: z.string().optional(), selectedPerson: z.string().optional(), selectedEvent: z.string().optional(), currentPage: z.string().max(200) }),
+  context: z.object({ currentYear: z.number().int().min(TIMELINE_MIN_YEAR).max(MAX_YEAR), selectedDynasty: z.string().optional(), selectedPerson: z.string().optional(), selectedEvent: z.string().optional(), currentPage: z.string().max(200) }),
   allowGeneralKnowledge: z.boolean().optional(),
 });
 

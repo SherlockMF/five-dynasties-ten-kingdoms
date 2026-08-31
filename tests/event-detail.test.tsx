@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { EventDetail } from "@/features/events/event-detail";
+import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import { LocalHistoryRepository } from "@/lib/repositories/local-history-repository";
 
 describe("EventDetail", () => {
@@ -9,7 +10,10 @@ describe("EventDetail", () => {
     const repository = new LocalHistoryRepository();
     const event = await repository.getEvent("founding-later-jin");
     const relations = await repository.getEventRelations("founding-later-jin");
-    const relatedEvents = await repository.getEventsInRange(907, 960);
+    const relatedEvents = await repository.getEventsInRange(
+      TIMELINE_MIN_YEAR,
+      MAX_YEAR,
+    );
 
     if (!event) throw new Error("fixture event missing");
     render(

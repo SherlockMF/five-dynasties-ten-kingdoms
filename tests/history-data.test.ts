@@ -50,6 +50,29 @@ describe("history seed data", () => {
     expect(validateHistoryData(seedData)).toEqual([]);
   });
 
+  it("validates event years against 875 through 979", () => {
+    const withStartYear = (startYear: number) => ({
+      ...seedData,
+      events: [
+        { ...seedData.events[0], startYear },
+        ...seedData.events.slice(1),
+      ],
+    });
+
+    expect(validateHistoryData(withStartYear(875))).not.toContain(
+      `event:${seedData.events[0].id}:year-out-of-range`,
+    );
+    expect(validateHistoryData(withStartYear(979))).not.toContain(
+      `event:${seedData.events[0].id}:year-out-of-range`,
+    );
+    expect(validateHistoryData(withStartYear(874))).toContain(
+      `event:${seedData.events[0].id}:year-out-of-range`,
+    );
+    expect(validateHistoryData(withStartYear(980))).toContain(
+      `event:${seedData.events[0].id}:year-out-of-range`,
+    );
+  });
+
   it("represents northern succession and southern coexistence", () => {
     const northern = seedData.dynasties.filter(
       (dynasty) => dynasty.category === "five-dynasties",

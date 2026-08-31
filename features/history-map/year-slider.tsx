@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 
+import { useHistoryStore } from "@/features/history-state/history-store";
 import {
   clampMapYear,
   MAP_MIN_YEAR,
   MAX_YEAR,
-  useHistoryStore,
-} from "@/features/history-state/history-store";
+} from "@/lib/history/year-range";
 
 export function YearSlider() {
   const year = useHistoryStore((state) => state.currentYear);

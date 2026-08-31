@@ -1,6 +1,6 @@
-import { getHistoricalPeriod } from "@/features/history-state/history-store";
+import { getHistoricalPeriod } from "@/lib/history/year-range";
 
-export { getHistoricalPeriod } from "@/features/history-state/history-store";
+export { getHistoricalPeriod } from "@/lib/history/year-range";
 
 export function TimelinePeriodLabel({ year }: { year: number }) {
   const period = getHistoricalPeriod(year);

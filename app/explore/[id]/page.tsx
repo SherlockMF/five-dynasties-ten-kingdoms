@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { EventDetail } from "@/features/events/event-detail";
+import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import { getHistoryRepository } from "@/lib/repositories";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const repository = getHistoryRepository();
-  const [event, relations, relatedEvents] = await Promise.all([repository.getEvent(id), repository.getEventRelations(id), repository.getEventsInRange(907, 960)]);
+  const [event, relations, relatedEvents] = await Promise.all([repository.getEvent(id), repository.getEventRelations(id), repository.getEventsInRange(TIMELINE_MIN_YEAR, MAX_YEAR)]);
   if (!event) notFound();
   return <EventDetail event={event} relations={relations} relatedEvents={relatedEvents} />;
 }

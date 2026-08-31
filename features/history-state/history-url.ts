@@ -2,8 +2,9 @@ import {
   DEFAULT_YEAR,
   MAX_YEAR,
   TIMELINE_MIN_YEAR,
-  type HistoryCoreState,
-} from "./history-store";
+} from "@/lib/history/year-range";
+
+import type { HistoryCoreState } from "./history-store";
 
 const selectionKeys = ["dynasty", "person", "event"] as const;
 

@@ -4,6 +4,7 @@ import { geoMercator, geoPath } from "d3-geo";
 import { useMemo } from "react";
 
 import { useHistoryStore } from "@/features/history-state/history-store";
+import { clampMapYear } from "@/lib/history/year-range";
 import type { Dynasty, HistoricalRegion } from "@/types/history";
 
 import { DynastyListView } from "./dynasty-list-view";
@@ -13,7 +14,8 @@ import { MapControls } from "./map-controls";
 import { MapEmpty } from "./map-empty";
 
 export function HistoricalMap({ regions, dynasties, mode = "full" }: { regions: HistoricalRegion[]; dynasties: Dynasty[]; mode?: "full" | "preview" }) {
-  const year = useHistoryStore((state) => state.currentYear);
+  const storeYear = useHistoryStore((state) => state.currentYear);
+  const year = clampMapYear(storeYear);
   const selectedId = useHistoryStore((state) => state.selectedDynasty);
   const selectDynasty = useHistoryStore((state) => state.selectDynasty);
   const visibleRegions = useMemo(() => regions.filter((region) => region.validFromYear <= year && year < region.validToYearExclusive), [regions, year]);
