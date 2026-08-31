@@ -20,23 +20,29 @@ export function TimelineEventNode({ event }: { event: HistoricalEvent }) {
   const meta = typeMeta[event.eventType];
   const Icon = meta.icon;
   return (
-    <Link
-      href={`/explore/${event.id}?year=${event.startYear}`}
-      className="group block rounded-xl border border-ink/10 bg-paper/80 p-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-cinnabar/50 hover:shadow-[0_16px_30px_rgba(23,40,36,0.08)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar"
-      aria-label={`${event.title}，${meta.label}`}
-    >
+    <article className="group relative block rounded-xl border border-ink/10 bg-paper/80 p-4 transition-[border-color,transform,box-shadow] hover:-translate-y-0.5 hover:border-cinnabar/50 hover:shadow-[0_16px_30px_rgba(23,40,36,0.08)] focus-within:ring-2 focus-within:ring-cinnabar">
       <div className="flex items-center gap-2 text-[10px] tracking-[0.14em] text-muted uppercase">
         <Icon aria-hidden="true" className={cn("size-3.5", meta.className)} />
         {meta.label}
       </div>
-      <h3 className="mt-3 flex items-baseline gap-1 font-serif text-lg text-ink group-hover:text-cinnabar">
-        <span>{event.title}</span>
-        <SourceMarker entity={event} />
-      </h3>
+      <div className="mt-3 flex items-baseline gap-1">
+        <h3 className="font-serif text-lg text-ink group-hover:text-cinnabar">
+          <Link
+            href={`/explore/${event.id}?year=${event.startYear}`}
+            aria-label={`查看${event.title}详情`}
+            className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+          >
+            {event.title}
+          </Link>
+        </h3>
+        <span className="relative z-10">
+          <SourceMarker entity={event} />
+        </span>
+      </div>
       <p className="mt-2 line-clamp-2 text-xs leading-6 text-muted">
         {event.summary}
       </p>
-    </Link>
+    </article>
   );
 }
 

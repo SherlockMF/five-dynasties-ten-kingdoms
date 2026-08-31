@@ -1,8 +1,10 @@
-import { act, render, screen, within } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
+import { events as seedEvents } from "@/data/seed";
 import { useHistoryStore } from "@/features/history-state/history-store";
+import { TimelineEventNode } from "@/features/timeline/timeline-event-node";
 import { Timeline } from "@/features/timeline/timeline";
 import type { HistoricalEvent } from "@/types/history";
 
@@ -138,12 +140,73 @@ describe("Timeline track filters", () => {
     expect(screen.queryByRole("button", { name: "唐末前史" })).not.toBeInTheDocument();
   });
 
+  it("stops late-Tang bypass at the 907 stage boundary", async () => {
+    const user = userEvent.setup();
+    const feud = seedEvents.find(
+      (event) => event.id === "zhu-wen-li-keyong-feud",
+    );
+    expect(feud).toMatchObject({ startYear: 884, endYear: 908 });
+    render(<Timeline events={feud ? [feud] : []} />);
+
+    await user.click(screen.getByRole("button", { name: "五代主线" }));
+    await user.click(screen.getByRole("button", { name: "五代主线" }));
+    act(() => useHistoryStore.getState().setCurrentYear(906));
+
+    expect(screen.getByText("唐末前史")).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: /上源驿之变与梁晋结怨/ }),
+    ).toBeVisible();
+
+    act(() => useHistoryStore.getState().setCurrentYear(907));
+
+    expect(screen.queryByText("唐末前史")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: /上源驿之变与梁晋结怨/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "当前未选择时间线轨道",
+    );
+
+    act(() => useHistoryStore.getState().setCurrentYear(908));
+
+    expect(
+      screen.queryByRole("link", { name: /上源驿之变与梁晋结怨/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "当前未选择时间线轨道",
+    );
+  });
+
   it("shows source markers and accessible meanings on event nodes", () => {
     render(<Timeline events={fixtureEvents} />);
 
-    expect(within(screen.getByRole("link", { name: /后晋建立/ })).getByLabelText("第04集主线")).toHaveTextContent("¹");
-    expect(within(screen.getByRole("link", { name: /南唐取代吴/ })).getByLabelText("史料扩展")).toHaveTextContent("²");
-    expect(within(screen.getByRole("link", { name: /燕云十六州归辽/ })).getByLabelText("第04集主线、史料扩展")).toHaveTextContent("¹²");
-    expect(within(screen.getByRole("link", { name: /宋初统一进程/ })).getByLabelText("第06集主线、史料扩展、存在异说")).toHaveTextContent("¹²³");
+    expect(screen.getByLabelText("第04集主线")).toHaveTextContent("¹");
+    expect(screen.getByLabelText("史料扩展")).toHaveTextContent("²");
+    expect(screen.getByLabelText("第04集主线、史料扩展")).toHaveTextContent(
+      "¹²",
+    );
+    expect(
+      screen.getByLabelText("第06集主线、史料扩展、存在异说"),
+    ).toHaveTextContent("¹²³");
+  });
+
+  it("keeps the event link and provenance marker as separate keyboard stops", async () => {
+    const user = userEvent.setup();
+    render(<TimelineEventNode event={fixtureEvents[0]} />);
+
+    const link = screen.getByRole("link", { name: "查看后晋建立详情" });
+    const marker = screen.getByLabelText("第04集主线");
+
+    expect(link).toHaveAttribute(
+      "href",
+      "/explore/later-jin-founded?year=936",
+    );
+    expect(link).not.toContainElement(marker);
+    expect(marker.closest("a")).toBeNull();
+
+    await user.tab();
+    expect(link).toHaveFocus();
+    await user.tab();
+    expect(marker).toHaveFocus();
   });
 });

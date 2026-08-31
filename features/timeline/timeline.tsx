@@ -2,7 +2,10 @@
 
 import { useMemo, useState } from "react";
 
-import { useHistoryStore } from "@/features/history-state/history-store";
+import {
+  MAP_MIN_YEAR,
+  useHistoryStore,
+} from "@/features/history-state/history-store";
 import type { HistoricalEvent } from "@/types/history";
 
 import { MobileYearStepper } from "./mobile-year-stepper";
@@ -26,12 +29,12 @@ export function Timeline({ events, mode = "full" }: { events: HistoricalEvent[];
     () =>
       events.filter(
         (event) =>
-          event.tracks.includes("late-tang") ||
+          (currentYear < MAP_MIN_YEAR && event.tracks.includes("late-tang")) ||
           event.tracks.some((track) =>
             track !== "late-tang" && selectedTracks.has(track),
           ),
       ),
-    [events, selectedTracks],
+    [currentYear, events, selectedTracks],
   );
   const visibleEvents = useMemo(
     () =>
@@ -42,7 +45,8 @@ export function Timeline({ events, mode = "full" }: { events: HistoricalEvent[];
       ),
     [currentYear, filteredEvents],
   );
-  const subjectTracksEmpty = selectedTracks.size === 0 && currentYear >= 907;
+  const subjectTracksEmpty =
+    selectedTracks.size === 0 && currentYear >= MAP_MIN_YEAR;
 
   return (
     <section aria-label="互动历史时间线" className="min-w-0">
@@ -54,7 +58,7 @@ export function Timeline({ events, mode = "full" }: { events: HistoricalEvent[];
         {mode === "full" ? <TimelinePlayer /> : null}
       </div>
       <TimelineFilters selected={selectedTracks} onChange={setSelectedTracks} />
-      {currentYear < 907 ? (
+      {currentYear < MAP_MIN_YEAR ? (
         <p className="mt-3 border-l-2 border-gold pl-3 text-xs leading-6 text-muted">
           875—906 年为唐末前史阶段，不受主体轨道筛选影响。
         </p>
