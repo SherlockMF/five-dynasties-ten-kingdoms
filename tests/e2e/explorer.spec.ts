@@ -14,6 +14,69 @@ test("explores 936 from map to person to event and asks a contextual question", 
   await expect(page.getByText("当前上下文：936年")).toBeVisible();
 });
 
+test("map event markers stay projected and expose a bounded sourced popover", async ({ page }) => {
+  await page.goto("/map?year=936");
+  const marker = page.getByRole("button", {
+    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+  });
+  await expect(marker).toBeVisible();
+
+  async function expectProjectedAlignment() {
+    await expect
+      .poll(async () => marker.evaluate((button) => {
+        const anchor = button.parentElement;
+        const layer = anchor?.parentElement;
+        const svg = layer?.previousElementSibling as SVGSVGElement | null;
+        if (!anchor || !layer || !svg) throw new Error("map marker structure missing");
+        const markerBox = button.getBoundingClientRect();
+        const svgBox = svg.getBoundingClientRect();
+        const mapX = Number(anchor.dataset.mapX);
+        const mapY = Number(anchor.dataset.mapY);
+        const scale = Math.min(svgBox.width / 800, svgBox.height / 500);
+        const expectedX = svgBox.left + (svgBox.width - 800 * scale) / 2 + mapX * scale;
+        const expectedY = svgBox.top + (svgBox.height - 500 * scale) / 2 + mapY * scale;
+        return Math.max(
+          Math.abs(markerBox.left + markerBox.width / 2 - expectedX),
+          Math.abs(markerBox.top + markerBox.height / 2 - expectedY),
+        );
+      }))
+      .toBeLessThanOrEqual(2);
+  }
+
+  await expectProjectedAlignment();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(marker).toBeVisible();
+  await expectProjectedAlignment();
+
+  await marker.click();
+  const dialog = page.getByRole("dialog", { name: "太原事件" });
+  await expect(dialog.getByRole("link", { name: "石敬瑭起兵（太原）" })).toHaveAttribute(
+    "href",
+    "/explore/shi-jingtang-rebellion?year=936",
+  );
+  await expect(
+    dialog.getByRole("note", { name: "第04集主线、史料扩展" }).first(),
+  ).toBeVisible();
+  const dialogBox = await dialog.boundingBox();
+  const viewport = page.viewportSize();
+  expect(dialogBox).not.toBeNull();
+  expect(viewport).not.toBeNull();
+  expect(dialogBox!.x).toBeGreaterThanOrEqual(0);
+  expect(dialogBox!.y).toBeGreaterThanOrEqual(0);
+  expect(dialogBox!.x + dialogBox!.width).toBeLessThanOrEqual(viewport!.width);
+  expect(dialogBox!.y + dialogBox!.height).toBeLessThanOrEqual(viewport!.height);
+});
+
+test("map corrects pre-907 years without dropping existing query state", async ({ page }) => {
+  await page.goto("/map?year=884&dynasty=later-jin");
+
+  await expect(page.getByRole("status")).toHaveText(
+    "地图仅展示907—979年，已校正为907年",
+  );
+  await expect(page).toHaveURL(/\/map\?year=907&dynasty=later-jin$/);
+  await expect(page.getByText(/^907 · 年末格局/)).toBeVisible();
+});
+
 test("primary pages never overflow the viewport", async ({ page }) => {
   for (const path of ["/", "/timeline?year=936", "/map?year=936", "/people?year=936&person=shi-jingtang", "/explore/founding-later-jin?year=936"]) {
     await page.goto(path);

@@ -56,7 +56,9 @@ describe("history year model", () => {
     expect(screen.getByRole("slider", { name: "地图年份" })).toHaveValue(
       "907",
     );
-    expect(screen.getByRole("status")).toHaveTextContent("地图从907年开始");
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "地图仅展示907—979年，已校正为907年",
+    );
     await waitFor(() => {
       expect(useHistoryStore.getState().currentYear).toBe(907);
     });
@@ -70,7 +72,7 @@ describe("history year model", () => {
     });
 
     expect(await screen.findByRole("status")).toHaveTextContent(
-      "地图从907年开始",
+      "地图仅展示907—979年，已校正为907年",
     );
     expect(useHistoryStore.getState().currentYear).toBe(907);
   });

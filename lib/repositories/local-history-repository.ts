@@ -73,6 +73,10 @@ export class LocalHistoryRepository implements HistoryRepository {
     ));
   }
 
+  async getAllLocations() {
+    return seedData.locations;
+  }
+
   async getEventsByYear(year: number) {
     return deepFreeze(seedData.events.filter((item) => item.startYear <= year && (item.endYear ?? item.startYear) >= year));
   }

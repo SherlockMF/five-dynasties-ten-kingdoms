@@ -17,15 +17,9 @@ export function YearSlider() {
   );
   const mapYear = clampMapYear(year);
 
-  useEffect(
-    () =>
-      useHistoryStore.subscribe((state) => {
-        if (state.currentYear < MAP_MIN_YEAR) {
-          setShowMapStartNotice(true);
-        }
-      }),
-    [],
-  );
+  if (year < MAP_MIN_YEAR && !showMapStartNotice) {
+    setShowMapStartNotice(true);
+  }
 
   useEffect(() => {
     if (year < MAP_MIN_YEAR) {
@@ -48,8 +42,8 @@ export function YearSlider() {
         className="h-1 w-full cursor-pointer appearance-none rounded-full bg-ink/15 accent-cinnabar"
       />
       {showMapStartNotice ? (
-        <span role="status" className="text-xs text-paper/70">
-          地图从907年开始
+        <span role="status" aria-live="polite" className="text-xs text-paper/70">
+          地图仅展示907—979年，已校正为907年
         </span>
       ) : null}
     </label>

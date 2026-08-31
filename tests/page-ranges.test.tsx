@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const repository = vi.hoisted(() => ({
   getAllDynasties: vi.fn().mockResolvedValue([]),
   getAllPeople: vi.fn().mockResolvedValue([]),
+  getAllLocations: vi.fn().mockResolvedValue([]),
   getEvent: vi.fn().mockResolvedValue({ id: "founding-later-jin" }),
   getEventRelations: vi.fn().mockResolvedValue([]),
   getEventsInRange: vi.fn().mockResolvedValue([]),
@@ -35,6 +36,9 @@ describe("page repository ranges", () => {
     await MapPage();
 
     expect(repository.getRegionsInRange).toHaveBeenCalledWith(907, 979);
+    expect(repository.getEventsInRange).toHaveBeenCalledWith(907, 979);
+    expect(repository.getAllDynasties).toHaveBeenCalledOnce();
+    expect(repository.getAllLocations).toHaveBeenCalledOnce();
   });
 
   it("loads the full range for the home page", async () => {
