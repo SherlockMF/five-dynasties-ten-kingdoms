@@ -84,24 +84,116 @@ describe("expanded history repository", () => {
 
     expect(
       relations.find((relation) => relation.id === "huang-chao-zhu-wen"),
-    ).toMatchObject({ startYear: 880 });
+    ).toMatchObject({ startYear: 877 });
     expect(
       relations.find((relation) => relation.id === "huang-chao-zhu-wen")
         ?.description,
-    ).toContain("至迟 880 年");
+    ).toContain("乾符四年");
+    expect(
+      relations.find((relation) => relation.id === "huang-chao-zhu-wen")
+        ?.sourceRefs,
+    ).toContain("《新五代史》卷一《梁本纪第一》");
+
+    expect(
+      relations.find((relation) => relation.id === "yang-xingmi-xu-wen"),
+    ).toMatchObject({ startYear: 883 });
+    expect(
+      relations.find((relation) => relation.id === "yang-xingmi-xu-wen")
+        ?.description,
+    ).toContain("保守起点");
+    expect(
+      relations.filter(
+        (relation) =>
+          relation.type !== "family" && relation.startYear === undefined,
+      ),
+    ).toEqual([]);
   });
 
-  it("does not treat undated or later relations as active in 875", async () => {
-    const graph = await repository.getFirstDegreeRelations(
+  it("infers family bounds and honors explicit temporal bounds", async () => {
+    const earlyShiJingtang = await repository.getFirstDegreeRelations(
       "shi-jingtang",
       875,
     );
+    const activeShiJingtang = await repository.getFirstDegreeRelations(
+      "shi-jingtang",
+      930,
+    );
+    const earlyYeluDeguang = await repository.getFirstDegreeRelations(
+      "yelu-deguang",
+      875,
+    );
+    const activeYeluDeguang = await repository.getFirstDegreeRelations(
+      "yelu-deguang",
+      930,
+    );
+    const lateYeluDeguang = await repository.getFirstDegreeRelations(
+      "yelu-deguang",
+      948,
+    );
+    const allShiJingtang = await repository.getFirstDegreeRelations(
+      "shi-jingtang",
+    );
+    const allRelations = await repository.getAllPersonRelations();
+    const expectedShiJingtangRelationCount = allRelations.filter(
+      (relation) =>
+        relation.sourcePersonId === "shi-jingtang" ||
+        relation.targetPersonId === "shi-jingtang",
+    ).length;
 
-    expect(graph.relations.map((relation) => relation.id)).not.toContain(
+    expect(earlyShiJingtang.relations.map((relation) => relation.id)).not.toContain(
       "li-siyuan-shi-jingtang",
     );
-    expect(graph.relations.map((relation) => relation.id)).not.toContain(
+    expect(earlyShiJingtang.relations.map((relation) => relation.id)).not.toContain(
       "li-siyuan-shi-jingtang-family",
+    );
+    expect(activeShiJingtang.relations.map((relation) => relation.id)).toEqual(
+      expect.arrayContaining([
+        "li-siyuan-shi-jingtang",
+        "li-siyuan-shi-jingtang-family",
+      ]),
+    );
+
+    expect(earlyYeluDeguang.relations.map((relation) => relation.id)).not.toContain(
+      "shulu-ping-yelu-deguang",
+    );
+    expect(activeYeluDeguang.relations.map((relation) => relation.id)).toContain(
+      "shulu-ping-yelu-deguang",
+    );
+    expect(lateYeluDeguang.relations.map((relation) => relation.id)).not.toContain(
+      "shulu-ping-yelu-deguang",
+    );
+    expect(allShiJingtang.relations.map((relation) => relation.id)).toEqual(
+      expect.arrayContaining([
+        "li-siyuan-shi-jingtang",
+        "li-siyuan-shi-jingtang-family",
+      ]),
+    );
+    expect(allShiJingtang.relations).toHaveLength(
+      expectedShiJingtangRelationCount,
+    );
+
+    const huangChaoAt876 = await repository.getFirstDegreeRelations(
+      "huang-chao",
+      876,
+    );
+    const huangChaoAt877 = await repository.getFirstDegreeRelations(
+      "huang-chao",
+      877,
+    );
+    expect(huangChaoAt876.relations.map((relation) => relation.id)).not.toContain(
+      "huang-chao-zhu-wen",
+    );
+    expect(huangChaoAt877.relations.map((relation) => relation.id)).toContain(
+      "huang-chao-zhu-wen",
+    );
+
+    const xuWenAt882 = await repository.getFirstDegreeRelations("xu-wen", 882);
+    const xuWenAt883 = await repository.getFirstDegreeRelations("xu-wen", 883);
+    expect(xuWenAt882.relations.map((relation) => relation.id)).not.toContain(
+      "yang-xingmi-xu-wen",
+    );
+    expect(xuWenAt883.relations.map((relation) => relation.id)).toContain(
+      "yang-xingmi-xu-wen",
     );
   });
 

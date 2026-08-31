@@ -17,7 +17,7 @@ const reviewed = (sourceRefs: string[]) => ({
 });
 
 export const personRelations: PersonRelation[] = [
-  { id: "huang-chao-zhu-wen", sourcePersonId: "huang-chao", targetPersonId: "zhu-wen", type: "ruler-subject", description: "至迟 880 年黄巢军进攻长安前后，朱温已明确在黄巢军中；882 年朱温转而归降唐朝。", startYear: 880, endYear: 882, ...reviewed(["《资治通鉴》卷二百五十五至卷二百五十六《唐纪七十一至七十二》"]), ...transcript([1, 2]) },
+  { id: "huang-chao-zhu-wen", sourcePersonId: "huang-chao", targetPersonId: "zhu-wen", type: "ruler-subject", description: "乾符四年（877），朱温加入黄巢军；中和二年（882）转而归降唐朝。", startYear: 877, endYear: 882, ...reviewed(["《新五代史》卷一《梁本纪第一》", "《资治通鉴》卷二百五十五至卷二百五十六《唐纪七十一至七十二》"]), ...transcript([1, 2]) },
   { id: "zhu-wen-jing-xiang", sourcePersonId: "zhu-wen", targetPersonId: "jing-xiang", type: "ruler-subject", description: "敬翔长期在朱温幕府及后梁中枢掌管军机文书。", startYear: 889, endYear: 912, ...reviewed(["《旧五代史》卷十八《梁书·敬翔传》"]), ...transcript([2]) },
   { id: "zhu-wen-wang-yanzhang", sourcePersonId: "zhu-wen", targetPersonId: "wang-yanzhang", type: "ruler-subject", description: "王彦章随朱温征战，后成为后梁主要将领。", startYear: 900, endYear: 912, ...reviewed(["《新五代史》卷三十二《死节传第二十·王彦章》"]), ...transcript([2, 3]) },
   { id: "zhu-wen-zhu-yougui", sourcePersonId: "zhu-wen", targetPersonId: "zhu-yougui", type: "family", description: "朱友珪是朱温之子，912 年弑父夺位。", endYear: 912, ...reviewed(["《新五代史》卷二《梁本纪第二》"]), ...transcript([2]) },
@@ -63,7 +63,7 @@ export const personRelations: PersonRelation[] = [
   { id: "zhao-kuangyin-li-chuyun", sourcePersonId: "zhao-kuangyin", targetPersonId: "li-chuyun", type: "ruler-subject", description: "李处耘在宋初奉赵匡胤命参与荆湖战役。", startYear: 960, endYear: 966, ...reviewed(["《宋史》卷二百五十七《列传第十六·李处耘》"]), ...transcript([6]) },
   { id: "zhao-guangyi-qian-chu", sourcePersonId: "zhao-guangyi", targetPersonId: "qian-chu", type: "ruler-subject", description: "978 年纳土后，钱俶至本产品时间线截至 979 年仍以宋臣身份保留爵位。", startYear: 978, endYear: 979, ...reviewed(["《续资治通鉴长编》卷十九", "《宋史》卷四百八十《吴越钱氏》"]), ...transcript([6]) },
   { id: "zhao-guangyi-liu-jiyuan", sourcePersonId: "zhao-guangyi", targetPersonId: "liu-jiyuan", type: "enemy", description: "979 年赵光义亲征北汉，刘继元守太原后出降。", startYear: 979, endYear: 979, ...reviewed(["《续资治通鉴长编》卷二十", "《宋史》卷四百八十二《北汉刘氏》"]), ...transcript([6]) },
-  { id: "yang-xingmi-xu-wen", sourcePersonId: "yang-xingmi", targetPersonId: "xu-wen", type: "ruler-subject", description: "徐温早年是杨行密部将，杨行密死后逐步控制吴国军政。", endYear: 905, ...reviewed(["《新五代史》卷六十一《吴世家第一》"]), ...transcript([5]) },
+  { id: "yang-xingmi-xu-wen", sourcePersonId: "yang-xingmi", targetPersonId: "xu-wen", type: "ruler-subject", description: "《新五代史》载徐温在杨行密起于合肥时即隶帐下；以中和三年（883）杨行密受任庐州刺史作为关系的保守起点，杨行密死后徐温逐步控制吴国军政。", startYear: 883, endYear: 905, ...reviewed(["《新五代史》卷六十一《吴世家第一》"]), ...transcript([5]) },
   { id: "xu-wen-li-bian", sourcePersonId: "xu-wen", targetPersonId: "li-bian", type: "family", description: "李昪原名徐知诰，是徐温养子并承接徐氏权力。", endYear: 927, ...reviewed(["《新五代史》卷六十二《南唐世家第二》", "《十国春秋》卷十五《南唐一》"]), ...transcript([5]) },
   { id: "li-bian-li-jing", sourcePersonId: "li-bian", targetPersonId: "li-jing", type: "family", description: "李璟是李昪长子，并继承南唐帝位。", endYear: 943, ...reviewed(["《新五代史》卷六十二《南唐世家第二》"]), ...transcript([5, 6]) },
   { id: "li-jing-li-yu", sourcePersonId: "li-jing", targetPersonId: "li-yu", type: "family", description: "李煜是李璟之子，于 961 年继承南唐国主之位。", endYear: 961, ...reviewed(["《新五代史》卷六十二《南唐世家第二》"]), ...transcript([6]) },

@@ -135,6 +135,21 @@ describe("history seed data", () => {
     expect(nullItem).toContain("event:test:invalid-transcript-episode:null");
   });
 
+  it("safely formats Symbol transcript episode values", () => {
+    let result: string[] | undefined;
+
+    expect(() => {
+      result = validateHistoryData(
+        replaceFirstEvent({
+          transcriptEpisodeIds: [Symbol("episode")],
+        } as unknown as Partial<HistoricalEvent>),
+      );
+    }).not.toThrow();
+    expect(result).toContain(
+      "event:test:invalid-transcript-episode:Symbol(episode)",
+    );
+  });
+
   it("requires transcript episodes to be unique, ordered, and within 1 through 6", () => {
     const duplicateEpisodes = validateHistoryData(
       replaceFirstEvent({

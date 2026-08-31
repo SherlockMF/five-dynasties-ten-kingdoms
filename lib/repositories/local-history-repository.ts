@@ -85,13 +85,25 @@ export class LocalHistoryRepository implements HistoryRepository {
   async getFirstDegreeRelations(id: string, year?: number): Promise<PersonGraphData> {
     const center = await this.getPerson(id);
     if (!center) throw new Error(`Unknown person: ${id}`);
+    const peopleById = new Map(seedData.people.map((person) => [person.id, person]));
     const relations = seedData.personRelations.filter((relation) => {
       const connected = relation.sourcePersonId === id || relation.targetPersonId === id;
-      const active =
-        year === undefined ||
-        (relation.startYear !== undefined &&
-          relation.startYear <= year &&
-          (relation.endYear ?? Infinity) >= year);
+      if (!connected) return false;
+      if (year === undefined) return true;
+
+      const source = peopleById.get(relation.sourcePersonId);
+      const target = peopleById.get(relation.targetPersonId);
+      const inferredFamilyStart =
+        relation.type === "family" && source?.birthYear !== undefined && target?.birthYear !== undefined
+          ? Math.max(source.birthYear, target.birthYear)
+          : undefined;
+      const inferredFamilyEnd =
+        relation.type === "family" && source?.deathYear !== undefined && target?.deathYear !== undefined
+          ? Math.min(source.deathYear, target.deathYear)
+          : undefined;
+      const startYear = relation.startYear ?? inferredFamilyStart;
+      const endYear = relation.endYear ?? inferredFamilyEnd;
+      const active = startYear !== undefined && startYear <= year && (endYear ?? Infinity) >= year;
       return connected && active;
     });
     const relatedIds = new Set(relations.flatMap((relation) => [relation.sourcePersonId, relation.targetPersonId]));

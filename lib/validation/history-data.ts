@@ -276,16 +276,24 @@ function validateSources(
       episode >= 1 &&
       episode <= 6;
     if (!validEpisode) {
-      errors.push(`${kind}:${entity.id}:invalid-transcript-episode:${episode}`);
+      errors.push(`${kind}:${entity.id}:invalid-transcript-episode:${formatErrorValue(episode)}`);
     }
     if (seenEpisodes.has(episode)) {
-      errors.push(`${kind}:${entity.id}:duplicate-transcript-episode:${episode}`);
+      errors.push(`${kind}:${entity.id}:duplicate-transcript-episode:${formatErrorValue(episode)}`);
     }
     if (validEpisode && episode <= previousEpisode) unordered = true;
     seenEpisodes.add(episode);
     if (validEpisode) previousEpisode = episode;
   }
   if (unordered) errors.push(`${kind}:${entity.id}:unordered-transcript-episodes`);
+}
+
+function formatErrorValue(value: unknown): string {
+  try {
+    return String(value);
+  } catch {
+    return typeof value;
+  }
 }
 
 function validateUniqueIds(
