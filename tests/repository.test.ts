@@ -48,7 +48,7 @@ describe("expanded history repository", () => {
 
     expect(
       relations.find((relation) => relation.id === "li-siyuan-shi-jingtang"),
-    ).toMatchObject({ type: "ruler-subject" });
+    ).toMatchObject({ type: "ruler-subject", startYear: 926 });
     expect(relations).toContainEqual(
       expect.objectContaining({
         sourcePersonId: "li-siyuan",
@@ -84,7 +84,25 @@ describe("expanded history repository", () => {
 
     expect(
       relations.find((relation) => relation.id === "huang-chao-zhu-wen"),
-    ).not.toHaveProperty("startYear");
+    ).toMatchObject({ startYear: 880 });
+    expect(
+      relations.find((relation) => relation.id === "huang-chao-zhu-wen")
+        ?.description,
+    ).toContain("至迟 880 年");
+  });
+
+  it("does not treat undated or later relations as active in 875", async () => {
+    const graph = await repository.getFirstDegreeRelations(
+      "shi-jingtang",
+      875,
+    );
+
+    expect(graph.relations.map((relation) => relation.id)).not.toContain(
+      "li-siyuan-shi-jingtang",
+    );
+    expect(graph.relations.map((relation) => relation.id)).not.toContain(
+      "li-siyuan-shi-jingtang-family",
+    );
   });
 
   it("keeps at least 25 derived event relations available", async () => {

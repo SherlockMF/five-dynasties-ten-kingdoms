@@ -87,7 +87,11 @@ export class LocalHistoryRepository implements HistoryRepository {
     if (!center) throw new Error(`Unknown person: ${id}`);
     const relations = seedData.personRelations.filter((relation) => {
       const connected = relation.sourcePersonId === id || relation.targetPersonId === id;
-      const active = year === undefined || (relation.startYear ?? -Infinity) <= year && (relation.endYear ?? Infinity) >= year;
+      const active =
+        year === undefined ||
+        (relation.startYear !== undefined &&
+          relation.startYear <= year &&
+          (relation.endYear ?? Infinity) >= year);
       return connected && active;
     });
     const relatedIds = new Set(relations.flatMap((relation) => [relation.sourcePersonId, relation.targetPersonId]));

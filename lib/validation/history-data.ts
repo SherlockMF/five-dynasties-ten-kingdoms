@@ -26,6 +26,14 @@ const COLLECTION_LIMITS = {
   eventRelations: [25, Number.POSITIVE_INFINITY],
 } as const;
 
+function isIntegerYear(value: unknown): value is number {
+  return (
+    typeof value === "number" &&
+    Number.isFinite(value) &&
+    Number.isInteger(value)
+  );
+}
+
 export function validateHistoryData(data: HistoryDataSet): string[] {
   const errors: string[] = [];
   const dynastyIds = new Set(data.dynasties.map(({ id }) => id));
@@ -61,10 +69,16 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   }
 
   for (const dynasty of data.dynasties) {
+    const validStartYear = isIntegerYear(dynasty.startYear);
+    const validEndYear = isIntegerYear(dynasty.endYear);
     if (
-      dynasty.startYear > dynasty.endYear ||
-      dynasty.startYear < TIMELINE_MIN_YEAR ||
-      dynasty.endYear > 1127
+      !validStartYear ||
+      !validEndYear ||
+      (validStartYear &&
+        validEndYear &&
+        (dynasty.startYear > dynasty.endYear ||
+          dynasty.startYear < TIMELINE_MIN_YEAR ||
+          dynasty.endYear > 1127))
     ) {
       errors.push(`dynasty:${dynasty.id}:invalid-years`);
     }
@@ -88,15 +102,28 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   }
 
   for (const person of data.people) {
+    const birthYearDefined = person.birthYear !== undefined;
+    const deathYearDefined = person.deathYear !== undefined;
+    const validBirthYear =
+      !birthYearDefined || isIntegerYear(person.birthYear);
+    const validDeathYear =
+      !deathYearDefined || isIntegerYear(person.deathYear);
     if (
-      person.birthYear !== undefined &&
-      person.deathYear !== undefined &&
-      person.birthYear > person.deathYear
+      !validBirthYear ||
+      !validDeathYear ||
+      (birthYearDefined &&
+        deathYearDefined &&
+        validBirthYear &&
+        validDeathYear &&
+        person.birthYear! > person.deathYear!)
     ) {
       errors.push(`person:${person.id}:invalid-years`);
     }
     const seenDynastyIds = new Set<string>();
-    for (const id of person.dynastyIds) {
+    const personDynastyIds = Array.isArray(person.dynastyIds)
+      ? person.dynastyIds
+      : [];
+    for (const id of personDynastyIds) {
       if (!dynastyIds.has(id)) {
         errors.push(`person:${person.id}:missing-dynasty:${id}`);
       }
@@ -108,16 +135,26 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   }
 
   for (const event of data.events) {
-    const endYear = event.endYear ?? event.startYear;
+    const validStartYear = isIntegerYear(event.startYear);
+    const endYearDefined = event.endYear !== undefined;
+    const validEndYear = !endYearDefined || isIntegerYear(event.endYear);
+    const endYear = endYearDefined ? event.endYear : event.startYear;
     if (
-      event.startYear < TIMELINE_MIN_YEAR ||
-      event.startYear > MAX_YEAR ||
-      endYear < event.startYear ||
-      endYear > MAX_YEAR
+      !validStartYear ||
+      !validEndYear ||
+      (validStartYear &&
+        validEndYear &&
+        isIntegerYear(endYear) &&
+        (event.startYear < TIMELINE_MIN_YEAR ||
+          event.startYear > MAX_YEAR ||
+          endYear < event.startYear ||
+          endYear > MAX_YEAR))
     ) {
       errors.push(`event:${event.id}:year-out-of-range`);
     }
-    if (!event.tracks.length) errors.push(`event:${event.id}:missing-track`);
+    if (!Array.isArray(event.tracks) || !event.tracks.length) {
+      errors.push(`event:${event.id}:missing-track`);
+    }
     for (const field of [
       "summary",
       "background",
@@ -179,7 +216,11 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
     if (!dynastyIds.has(region.dynastyId)) {
       errors.push(`region:${region.id}:missing-dynasty`);
     }
-    if (region.validFromYear >= region.validToYearExclusive) {
+    if (
+      !isIntegerYear(region.validFromYear) ||
+      !isIntegerYear(region.validToYearExclusive) ||
+      region.validFromYear >= region.validToYearExclusive
+    ) {
       errors.push(`region:${region.id}:invalid-interval`);
     }
   }
@@ -193,11 +234,14 @@ function validateSources(
   errors: string[],
 ) {
   const entityId = entity.id;
+  const sourceRefs: unknown = entity.sourceRefs;
 
   if (
-    !Array.isArray(entity.sourceRefs) ||
-    !entity.sourceRefs.length ||
-    entity.sourceRefs.some((source) => !source.trim())
+    !Array.isArray(sourceRefs) ||
+    !sourceRefs.length ||
+    sourceRefs.some(
+      (source) => typeof source !== "string" || !source.trim(),
+    )
   ) {
     errors.push(`${kind}:${entity.id}:missing-sources`);
   }
@@ -210,8 +254,9 @@ function validateSources(
     errors.push(`${kind}:${entityId}:invalid-content-origin`);
   }
 
-  const episodes = Array.isArray(entity.transcriptEpisodeIds)
-    ? entity.transcriptEpisodeIds
+  const transcriptEpisodeIds: unknown = entity.transcriptEpisodeIds;
+  const episodes: unknown[] = Array.isArray(transcriptEpisodeIds)
+    ? transcriptEpisodeIds
     : [];
   if (entity.contentOrigin === "historical-extension" && episodes.length) {
     errors.push(`${kind}:${entity.id}:extension-has-transcript`);
@@ -220,19 +265,25 @@ function validateSources(
     errors.push(`${kind}:${entity.id}:transcript-origin-without-episode`);
   }
 
-  const seenEpisodes = new Set<number>();
+  const seenEpisodes = new Set<unknown>();
   let previousEpisode = Number.NEGATIVE_INFINITY;
   let unordered = false;
   for (const episode of episodes) {
-    if (!Number.isInteger(episode) || episode < 1 || episode > 6) {
+    const validEpisode =
+      typeof episode === "number" &&
+      Number.isFinite(episode) &&
+      Number.isInteger(episode) &&
+      episode >= 1 &&
+      episode <= 6;
+    if (!validEpisode) {
       errors.push(`${kind}:${entity.id}:invalid-transcript-episode:${episode}`);
     }
     if (seenEpisodes.has(episode)) {
       errors.push(`${kind}:${entity.id}:duplicate-transcript-episode:${episode}`);
     }
-    if (episode <= previousEpisode) unordered = true;
+    if (validEpisode && episode <= previousEpisode) unordered = true;
     seenEpisodes.add(episode);
-    previousEpisode = episode;
+    if (validEpisode) previousEpisode = episode;
   }
   if (unordered) errors.push(`${kind}:${entity.id}:unordered-transcript-episodes`);
 }
@@ -251,13 +302,21 @@ function validateUniqueIds(
 
 function validateReferences(
   prefix: string,
-  references: readonly string[],
+  references: unknown,
   knownIds: ReadonlySet<string>,
   selfId: string | undefined,
   errors: string[],
 ) {
   const seen = new Set<string>();
+  if (!Array.isArray(references)) {
+    errors.push(`${prefix}:malformed-references`);
+    return;
+  }
   for (const id of references) {
+    if (typeof id !== "string") {
+      errors.push(`${prefix}:malformed-reference`);
+      continue;
+    }
     if (!knownIds.has(id)) errors.push(`${prefix}:missing:${id}`);
     if (selfId === id) errors.push(`${prefix}:self-reference`);
     if (seen.has(id)) errors.push(`${prefix}:duplicate:${id}`);
@@ -275,6 +334,8 @@ function validateEventCoverage(data: HistoryDataSet, errors: string[]) {
     if (
       !data.events.some(
         (event) =>
+          isIntegerYear(event.startYear) &&
+          (event.endYear === undefined || isIntegerYear(event.endYear)) &&
           event.startYear <= endYear &&
           (event.endYear ?? event.startYear) >= startYear,
       )
@@ -284,7 +345,11 @@ function validateEventCoverage(data: HistoryDataSet, errors: string[]) {
   }
 
   for (const year of CRITICAL_EVENT_YEARS) {
-    if (!data.events.some((event) => event.startYear === year)) {
+    if (
+      !data.events.some(
+        (event) => isIntegerYear(event.startYear) && event.startYear === year,
+      )
+    ) {
       errors.push(`events:coverage-gap:critical-year:${year}`);
     }
   }
@@ -297,6 +362,12 @@ function validatePersonRelations(
 ) {
   const edges = new Set<string>();
   for (const relation of data.personRelations) {
+    const startYearDefined = relation.startYear !== undefined;
+    const endYearDefined = relation.endYear !== undefined;
+    const validStartYear =
+      !startYearDefined || isIntegerYear(relation.startYear);
+    const validEndYear =
+      !endYearDefined || isIntegerYear(relation.endYear);
     if (relation.sourcePersonId === relation.targetPersonId) {
       errors.push(`person-relation:${relation.id}:self-reference`);
     }
@@ -307,21 +378,40 @@ function validatePersonRelations(
       errors.push(`person-relation:${relation.id}:missing-person`);
     }
     if (
-      relation.startYear !== undefined &&
-      relation.endYear !== undefined &&
-      relation.startYear > relation.endYear
+      !validStartYear ||
+      !validEndYear ||
+      (startYearDefined &&
+        endYearDefined &&
+        validStartYear &&
+        validEndYear &&
+        relation.startYear! > relation.endYear!)
     ) {
       errors.push(`person-relation:${relation.id}:invalid-interval`);
     }
+    const explicitYears = [relation.startYear, relation.endYear].filter(
+      isIntegerYear,
+    );
     for (const personId of [
       relation.sourcePersonId,
       relation.targetPersonId,
     ]) {
-      const deathYear = peopleById.get(personId)?.deathYear;
+      const person = peopleById.get(personId);
+      if (!person) continue;
+
+      const birthYear = person.birthYear;
       if (
-        deathYear !== undefined &&
-        ((relation.startYear !== undefined && relation.startYear > deathYear) ||
-          (relation.endYear !== undefined && relation.endYear > deathYear))
+        isIntegerYear(birthYear) &&
+        explicitYears.some((year) => year < birthYear)
+      ) {
+        errors.push(
+          `person-relation:${relation.id}:before-person-birth:${personId}`,
+        );
+      }
+
+      const deathYear = person.deathYear;
+      if (
+        isIntegerYear(deathYear) &&
+        explicitYears.some((year) => year > deathYear)
       ) {
         errors.push(
           `person-relation:${relation.id}:after-person-death:${personId}`,

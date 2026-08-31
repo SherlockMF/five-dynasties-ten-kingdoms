@@ -103,6 +103,38 @@ describe("history seed data", () => {
     ).toContain("event:test:invalid-content-origin");
   });
 
+  it.each([
+    ["non-array", null],
+    ["null item", [null]],
+    ["non-string item", [42]],
+    ["blank item", ["  "]],
+  ])("returns errors for malformed sourceRefs: %s", (_label, sourceRefs) => {
+    let result: string[] | undefined;
+
+    expect(() => {
+      result = validateHistoryData(
+        replaceFirstEvent({ sourceRefs } as unknown as Partial<HistoricalEvent>),
+      );
+    }).not.toThrow();
+    expect(result).toContain("event:test:missing-sources");
+  });
+
+  it("guards malformed transcriptEpisodeIds without throwing", () => {
+    const nonArray = validateHistoryData(
+      replaceFirstEvent({
+        transcriptEpisodeIds: null,
+      } as unknown as Partial<HistoricalEvent>),
+    );
+    const nullItem = validateHistoryData(
+      replaceFirstEvent({
+        transcriptEpisodeIds: [null],
+      } as unknown as Partial<HistoricalEvent>),
+    );
+
+    expect(nonArray).toContain("event:test:transcript-origin-without-episode");
+    expect(nullItem).toContain("event:test:invalid-transcript-episode:null");
+  });
+
   it("requires transcript episodes to be unique, ordered, and within 1 through 6", () => {
     const duplicateEpisodes = validateHistoryData(
       replaceFirstEvent({
@@ -150,6 +182,44 @@ describe("history seed data", () => {
     );
     expect(validateHistoryData(seedData).some((error) => error.includes("coverage-gap"))).toBe(false);
   });
+
+  it.each([
+    [875, 884],
+    [975, 979],
+  ])("detects a missing boundary coverage window %i-%i", (startYear, endYear) => {
+    const events = seedData.events.filter(
+      (event) =>
+        (event.endYear ?? event.startYear) < startYear ||
+        event.startYear > endYear,
+    );
+
+    expect(validateHistoryData({ ...seedData, events })).toContain(
+      `events:coverage-gap:${startYear}-${endYear}`,
+    );
+  });
+
+  it("treats an event ending at a window start as intersecting that window", () => {
+    const events = seedData.events.map((event) =>
+      event.id === "zhu-wen-li-keyong-feud"
+        ? { ...event, endYear: 885 }
+        : event,
+    );
+
+    expect(validateHistoryData({ ...seedData, events })).not.toContain(
+      "events:coverage-gap:885-894",
+    );
+  });
+
+  it.each([907, 923, 936, 947, 951, 960, 971, 975, 978, 979])(
+    "requires the critical event year %i",
+    (year) => {
+      const events = seedData.events.filter((event) => event.startYear !== year);
+
+      expect(validateHistoryData({ ...seedData, events })).toContain(
+        `events:coverage-gap:critical-year:${year}`,
+      );
+    },
+  );
 
   it("validates duplicate person dynasty references", () => {
     const personIndex = seedData.people.findIndex(
@@ -227,19 +297,118 @@ describe("history seed data", () => {
     expect(eventErrors).toContain("event-relation:event-duplicate-edge:duplicate-edge");
   });
 
-  it("rejects explicit person relation years after a known death year", () => {
-    const afterTaizuDeath: HistoryDataSet = {
+  it("validates explicit relation years against known lifetimes", () => {
+    const withQianChuRelation = (
+      overrides: Partial<HistoryDataSet["personRelations"][number]>,
+      people = seedData.people,
+    ): HistoryDataSet => ({
       ...seedData,
+      people,
       personRelations: seedData.personRelations.map((relation) =>
         relation.id === "qian-chu-zhao-kuangyin"
-          ? { ...relation, endYear: 977 }
+          ? ({
+              ...relation,
+              ...overrides,
+            } as HistoryDataSet["personRelations"][number])
           : relation,
       ),
-    };
+    });
 
-    expect(validateHistoryData(afterTaizuDeath)).toContain(
+    expect(
+      validateHistoryData(
+        withQianChuRelation({ startYear: 977, endYear: undefined }),
+      ),
+    ).toContain(
       "person-relation:qian-chu-zhao-kuangyin:after-person-death:zhao-kuangyin",
     );
+    expect(
+      validateHistoryData(withQianChuRelation({ endYear: 976 })),
+    ).not.toContain(
+      "person-relation:qian-chu-zhao-kuangyin:after-person-death:zhao-kuangyin",
+    );
+
+    const unknownDeath = seedData.people.map((person) =>
+      person.id === "zhao-kuangyin"
+        ? { ...person, deathYear: undefined }
+        : person,
+    );
+    expect(
+      validateHistoryData(
+        withQianChuRelation({ endYear: 979 }, unknownDeath),
+      ),
+    ).not.toContain(
+      "person-relation:qian-chu-zhao-kuangyin:after-person-death:zhao-kuangyin",
+    );
+
+    const dangling = {
+      ...seedData.personRelations[0],
+      id: "dangling-lifetime",
+      targetPersonId: "missing-person",
+      startYear: 999,
+      endYear: 999,
+    };
+    const danglingErrors = validateHistoryData({
+      ...seedData,
+      personRelations: [...seedData.personRelations, dangling],
+    });
+    expect(danglingErrors).toContain(
+      "person-relation:dangling-lifetime:missing-person",
+    );
+    expect(
+      danglingErrors.some((error) =>
+        error.startsWith("person-relation:dangling-lifetime:after-person-death:missing-person"),
+      ),
+    ).toBe(false);
+
+    expect(
+      validateHistoryData(withQianChuRelation({ startYear: 928 })),
+    ).toContain(
+      "person-relation:qian-chu-zhao-kuangyin:before-person-birth:qian-chu",
+    );
+  });
+
+  it("rejects non-finite, fractional, and NaN year fields", () => {
+    expect(
+      validateHistoryData(replaceFirstEvent({ startYear: Number.NaN })),
+    ).toContain("event:test:year-out-of-range");
+    expect(
+      validateHistoryData(replaceFirstEvent({ endYear: Number.POSITIVE_INFINITY })),
+    ).toContain("event:test:year-out-of-range");
+
+    expect(
+      validateHistoryData({
+        ...seedData,
+        dynasties: seedData.dynasties.map((dynasty, index) =>
+          index === 0 ? { ...dynasty, startYear: Number.NaN } : dynasty,
+        ),
+      }),
+    ).toContain(`dynasty:${seedData.dynasties[0].id}:invalid-years`);
+    expect(
+      validateHistoryData({
+        ...seedData,
+        people: seedData.people.map((person, index) =>
+          index === 0 ? { ...person, birthYear: 1.5 } : person,
+        ),
+      }),
+    ).toContain(`person:${seedData.people[0].id}:invalid-years`);
+    expect(
+      validateHistoryData({
+        ...seedData,
+        personRelations: seedData.personRelations.map((relation, index) =>
+          index === 0 ? { ...relation, startYear: Number.NaN } : relation,
+        ),
+      }),
+    ).toContain(
+      `person-relation:${seedData.personRelations[0].id}:invalid-interval`,
+    );
+    expect(
+      validateHistoryData({
+        ...seedData,
+        regions: seedData.regions.map((region, index) =>
+          index === 0 ? { ...region, validFromYear: Number.NaN } : region,
+        ),
+      }),
+    ).toContain(`region:${seedData.regions[0].id}:invalid-interval`);
   });
 
   it("validates dynasty succession references and required historical chains", () => {

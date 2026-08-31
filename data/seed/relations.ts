@@ -17,7 +17,7 @@ const reviewed = (sourceRefs: string[]) => ({
 });
 
 export const personRelations: PersonRelation[] = [
-  { id: "huang-chao-zhu-wen", sourcePersonId: "huang-chao", targetPersonId: "zhu-wen", type: "ruler-subject", description: "朱温早年参加黄巢军，882 年转而归降唐朝。", endYear: 882, ...reviewed(["《资治通鉴》卷二百五十五至卷二百五十六《唐纪七十一至七十二》"]), ...transcript([1, 2]) },
+  { id: "huang-chao-zhu-wen", sourcePersonId: "huang-chao", targetPersonId: "zhu-wen", type: "ruler-subject", description: "至迟 880 年黄巢军进攻长安前后，朱温已明确在黄巢军中；882 年朱温转而归降唐朝。", startYear: 880, endYear: 882, ...reviewed(["《资治通鉴》卷二百五十五至卷二百五十六《唐纪七十一至七十二》"]), ...transcript([1, 2]) },
   { id: "zhu-wen-jing-xiang", sourcePersonId: "zhu-wen", targetPersonId: "jing-xiang", type: "ruler-subject", description: "敬翔长期在朱温幕府及后梁中枢掌管军机文书。", startYear: 889, endYear: 912, ...reviewed(["《旧五代史》卷十八《梁书·敬翔传》"]), ...transcript([2]) },
   { id: "zhu-wen-wang-yanzhang", sourcePersonId: "zhu-wen", targetPersonId: "wang-yanzhang", type: "ruler-subject", description: "王彦章随朱温征战，后成为后梁主要将领。", startYear: 900, endYear: 912, ...reviewed(["《新五代史》卷三十二《死节传第二十·王彦章》"]), ...transcript([2, 3]) },
   { id: "zhu-wen-zhu-yougui", sourcePersonId: "zhu-wen", targetPersonId: "zhu-yougui", type: "family", description: "朱友珪是朱温之子，912 年弑父夺位。", endYear: 912, ...reviewed(["《新五代史》卷二《梁本纪第二》"]), ...transcript([2]) },
@@ -31,7 +31,7 @@ export const personRelations: PersonRelation[] = [
   { id: "li-cunxu-guo-chongtao", sourcePersonId: "li-cunxu", targetPersonId: "guo-chongtao", type: "ruler-subject", description: "郭崇韬辅佐李存勖灭梁，并统筹后唐伐蜀。", startYear: 908, endYear: 926, ...reviewed(["《新五代史》卷二十四《唐臣传第十二·郭崇韬》"]), ...transcript([2, 3]) },
   { id: "li-cunxu-meng-zhixiang", sourcePersonId: "li-cunxu", targetPersonId: "meng-zhixiang", type: "ruler-subject", description: "后唐灭前蜀后，李存勖任命孟知祥镇守西川。", startYear: 925, endYear: 926, ...reviewed(["《资治通鉴》卷二百七十四至卷二百七十五《后唐纪三至四》"]), ...transcript([3]) },
   { id: "li-siyuan-an-chonghui", sourcePersonId: "li-siyuan", targetPersonId: "an-chonghui", type: "ruler-subject", description: "安重诲在李嗣源朝掌枢密院并主持军政机要。", startYear: 926, endYear: 931, ...reviewed(["《旧五代史》卷六十六《唐书·安重诲传》"]), ...transcript([3]) },
-  { id: "li-siyuan-shi-jingtang", sourcePersonId: "li-siyuan", targetPersonId: "shi-jingtang", type: "ruler-subject", description: "石敬瑭长期在李嗣源麾下任将，并在明宗朝出任重要军职。", endYear: 933, ...reviewed(["《新五代史》卷八《晋本纪第八》"]), ...transcript([3, 4]) },
+  { id: "li-siyuan-shi-jingtang", sourcePersonId: "li-siyuan", targetPersonId: "shi-jingtang", type: "ruler-subject", description: "李嗣源 926 年即位后，石敬瑭在明宗朝出任重要军职。", startYear: 926, endYear: 933, ...reviewed(["《新五代史》卷八《晋本纪第八》"]), ...transcript([3, 4]) },
   { id: "li-siyuan-shi-jingtang-family", sourcePersonId: "li-siyuan", targetPersonId: "shi-jingtang", type: "family", description: "石敬瑭娶李嗣源之女，是李嗣源的女婿。", endYear: 933, ...reviewed(["《新五代史》卷八《晋本纪第八》"]), ...transcript([3, 4]) },
   { id: "li-siyuan-li-congke", sourcePersonId: "li-siyuan", targetPersonId: "li-congke", type: "family", description: "李从珂是李嗣源养子，随其长期征战。", endYear: 933, ...reviewed(["《新五代史》卷七《唐本纪第七》"]), ...transcript([3, 4]) },
   { id: "an-chonghui-meng-zhixiang", sourcePersonId: "an-chonghui", targetPersonId: "meng-zhixiang", type: "political", description: "安重诲加强朝廷对两川控制的政策，加剧了与孟知祥的对立。", startYear: 926, endYear: 931, ...reviewed(["《资治通鉴》卷二百七十六至卷二百七十八"]), ...transcript([3]) },
