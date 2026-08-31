@@ -3,7 +3,7 @@ import type { HistoricalLocation } from "@/types/history";
 import { historicalExtension, mixed as transcript } from "./provenance";
 
 const base = { sourceRefs: ["谭其骧主编《中国历史地图集》第五册（位置参考）"], verificationStatus: "illustrative" as const };
-const yanyunBase = { sourceRefs: [...base.sourceRefs, "《考古学视野下的燕云十六州》（州治沿革与现代参照）"], verificationStatus: "illustrative" as const };
+const yanyunBase = { sourceRefs: [...base.sourceRefs, "何岁利：《考古学视野下的燕云十六州——以鄚州城为中心》，《故宫博物院院刊》2023年第7期（总255期）。"], verificationStatus: "illustrative" as const };
 
 export const locations: HistoricalLocation[] = [
   { id: "changan", name: "长安", longitude: 108.94, latitude: 34.26, modernReference: "今陕西西安一带", ...base, ...historicalExtension() },

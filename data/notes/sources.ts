@@ -27,8 +27,8 @@ export const transcriptSources: TranscriptSource[] = [
   },
   {
     id: "yan-yun-archaeology",
-    title: "考古学视野下的燕云十六州",
-    publisher: "故宫博物院院刊",
+    title: "何岁利：《考古学视野下的燕云十六州——以鄚州城为中心》",
+    publisher: "《故宫博物院院刊》2023年第7期（总255期）",
     url: "https://www.dpm.org.cn/Uploads/File/2023/07/19/u64b7500e18409.pdf",
     kind: "academic",
     note: "用于核定十六州名目、地理范围与“燕云”概念形成。",

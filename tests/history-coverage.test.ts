@@ -335,6 +335,7 @@ describe("expanded northern history corpus", () => {
   });
 
   it("scopes Yanyun-specific research references to Yanyun locations", () => {
+    const citation = "何岁利：《考古学视野下的燕云十六州——以鄚州城为中心》，《故宫博物院院刊》2023年第7期（总255期）。";
     const yanyunIds = new Set([
       "youzhou", "jizhou", "yingzhou", "mozhou", "zhuozhou", "tanzhou-yanyun",
       "shunzhou", "xinzhou", "guizhou", "ruzhou", "wuzhou", "yunzhou",
@@ -345,6 +346,9 @@ describe("expanded northern history corpus", () => {
 
     for (const location of locations) {
       expect(mentionsYanyunStudy(location.sourceRefs), location.id).toBe(yanyunIds.has(location.id));
+      if (yanyunIds.has(location.id)) {
+        expect(location.sourceRefs, location.id).toContain(citation);
+      }
     }
     for (const region of regions.filter((item) =>
       ["wu", "wuyue", "min", "chu", "former-shu", "later-shu", "southern-han", "southern-tang", "jingnan"].includes(item.dynastyId),

@@ -193,6 +193,44 @@ test("filters people by category and role and exposes map evidence", async ({ pa
   ).toBeVisible();
 });
 
+test("keeps a rapidly closed dynasty out of the next map event", async (
+  { page },
+  testInfo,
+) => {
+  await page.goto("/map?year=936");
+  const laterJin = page.getByRole("button", { name: "查看后晋", exact: true });
+  if (testInfo.project.name === "mobile") await laterJin.tap();
+  else await laterJin.click();
+
+  const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
+  const closeDynasty = dynastyDialog.getByRole("button", {
+    name: "关闭政权详情",
+  });
+  const youzhou = page.getByRole("button", {
+    name: "幽州：燕云十六州归辽（时称契丹）",
+  });
+  if (testInfo.project.name === "mobile") {
+    await closeDynasty.tap();
+    await youzhou.tap();
+  } else {
+    await closeDynasty.click();
+    await youzhou.click();
+  }
+
+  await expect(dynastyDialog).toBeHidden();
+  await expect.poll(() => new URL(page.url()).searchParams.get("dynasty")).toBeNull();
+  const eventDialog = page.getByRole("dialog", { name: "幽州事件" });
+  await expect(eventDialog).toBeVisible();
+  await eventDialog.getByRole("button", { name: "关闭幽州事件" }).click();
+
+  const taiyuan = page.getByRole("button", {
+    name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
+  });
+  if (testInfo.project.name === "mobile") await taiyuan.tap();
+  else await taiyuan.click();
+  await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
+});
+
 test("keeps research notes secondary and distinguishes local AI evidence", async ({ page }) => {
   await page.goto("/notes");
   await expect(page.getByRole("heading", { name: "资料与校勘", level: 1 })).toBeVisible();

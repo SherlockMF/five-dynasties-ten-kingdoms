@@ -21,6 +21,15 @@ describe("transcript notes data", () => {
       [],
     );
   });
+
+  it("records complete publication metadata for the Yanyun study", () => {
+    expect(
+      transcriptSources.find((source) => source.id === "yan-yun-archaeology"),
+    ).toMatchObject({
+      title: "何岁利：《考古学视野下的燕云十六州——以鄚州城为中心》",
+      publisher: "《故宫博物院院刊》2023年第7期（总255期）",
+    });
+  });
 });
 
 describe("TranscriptNotes", () => {

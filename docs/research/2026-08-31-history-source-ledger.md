@@ -89,7 +89,7 @@
 ### 《中国历史地图集》与燕云研究
 
 - 《中国历史地图集》第五册：35 个 `locations` 的位置参照；17 个 `regions` 的边界简化示意。
-- 故宫博物院院刊《考古学视野下的燕云十六州》：只用于 16 个燕云地点 `youzhou`、`jizhou`、`yingzhou`、`mozhou`、`zhuozhou`、`tanzhou-yanyun`、`shunzhou`、`xinzhou`、`guizhou`、`ruzhou`、`wuzhou`、`yunzhou`、`yingzhou-shanxi`、`huanzhou`、`shuozhou`、`weizhou-yanyun` 的州治沿革与现代参照；不外推到南方政权疆域。
+- 何岁利：《考古学视野下的燕云十六州——以鄚州城为中心》，《故宫博物院院刊》2023年第7期（总255期）。只用于 16 个燕云地点 `youzhou`、`jizhou`、`yingzhou`、`mozhou`、`zhuozhou`、`tanzhou-yanyun`、`shunzhou`、`xinzhou`、`guizhou`、`ruzhou`、`wuzhou`、`yunzhou`、`yingzhou-shanxi`、`huanzhou`、`shuozhou`、`weizhou-yanyun` 的州治沿革与现代参照；不外推到南方政权疆域。
 - 地图精度：所有 17 个当前 `regions` 均为 `illustrative`（“示意”）；没有 `approximate`（“约略”）或 `verified`（“核定”）区域。地图按所选年份年末显示，不是精确 GIS 国界，也不展示 875—906 的逐年边界。
 - 争议处理：十六州采用校订名目，不读取逐字稿残缺清单；现代行政位置只作参照，不反投射为古代精确边界。
 
