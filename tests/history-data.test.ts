@@ -227,6 +227,21 @@ describe("history seed data", () => {
     expect(eventErrors).toContain("event-relation:event-duplicate-edge:duplicate-edge");
   });
 
+  it("rejects explicit person relation years after a known death year", () => {
+    const afterTaizuDeath: HistoryDataSet = {
+      ...seedData,
+      personRelations: seedData.personRelations.map((relation) =>
+        relation.id === "qian-chu-zhao-kuangyin"
+          ? { ...relation, endYear: 977 }
+          : relation,
+      ),
+    };
+
+    expect(validateHistoryData(afterTaizuDeath)).toContain(
+      "person-relation:qian-chu-zhao-kuangyin:after-person-death:zhao-kuangyin",
+    );
+  });
+
   it("validates dynasty succession references and required historical chains", () => {
     const missingReference: HistoryDataSet = {
       ...seedData,

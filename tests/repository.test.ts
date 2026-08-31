@@ -57,11 +57,30 @@ describe("expanded history repository", () => {
       }),
     );
 
-    const qianChuSongRelation = relations.find(
+    const qianChuTaizuRelation = relations.find(
       (relation) => relation.id === "qian-chu-zhao-kuangyin",
     );
-    expect(qianChuSongRelation).toMatchObject({ endYear: 979 });
-    expect(qianChuSongRelation?.description).toContain("截至 979 年");
+    expect(qianChuTaizuRelation).toMatchObject({
+      sourcePersonId: "qian-chu",
+      targetPersonId: "zhao-kuangyin",
+      type: "political",
+      startYear: 960,
+      endYear: 976,
+    });
+    expect(qianChuTaizuRelation?.description).toContain("赵匡胤在世期间");
+
+    const taizongQianChuRelation = relations.find(
+      (relation) => relation.id === "zhao-guangyi-qian-chu",
+    );
+    expect(taizongQianChuRelation).toMatchObject({
+      sourcePersonId: "zhao-guangyi",
+      targetPersonId: "qian-chu",
+      type: "ruler-subject",
+      startYear: 978,
+      endYear: 979,
+    });
+    expect(taizongQianChuRelation?.description).toContain("978 年纳土后");
+    expect(taizongQianChuRelation?.description).toContain("截至 979 年");
 
     expect(
       relations.find((relation) => relation.id === "huang-chao-zhu-wen"),

@@ -167,7 +167,11 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   }
 
   validateEventCoverage(data, errors);
-  validatePersonRelations(data, personIds, errors);
+  validatePersonRelations(
+    data,
+    new Map(data.people.map((person) => [person.id, person])),
+    errors,
+  );
   validateEventRelations(data, eventIds, errors);
   validateDynastySuccessions(data, dynastyIds, errors);
 
@@ -288,7 +292,7 @@ function validateEventCoverage(data: HistoryDataSet, errors: string[]) {
 
 function validatePersonRelations(
   data: HistoryDataSet,
-  personIds: ReadonlySet<string>,
+  peopleById: ReadonlyMap<string, HistoryDataSet["people"][number]>,
   errors: string[],
 ) {
   const edges = new Set<string>();
@@ -297,8 +301,8 @@ function validatePersonRelations(
       errors.push(`person-relation:${relation.id}:self-reference`);
     }
     if (
-      !personIds.has(relation.sourcePersonId) ||
-      !personIds.has(relation.targetPersonId)
+      !peopleById.has(relation.sourcePersonId) ||
+      !peopleById.has(relation.targetPersonId)
     ) {
       errors.push(`person-relation:${relation.id}:missing-person`);
     }
@@ -308,6 +312,21 @@ function validatePersonRelations(
       relation.startYear > relation.endYear
     ) {
       errors.push(`person-relation:${relation.id}:invalid-interval`);
+    }
+    for (const personId of [
+      relation.sourcePersonId,
+      relation.targetPersonId,
+    ]) {
+      const deathYear = peopleById.get(personId)?.deathYear;
+      if (
+        deathYear !== undefined &&
+        ((relation.startYear !== undefined && relation.startYear > deathYear) ||
+          (relation.endYear !== undefined && relation.endYear > deathYear))
+      ) {
+        errors.push(
+          `person-relation:${relation.id}:after-person-death:${personId}`,
+        );
+      }
     }
     const pair = [relation.sourcePersonId, relation.targetPersonId].sort().join("<->");
     const edge = `${pair}:${relation.type}`;
