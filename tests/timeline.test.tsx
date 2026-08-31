@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -32,5 +32,16 @@ describe("Timeline", () => {
       "这一年暂无收录事件",
     );
     expect(useHistoryStore.getState().currentYear).toBe(930);
+  });
+
+  it("shows the active historical period across the 907 boundary", () => {
+    render(<Timeline events={events} />);
+
+    expect(screen.getByText("五代十国主体")).toBeVisible();
+    expect(screen.getByLabelText("875至979年时间轨")).toBeInTheDocument();
+
+    act(() => useHistoryStore.getState().setCurrentYear(884));
+
+    expect(screen.getByText("唐末前史")).toBeVisible();
   });
 });

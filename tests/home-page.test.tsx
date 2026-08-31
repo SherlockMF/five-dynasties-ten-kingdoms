@@ -41,5 +41,8 @@ describe("HomePageContent", () => {
     expect(screen.getByRole("link", { name: "探索完整时间线" })).toBeVisible();
     expect(screen.getByRole("link", { name: "打开互动地图" })).toBeVisible();
     expect(screen.getByRole("link", { name: "探索人物关系" })).toBeVisible();
+    expect(
+      screen.getByText("Interactive history · 875—979"),
+    ).toBeInTheDocument();
   });
 });

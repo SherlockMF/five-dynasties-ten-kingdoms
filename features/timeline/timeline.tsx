@@ -8,6 +8,7 @@ import type { HistoricalEvent } from "@/types/history";
 import { MobileYearStepper } from "./mobile-year-stepper";
 import { TimelineEmpty } from "./timeline-empty";
 import { TimelineEventNode, typeMeta } from "./timeline-event-node";
+import { TimelinePeriodLabel } from "./timeline-period-label";
 import { TimelinePlayer } from "./timeline-player";
 import { TimelineTrack } from "./timeline-track";
 
@@ -21,7 +22,10 @@ export function Timeline({ events, mode = "full" }: { events: HistoricalEvent[];
   return (
     <section aria-label="互动历史时间线" className="min-w-0">
       <div className="flex flex-col gap-4 border-y border-ink/15 py-5 sm:flex-row sm:items-center sm:justify-between">
-        <MobileYearStepper />
+        <div className="grid gap-2">
+          <TimelinePeriodLabel year={currentYear} />
+          <MobileYearStepper />
+        </div>
         {mode === "full" ? <TimelinePlayer /> : null}
       </div>
       <TimelineTrack events={events} />

@@ -2,7 +2,11 @@
 
 import { useMemo } from "react";
 
-import { MAX_YEAR, MIN_YEAR, useHistoryStore } from "@/features/history-state/history-store";
+import {
+  MAX_YEAR,
+  TIMELINE_MIN_YEAR,
+  useHistoryStore,
+} from "@/features/history-state/history-store";
 import { cn } from "@/lib/utils";
 import type { HistoricalEvent } from "@/types/history";
 
@@ -14,12 +18,12 @@ export function TimelineTrack({ events }: { events: HistoricalEvent[] }) {
     [events],
   );
   const years = Array.from(
-    { length: MAX_YEAR - MIN_YEAR + 1 },
-    (_, index) => MIN_YEAR + index,
+    { length: MAX_YEAR - TIMELINE_MIN_YEAR + 1 },
+    (_, index) => TIMELINE_MIN_YEAR + index,
   );
 
   return (
-    <div className="hidden overflow-x-auto pb-4 md:block" aria-label="907至960年时间轨">
+    <div className="hidden overflow-x-auto pb-4 md:block" aria-label="875至979年时间轨">
       <div className="relative flex min-w-[1800px] items-end px-2 pt-8">
         <div className="absolute inset-x-2 bottom-[1.15rem] h-px bg-ink/20" />
         {years.map((year) => {

@@ -10,7 +10,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: { default: "山河纪 · 五代十国互动历史", template: "%s · 山河纪" },
-  description: "用时间、地图、人物关系和事件因果，探索 907—960 年的五代十国。",
+  description: "用时间、地图、人物关系和事件因果，探索 875—979 年的五代十国。",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
