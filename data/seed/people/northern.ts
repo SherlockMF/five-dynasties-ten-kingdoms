@@ -1,0 +1,174 @@
+import type { Person } from "@/types/history";
+
+import { historicalExtension, mixed } from "../provenance";
+
+export const northernPeople: Person[] = [
+  {
+    id: "huang-chao", name: "黄巢", deathYear: 884, dynastyIds: [], roles: ["唐末起事军领袖", "大齐政权建立者"],
+    summary: "唐末大规模起事的主要领袖，曾攻入长安并建立大齐政权。",
+    biography: "黄巢早期与王仙芝所部呼应，王仙芝败亡后成为起事主力。其军于 880 年进入长安，后在唐军与藩镇追击下败退，884 年死亡；具体死亡经过的史书记载存在差异。",
+    sourceRefs: ["《资治通鉴》卷二百五十三至卷二百五十六《唐纪六十九至七十二》"], verificationStatus: "reviewed", ...mixed([1]),
+  },
+  {
+    id: "zhu-wen", name: "朱温", birthYear: 852, deathYear: 912, dynastyIds: ["later-liang"], roles: ["后梁建立者", "皇帝", "唐末藩镇"],
+    summary: "由黄巢部将转为唐朝强藩，控制唐廷后代唐建立后梁。",
+    biography: "朱温于 882 年降唐，受赐名全忠并经营宣武军。此后兼并中原、控制唐廷，907 年称帝建梁；其晚年储位失序，912 年被朱友珪所杀。",
+    sourceRefs: ["《新五代史》卷一至卷二《梁本纪第一至第二》", "《资治通鉴》卷二百五十五至卷二百六十八"], verificationStatus: "reviewed", ...mixed([1, 2]),
+  },
+  {
+    id: "zhu-yougui", name: "朱友珪", deathYear: 913, dynastyIds: ["later-liang"], roles: ["后梁皇帝", "朱温之子"],
+    summary: "弑父夺位的后梁宗室，在位不足一年即因政变失败自尽。",
+    biography: "朱友珪因担心被朱温处置，于 912 年发动宫廷政变并即位。其统治缺乏军政支持，次年朱友贞一方起兵后败亡。",
+    sourceRefs: ["《资治通鉴》卷二百六十八至卷二百六十九《后梁纪三至四》", "《新五代史》卷二《梁本纪第二》"], verificationStatus: "reviewed", ...mixed([2]),
+  },
+  {
+    id: "zhu-youzhen", name: "朱友贞", birthYear: 888, deathYear: 923, dynastyIds: ["later-liang"], roles: ["后梁末帝", "朱温之子"],
+    summary: "朱友珪败亡后即位的后梁末帝，在梁晋长期战争中失去汴州而自尽。",
+    biography: "朱友贞于 913 年即位，依靠开封朝廷与晋持续争战。后梁内部猜忌将领、河北失势，923 年后唐军突袭汴州时命人杀死自己。",
+    sourceRefs: ["《新五代史》卷三《梁本纪第三》", "《资治通鉴》卷二百六十九至卷二百七十二"], verificationStatus: "reviewed", ...mixed([2, 3]),
+  },
+  {
+    id: "jing-xiang", name: "敬翔", deathYear: 923, dynastyIds: ["later-liang"], roles: ["后梁宰相", "谋臣"],
+    summary: "长期参与朱温军政决策的后梁谋臣，以勤于政务和熟悉文书著称。",
+    biography: "敬翔在朱温幕府中掌管军机，后梁建立后位居枢要。后梁末年其建议未尽被采纳，汴州陷落后自杀。",
+    sourceRefs: ["《旧五代史》卷十八《梁书·敬翔传》", "《资治通鉴》卷二百七十二《后唐纪一》"], verificationStatus: "reviewed", ...mixed([2]),
+  },
+  {
+    id: "wang-yanzhang", name: "王彦章", birthYear: 863, deathYear: 923, dynastyIds: ["later-liang"], roles: ["后梁将领"],
+    summary: "以后梁末年抗击后唐著称的武将，兵败被俘后不屈而死。",
+    biography: "王彦章长期随朱温父子作战，923 年一度夺回黄河沿线据点。因朝廷猜忌和调度失当被替换，后再战被俘，拒绝归降李存勖。",
+    sourceRefs: ["《新五代史》卷三十二《死节传第二十·王彦章》", "《资治通鉴》卷二百七十二《后唐纪一》"], verificationStatus: "reviewed", ...mixed([2, 3]),
+  },
+  {
+    id: "li-keyong", name: "李克用", birthYear: 856, deathYear: 908, dynastyIds: ["later-tang"], roles: ["晋王", "河东节度使", "沙陀军首领"],
+    summary: "唐末河东强藩，因参与镇压黄巢崛起，并与朱温形成长期敌对。",
+    biography: "李克用率沙陀军协助收复长安，后据太原经营河东。884 年上源驿之变后与朱温结怨，唐亡后仍沿用唐年号对抗后梁，其事业由李存勖继承。",
+    sourceRefs: ["《资治通鉴》卷二百五十五至卷二百六十七", "《新五代史》卷四《唐本纪第四》"], verificationStatus: "reviewed", ...mixed([1, 2]),
+  },
+  {
+    id: "li-cunxu", name: "李存勖", birthYear: 885, deathYear: 926, dynastyIds: ["later-tang"], roles: ["后唐建立者", "皇帝", "晋王"],
+    summary: "继承晋王位后灭燕、灭梁并建立后唐，后在洛阳兵变中身亡。",
+    biography: "李存勖整合河东和河北军力，于 923 年称帝建后唐并迅速灭后梁，925 年又灭前蜀。连年用兵、赏赐失衡与功臣被杀激化军心，926 年死于兴教门之变。",
+    sourceRefs: ["《新五代史》卷四至卷五《唐本纪第四至第五》", "《资治通鉴》卷二百六十七至卷二百七十五"], verificationStatus: "reviewed", ...mixed([2, 3]),
+  },
+  {
+    id: "li-siyuan", name: "李嗣源", birthYear: 867, deathYear: 933, dynastyIds: ["later-tang"], roles: ["后唐皇帝", "将领"],
+    summary: "由沙陀军将领成长为后唐明宗，在庄宗死后重建朝廷秩序。",
+    biography: "李嗣源长期随李克用、李存勖征战，926 年在魏州兵变中被推到庄宗对立面，随后入洛即位。其在位期间重视休养，但晚年继承与藩镇问题再次恶化。",
+    sourceRefs: ["《新五代史》卷六《唐本纪第六》", "《资治通鉴》卷二百七十五至卷二百七十九"], verificationStatus: "reviewed", ...mixed([2, 3]),
+  },
+  {
+    id: "li-congke", name: "李从珂", birthYear: 885, deathYear: 937, dynastyIds: ["later-tang"], roles: ["后唐末帝", "凤翔节度使"],
+    summary: "李嗣源养子，934 年起兵夺位，后因逼反石敬瑭而亡国。",
+    biography: "李从珂凭军中资历在凤翔起兵并进入洛阳即位。其与石敬瑭相互猜忌，936 年河东叛乱与契丹介入后失去军心，按公历于 937 年初在洛阳自焚。",
+    sourceRefs: ["《新五代史》卷七《唐本纪第七》", "《资治通鉴》卷二百七十九至卷二百八十"], verificationStatus: "reviewed", ...mixed([3, 4]),
+  },
+  {
+    id: "guo-chongtao", name: "郭崇韬", deathYear: 926, dynastyIds: ["later-tang"], roles: ["后唐枢密使", "将领"],
+    summary: "辅佐李存勖灭梁、灭前蜀的重臣，因谗言和猜忌在蜀中被杀。",
+    biography: "郭崇韬参与后唐战略和军政中枢，灭梁后又统筹伐蜀。926 年宫廷在缺乏确证的情况下下令处置，郭崇韬遇害，引发军队普遍恐惧。",
+    sourceRefs: ["《新五代史》卷二十四《唐臣传第十二·郭崇韬》", "《资治通鉴》卷二百七十二至卷二百七十五"], verificationStatus: "reviewed", ...mixed([2, 3]),
+  },
+  {
+    id: "an-chonghui", name: "安重诲", deathYear: 931, dynastyIds: ["later-tang"], roles: ["后唐枢密使", "重臣"],
+    summary: "李嗣源即位后的枢密重臣，推动中央集权，也因树敌过多而被诛。",
+    biography: "安重诲掌后唐军政机要，试图约束藩镇并加强朝廷对四川的控制。其专断与用人引发广泛反弹，最终失去明宗信任，于 931 年被杀。",
+    sourceRefs: ["《旧五代史》卷六十六《唐书·安重诲传》", "《资治通鉴》卷二百七十五至卷二百七十八"], verificationStatus: "reviewed", ...mixed([3]),
+  },
+  {
+    id: "feng-dao", name: "冯道", birthYear: 882, deathYear: 954, dynastyIds: ["later-tang", "later-jin", "later-han", "later-zhou"], roles: ["宰相", "文臣"],
+    summary: "历仕多个北方政权的文臣，体现五代官僚体系在改朝换代中的延续。",
+    biography: "冯道从燕晋之际进入仕途，后在后唐、后晋、后汉、后周担任高官。他重视政务连续与文教，其跨朝任职也历来引发关于出处和政治伦理的讨论。",
+    sourceRefs: ["《新五代史》卷五十四《杂传第四十二·冯道》", "《资治通鉴》卷二百七十六至卷二百九十一"], verificationStatus: "reviewed", ...mixed([3, 4, 5, 6]),
+  },
+  {
+    id: "shi-jingtang", name: "石敬瑭", birthYear: 892, deathYear: 942, dynastyIds: ["later-tang", "later-jin"], roles: ["后晋建立者", "皇帝", "河东节度使"],
+    summary: "在太原起兵并借契丹援助建立后晋，是 936 年政权更替的核心人物。",
+    biography: "石敬瑭原为李嗣源女婿和河东节度使，因受李从珂猜忌而反叛。他以称臣和割让燕云等条件换取契丹支援，建后晋后维持对辽谨慎关系。",
+    sourceRefs: ["《新五代史》卷八《晋本纪第八》", "《资治通鉴》卷二百七十九至卷二百八十三"], verificationStatus: "reviewed", ...mixed([3, 4, 5]),
+  },
+  {
+    id: "shi-chonggui", name: "石重贵", birthYear: 914, deathYear: 974, dynastyIds: ["later-jin"], roles: ["后晋末帝", "皇帝"],
+    summary: "石敬瑭之侄，采取对辽强硬路线，最终在辽军入汴后投降。",
+    biography: "石重贵于 942 年由景延广等拥立。他对辽称孙而不称臣，关系迅速恶化；战争后期杜重威降辽，947 年开封失守，石重贵被迁往北方。",
+    sourceRefs: ["《新五代史》卷九《晋本纪第九》", "《资治通鉴》卷二百八十三至卷二百八十六"], verificationStatus: "reviewed", ...mixed([4, 5]),
+  },
+  {
+    id: "sang-weihan", name: "桑维翰", birthYear: 898, deathYear: 947, dynastyIds: ["later-jin"], roles: ["后晋宰相", "谋臣"],
+    summary: "协助石敬瑭争取契丹援助并建立后晋，后又主张谨慎处理对辽关系。",
+    biography: "桑维翰为石敬瑭起草书表、参与联辽建晋，是后晋初年重要宰相。石重贵朝重新入相后力图缓和对辽战争，开封陷落前被张彦泽杀害。",
+    sourceRefs: ["《旧五代史》卷八十九《晋书·桑维翰传》", "《资治通鉴》卷二百八十至卷二百八十六"], verificationStatus: "reviewed", ...mixed([4, 5]),
+  },
+  {
+    id: "jing-yanguang", name: "景延广", birthYear: 892, deathYear: 947, dynastyIds: ["later-jin"], roles: ["后晋将领", "枢密使"],
+    summary: "拥立石重贵并推动对辽强硬外交的后晋重臣。",
+    biography: "景延广在石敬瑭死后参与拥立石重贵，主张对契丹不再称臣。他的强硬言行成为战争升级因素之一，后失势出镇，辽军南下时被俘并死去。",
+    sourceRefs: ["《旧五代史》卷八十八《晋书·景延广传》", "《资治通鉴》卷二百八十三至卷二百八十六"], verificationStatus: "reviewed", ...mixed([4, 5]),
+  },
+  {
+    id: "du-chongwei", name: "杜重威", deathYear: 948, dynastyIds: ["later-jin", "later-han"], roles: ["后晋将领", "天雄军节度使"],
+    summary: "后晋统兵大将，946 年率主力降辽，成为后晋灭亡的直接转折之一。",
+    biography: "杜重威身居后晋外戚和重将之位，统军北伐时在中渡桥一带被辽军包围，最终举军投降。辽军北撤后他又降后汉，后因反叛被杀。",
+    sourceRefs: ["《旧五代史》卷一百九《晋书·杜重威传》", "《资治通鉴》卷二百八十五至卷二百八十八"], verificationStatus: "reviewed", ...mixed([4, 5]),
+  },
+  {
+    id: "liu-zhiyuan", name: "刘知远", birthYear: 895, deathYear: 948, dynastyIds: ["later-jin", "later-han"], roles: ["后汉建立者", "皇帝", "河东节度使"],
+    summary: "后晋重将，辽灭后晋后据太原称帝并建立后汉。",
+    biography: "刘知远在后晋长期经营河东，对石重贵朝的对辽战争保持谨慎。947 年辽军占领开封后，他在太原称帝并南下接收中原，次年即病逝。",
+    sourceRefs: ["《新五代史》卷十《汉本纪第十》", "《资治通鉴》卷二百八十六至卷二百八十八"], verificationStatus: "reviewed", ...mixed([5]),
+  },
+  {
+    id: "liu-chengyou", name: "刘承祐", birthYear: 931, deathYear: 951, dynastyIds: ["later-han"], roles: ["后汉隐帝", "皇帝"],
+    summary: "刘知远之子，因清洗顾命重臣逼反郭威，后汉中原政权随之覆亡。",
+    biography: "刘承祐即位时年少，朝政由顾命大臣主持。950 年他突然诛杀杨邠等并试图处置郭威，郭威起兵南下；刘承祐出逃途中被杀。",
+    sourceRefs: ["《资治通鉴》卷二百八十八至卷二百八十九《后汉纪三至四》", "《旧五代史》卷一百零一《汉书·隐帝纪》"], verificationStatus: "reviewed", ...mixed([5]),
+  },
+  {
+    id: "guo-wei", name: "郭威", birthYear: 904, deathYear: 954, dynastyIds: ["later-han", "later-zhou"], roles: ["后周建立者", "皇帝", "枢密使"],
+    summary: "由后汉顾命重臣转为后周开国皇帝，着手减轻赋敛并整顿军政。",
+    biography: "郭威在刘知远朝成为枢密重臣，遭后汉隐帝猜忌后于邺都起兵。951 年建立后周，在位期间重视节用和恢复生产，并安排养子柴荣继承。",
+    sourceRefs: ["《新五代史》卷十一《周本纪第十一》", "《资治通鉴》卷二百八十八至卷二百九十一"], verificationStatus: "reviewed", ...mixed([5, 6]),
+  },
+  {
+    id: "chai-rong", name: "柴荣", birthYear: 921, deathYear: 959, dynastyIds: ["later-zhou"], roles: ["后周皇帝", "改革者", "统帅"],
+    summary: "高平之战后巩固皇位，以整军改革和连续统一战争显著增强后周国力。",
+    biography: "柴荣为郭威养子，954 年即位后亲征高平获胜，继而整顿禁军、财政和吏治。他夺取后蜀秦凤诸州、南唐淮南地区，959 年北征辽朝途中患病，回京后去世。",
+    sourceRefs: ["《新五代史》卷十二《周本纪第十二》", "《资治通鉴》卷二百九十一至卷二百九十四"], verificationStatus: "reviewed", ...mixed([6]),
+  },
+  {
+    id: "wang-pu", name: "王朴", birthYear: 922, deathYear: 959, dynastyIds: ["later-zhou"], roles: ["后周宰相", "战略规划者"],
+    summary: "向柴荣提出先南后北统一规划并参与制度建设的后周重臣。",
+    biography: "王朴以制策受到柴荣重用，所上《平边策》分析各割据政权形势。他参与礼乐、历法与军政事务，959 年在北征前后去世。",
+    sourceRefs: ["《旧五代史》卷一百二十八《周书·王朴传》", "《资治通鉴》卷二百九十二至卷二百九十四"], verificationStatus: "reviewed", ...mixed([6]),
+  },
+  {
+    id: "fan-zhi", name: "范质", birthYear: 911, deathYear: 964, dynastyIds: ["later-zhou", "northern-song"], roles: ["后周宰相", "北宋宰相"],
+    summary: "后周末年的首席文臣，入宋后继续主持中枢政务。",
+    biography: "范质在后周世宗、恭帝时期任宰相，参与 959 年皇位交接。宋朝建立后仍居相位，是五代文官体制延续到北宋的代表人物。",
+    sourceRefs: ["《宋史》卷二百四十九《列传第八·范质》", "《资治通鉴》卷二百九十四《后周纪五》"], verificationStatus: "reviewed", ...mixed([6]),
+  },
+  {
+    id: "liu-chong", name: "刘崇", birthYear: 895, deathYear: 954, dynastyIds: ["later-han", "northern-han"], roles: ["北汉建立者", "河东节度使"],
+    summary: "刘知远之弟，后周建立后据太原称帝并依靠辽援维持北汉。",
+    biography: "刘崇经营河东，郭威代汉后以延续后汉为名建立北汉。他借辽军多次南攻后周，954 年高平战败后不久去世。",
+    sourceRefs: ["《新五代史》卷七十《东汉世家第十》", "《资治通鉴》卷二百九十至卷二百九十一"], verificationStatus: "reviewed", ...mixed([5, 6]),
+  },
+  {
+    id: "liu-jiyuan", name: "刘继元", deathYear: 992, dynastyIds: ["northern-han", "northern-song"], roles: ["北汉末主", "皇帝"],
+    summary: "北汉末代君主，979 年太原被宋军围困后投降。",
+    biography: "刘继元在北汉宫廷政变后即位，继续依赖辽朝抵御北宋。宋太宗亲征并围攻太原，刘继元于 979 年出降，北汉灭亡。",
+    sourceRefs: ["《宋史》卷四百八十一《列传第二百四十·世家四·北汉刘氏》"], verificationStatus: "reviewed", ...historicalExtension(),
+  },
+  {
+    id: "zhao-kuangyin", name: "赵匡胤", birthYear: 927, deathYear: 976, dynastyIds: ["later-zhou", "northern-song"], roles: ["北宋建立者", "后周禁军将领"],
+    summary: "后周禁军核心将领，柴荣去世后掌兵，960 年建立北宋。",
+    biography: "赵匡胤在高平之战等战事中受到柴荣重用，逐步掌握殿前军。960 年陈桥兵变后即位建宋，并展开削平割据、重建中央权力的进程。",
+    sourceRefs: ["《宋史》卷一《太祖本纪一》", "《资治通鉴》卷二百九十一至卷二百九十四"], verificationStatus: "reviewed", ...mixed([6]),
+  },
+  {
+    id: "zhao-pu", name: "赵普", birthYear: 922, deathYear: 992, dynastyIds: ["later-zhou", "northern-song"], roles: ["北宋宰相", "幕僚"],
+    summary: "赵匡胤的重要幕僚与北宋宰相，参与宋初中央集权和统一决策。",
+    biography: "赵普在后周末进入赵匡胤幕府，宋朝建立后长期参与中枢决策。他推动削弱强藩和文官治理，是理解五代制度向宋初转型的重要人物。",
+    sourceRefs: ["《宋史》卷二百五十六《列传第十五·赵普》"], verificationStatus: "reviewed", ...historicalExtension(),
+  },
+];

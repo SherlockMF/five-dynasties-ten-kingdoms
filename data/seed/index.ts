@@ -1,7 +1,7 @@
 import { dynasties } from "./dynasties";
-import { events } from "./events";
+import { events } from "./events/index";
 import { locations } from "./locations";
-import { people } from "./people";
+import { people } from "./people/index";
 import { regions } from "./regions";
 import { dynastySuccessions, eventRelations, personRelations } from "./relations";
 

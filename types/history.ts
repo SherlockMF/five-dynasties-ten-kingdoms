@@ -87,6 +87,7 @@ export type HistoricalEvent = SourcedEntity & {
   id: string;
   title: string;
   eventType: EventType;
+  tracks: NarrativeTrack[];
   startYear: number;
   endYear?: number;
   summary: string;

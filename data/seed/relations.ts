@@ -26,7 +26,6 @@ export const eventRelations: EventRelation[] = [
   { id: "jin-to-prefectures", sourceEventId: "founding-later-jin", targetEventId: "sixteen-prefectures-ceded", type: "consequence", description: "获得契丹支持与燕云十六州的转移相互关联。", ...verified, ...transcript([4]) },
   { id: "jin-fall-to-han", sourceEventId: "later-jin-falls", targetEventId: "later-han-founded", type: "cause", ...verified, ...transcript([5]) },
   { id: "han-to-zhou", sourceEventId: "later-han-founded", targetEventId: "later-zhou-founded", type: "context", ...verified, ...transcript([5]) },
-  { id: "reforms-to-song", sourceEventId: "chai-rong-reforms", targetEventId: "chenqiao-mutiny", type: "context", description: "后周整军与禁军体系构成陈桥兵变的制度背景之一。", ...verified, ...transcript([6]) },
 ];
 
 export const dynastySuccessions: DynastySuccession[] = [
