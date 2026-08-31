@@ -54,7 +54,8 @@ export type PersonRoleCategory =
   | "ruler"
   | "general"
   | "official"
-  | "cultural";
+  | "cultural"
+  | "regent";
 
 export type SourcedEntity = ContentProvenance & {
   sourceRefs: string[];

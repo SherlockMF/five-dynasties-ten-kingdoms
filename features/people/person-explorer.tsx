@@ -8,7 +8,7 @@ import { useHistoryStore } from "@/features/history-state/history-store";
 import type { Dynasty, Person, PersonRelation } from "@/types/history";
 
 import { PersonDetailPanel } from "./person-detail-panel";
-import { filterPeople, PersonFilters, type PersonCategoryFilter, type PersonRoleFilter } from "./person-filters";
+import { filterPeople, PersonFilters, type PersonCategoryFilter, type PersonFilterRole } from "./person-filters";
 import { PersonGraph } from "./person-graph";
 import { PersonSearch } from "./person-search";
 import { RelationLegend } from "./relation-legend";
@@ -19,7 +19,7 @@ export function PersonExplorer({ initialPersonId, people, dynasties, relations }
   const selectedId = useHistoryStore((state) => state.selectedPerson) ?? initialPersonId;
   const selectPerson = useHistoryStore((state) => state.selectPerson);
   const [category, setCategory] = useState<PersonCategoryFilter>("all");
-  const [role, setRole] = useState<PersonRoleFilter | null>(null);
+  const [role, setRole] = useState<PersonFilterRole | null>(null);
   const center = people.find((person) => person.id === selectedId) ?? people.find((person) => person.id === initialPersonId) ?? people[0];
   const candidates = useMemo(() => filterPeople(people, dynasties, { category, role }), [category, dynasties, people, role]);
   const activeRelations = useMemo(() => relations.filter((relation) => (relation.sourcePersonId === center.id || relation.targetPersonId === center.id) && (relation.startYear ?? -Infinity) <= year && (relation.endYear ?? Infinity) >= year), [center.id, relations, year]);

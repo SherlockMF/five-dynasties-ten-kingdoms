@@ -16,15 +16,15 @@ export const PERSON_ROLE_FILTERS = [
   { id: "general", label: "将领" },
   { id: "official", label: "文臣" },
   { id: "cultural", label: "文化人物" },
-] as const;
+] as const satisfies readonly { id: PersonFilterRole; label: string }[];
 
 export type PersonCategoryFilter =
   (typeof PERSON_CATEGORY_FILTERS)[number]["id"];
-export type PersonRoleFilter = PersonRoleCategory;
+export type PersonFilterRole = Exclude<PersonRoleCategory, "regent">;
 
 export interface PersonFilterState {
   category: PersonCategoryFilter;
-  role: PersonRoleFilter | null;
+  role: PersonFilterRole | null;
 }
 
 function matchesCategory(
@@ -43,7 +43,7 @@ function matchesCategory(
   });
 }
 
-function matchesRole(person: Person, role: PersonRoleFilter | null) {
+function matchesRole(person: Person, role: PersonFilterRole | null) {
   if (!role) return true;
   return person.roleCategories.includes(role);
 }
@@ -65,7 +65,7 @@ export function filterPeople(
 
 interface PersonFiltersProps extends PersonFilterState {
   onCategoryChange: (category: PersonCategoryFilter) => void;
-  onRoleChange: (role: PersonRoleFilter | null) => void;
+  onRoleChange: (role: PersonFilterRole | null) => void;
 }
 
 export function PersonFilters({

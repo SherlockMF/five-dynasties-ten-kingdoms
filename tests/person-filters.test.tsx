@@ -1,10 +1,11 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
 import { dynasties, people } from "@/data/seed";
 import {
   filterPeople,
+  PERSON_ROLE_FILTERS,
   PersonFilters,
 } from "@/features/people/person-filters";
 
@@ -35,6 +36,11 @@ describe("PersonFilters", () => {
       "aria-pressed",
       "false",
     );
+    expect(
+      within(screen.getByRole("group", { name: "人物角色筛选" })).getAllByRole(
+        "button",
+      ),
+    ).toHaveLength(4);
 
     await user.click(screen.getByRole("button", { name: "十国人物" }));
     await user.click(screen.getByRole("button", { name: "筛选文化人物" }));
@@ -55,18 +61,21 @@ describe("PersonFilters", () => {
   it("filters only by explicit structured role categories", () => {
     const shuluPing = people.find((person) => person.id === "shulu-ping");
     expect(shuluPing?.roles).toContain("辽太祖皇后");
-    expect(shuluPing?.roleCategories).toEqual(["official"]);
+    expect(shuluPing?.roleCategories).toEqual(["regent"]);
+
+    for (const { id: role } of PERSON_ROLE_FILTERS) {
+      expect(
+        filterPeople(people, dynasties, {
+          category: "liao",
+          role,
+        }).map((person) => person.id),
+      ).not.toContain("shulu-ping");
+    }
 
     expect(
       filterPeople(people, dynasties, {
         category: "liao",
-        role: "ruler",
-      }).map((person) => person.id),
-    ).not.toContain("shulu-ping");
-    expect(
-      filterPeople(people, dynasties, {
-        category: "liao",
-        role: "official",
+        role: null,
       }).map((person) => person.id),
     ).toContain("shulu-ping");
   });

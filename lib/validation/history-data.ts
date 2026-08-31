@@ -35,6 +35,7 @@ const PERSON_ROLE_CATEGORIES = new Set<PersonRoleCategory>([
   "general",
   "official",
   "cultural",
+  "regent",
 ]);
 
 function isIntegerYear(value: unknown): value is number {

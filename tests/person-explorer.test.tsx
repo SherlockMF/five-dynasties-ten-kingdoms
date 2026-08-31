@@ -137,6 +137,20 @@ describe("PersonExplorer", () => {
     ).toHaveTextContent("没有符合当前筛选的人物");
   });
 
+  it("keeps a regent visible in the dynasty category and unfiltered search", async () => {
+    const user = userEvent.setup();
+    renderExplorer();
+
+    await user.click(screen.getByRole("button", { name: "辽人物" }));
+
+    const candidates = screen.getByRole("region", { name: "候选人物" });
+    expect(within(candidates).getByText("述律平")).toBeVisible();
+
+    await user.type(screen.getByRole("searchbox"), "述律");
+
+    expect(within(candidates).getByText("述律平")).toBeVisible();
+  });
+
   it("switches the detail when a filtered candidate is selected", async () => {
     const user = userEvent.setup();
     renderExplorer();
