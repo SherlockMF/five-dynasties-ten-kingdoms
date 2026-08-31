@@ -45,6 +45,27 @@ describe("expanded history repository", () => {
       expect(personIds.has(relation.targetPersonId), relation.id).toBe(true);
       expect(relation.sourceRefs.length, relation.id).toBeGreaterThan(0);
     }
+
+    expect(
+      relations.find((relation) => relation.id === "li-siyuan-shi-jingtang"),
+    ).toMatchObject({ type: "ruler-subject" });
+    expect(relations).toContainEqual(
+      expect.objectContaining({
+        sourcePersonId: "li-siyuan",
+        targetPersonId: "shi-jingtang",
+        type: "family",
+      }),
+    );
+
+    const qianChuSongRelation = relations.find(
+      (relation) => relation.id === "qian-chu-zhao-kuangyin",
+    );
+    expect(qianChuSongRelation).toMatchObject({ endYear: 979 });
+    expect(qianChuSongRelation?.description).toContain("截至 979 年");
+
+    expect(
+      relations.find((relation) => relation.id === "huang-chao-zhu-wen"),
+    ).not.toHaveProperty("startYear");
   });
 
   it("keeps at least 25 derived event relations available", async () => {

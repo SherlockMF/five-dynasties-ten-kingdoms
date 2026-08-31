@@ -67,7 +67,7 @@ export const lateTangEvents: HistoricalEvent[] = [
     sourceRefs: ["《资治通鉴》卷二百五十六《唐纪七十二》"], verificationStatus: "reviewed", ...mixed([1, 2]),
   },
   {
-    id: "zhu-wen-li-keyong-feud", title: "上源驿之变与梁晋结怨", eventType: "political", tracks: [...lateTangTrack], startYear: 884,
+    id: "zhu-wen-li-keyong-feud", title: "上源驿之变与梁晋结怨", eventType: "political", tracks: [...lateTangTrack], startYear: 884, endYear: 908,
     summary: "李克用班师经过汴州后，朱温军夜袭其驻地上源驿，李克用脱险，双方由此结下深仇。",
     background: "朱温与李克用虽共同参与追击黄巢，却在军功、地盘和彼此礼遇上矛盾尖锐。",
     process: "宴饮冲突后，汴军包围并纵火攻击馆舍；李克用冒雨突围，随后向唐廷申诉。",

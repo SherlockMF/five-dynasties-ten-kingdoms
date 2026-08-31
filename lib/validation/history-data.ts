@@ -95,8 +95,15 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
     ) {
       errors.push(`person:${person.id}:invalid-years`);
     }
+    const seenDynastyIds = new Set<string>();
     for (const id of person.dynastyIds) {
-      if (!dynastyIds.has(id)) errors.push(`person:${person.id}:missing-dynasty:${id}`);
+      if (!dynastyIds.has(id)) {
+        errors.push(`person:${person.id}:missing-dynasty:${id}`);
+      }
+      if (seenDynastyIds.has(id)) {
+        errors.push(`person:${person.id}:dynasty:duplicate:${id}`);
+      }
+      seenDynastyIds.add(id);
     }
   }
 
@@ -255,19 +262,17 @@ function validateReferences(
 }
 
 function validateEventCoverage(data: HistoryDataSet, errors: string[]) {
-  if (
-    !data.events.some(
-      (event) => event.startYear >= TIMELINE_MIN_YEAR && event.startYear < 907,
-    )
+  for (
+    let startYear = TIMELINE_MIN_YEAR;
+    startYear <= MAX_YEAR;
+    startYear += 10
   ) {
-    errors.push(`events:coverage-gap:${TIMELINE_MIN_YEAR}-906`);
-  }
-
-  for (let startYear = 907; startYear <= MAX_YEAR; startYear += 10) {
     const endYear = Math.min(startYear + 9, MAX_YEAR);
     if (
       !data.events.some(
-        (event) => event.startYear >= startYear && event.startYear <= endYear,
+        (event) =>
+          event.startYear <= endYear &&
+          (event.endYear ?? event.startYear) >= startYear,
       )
     ) {
       errors.push(`events:coverage-gap:${startYear}-${endYear}`);

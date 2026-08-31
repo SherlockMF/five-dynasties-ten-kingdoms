@@ -123,17 +123,49 @@ describe("history seed data", () => {
     expect(validateHistoryData(duplicateEvent)).toContain(
       `event:${seedData.events[0].id}:duplicate-id`,
     );
+    expect(
+      validateHistoryData({
+        ...seedData,
+        events: seedData.events.slice(0, 59),
+      }),
+    ).toContain("events:count-out-of-range:59");
 
     const missingWindow = {
       ...seedData,
       events: seedData.events.filter(
-        (event) => event.startYear < 917 || event.startYear > 926,
+        (event) =>
+          (event.endYear ?? event.startYear) < 885 || event.startYear > 894,
       ),
     };
     expect(validateHistoryData(missingWindow)).toContain(
-      "events:coverage-gap:917-926",
+      "events:coverage-gap:885-894",
+    );
+    expect(
+      validateHistoryData({
+        ...seedData,
+        events: seedData.events.filter((event) => event.startYear !== 971),
+      }),
+    ).toContain(
+      "events:coverage-gap:critical-year:971",
     );
     expect(validateHistoryData(seedData).some((error) => error.includes("coverage-gap"))).toBe(false);
+  });
+
+  it("validates duplicate person dynasty references", () => {
+    const personIndex = seedData.people.findIndex(
+      (person) => person.dynastyIds.length > 0,
+    );
+    const person = seedData.people[personIndex];
+    const dynastyId = person.dynastyIds[0];
+    const people = [...seedData.people];
+    people[personIndex] = {
+      ...person,
+      dynastyIds: [...person.dynastyIds, dynastyId],
+    };
+
+    expect(validateHistoryData({ ...seedData, people })).toContain(
+      `person:${person.id}:dynasty:duplicate:${dynastyId}`,
+    );
   });
 
   it("validates event tracks and relation graph invariants", () => {
@@ -255,6 +287,66 @@ describe("history seed data", () => {
     expect(validateHistoryData(withStartYear(980))).toContain(
       `event:${seedData.events[0].id}:year-out-of-range`,
     );
+
+    expect(
+      validateHistoryData(
+        replaceFirstEvent({ endYear: seedData.events[0].startYear - 1 }),
+      ),
+    ).toContain("event:test:year-out-of-range");
+    expect(
+      validateHistoryData(replaceFirstEvent({ endYear: 980 })),
+    ).toContain("event:test:year-out-of-range");
+  });
+
+  it("accepts dynasty end year 1127 and rejects 1128", () => {
+    const northernSong = seedData.dynasties.find(
+      (dynasty) => dynasty.id === "northern-song",
+    );
+    expect(northernSong?.endYear).toBe(1127);
+    expect(validateHistoryData(seedData)).not.toContain(
+      "dynasty:northern-song:invalid-years",
+    );
+    expect(
+      validateHistoryData({
+        ...seedData,
+        dynasties: seedData.dynasties.map((dynasty) =>
+          dynasty.id === "northern-song"
+            ? { ...dynasty, endYear: 1128 }
+            : dynasty,
+        ),
+      }),
+    ).toContain("dynasty:northern-song:invalid-years");
+  });
+
+  it("uses corrected traceable citations for Du Chongwei and Northern Han", () => {
+    const allSourceRefs = Object.values(seedData)
+      .flat()
+      .flatMap((entity) => entity.sourceRefs);
+    const duChongwei = seedData.people.find(
+      (person) => person.id === "du-chongwei",
+    );
+    const duChongweiRelation = seedData.personRelations.find(
+      (relation) => relation.id === "shi-chonggui-du-chongwei",
+    );
+
+    expect(duChongwei?.sourceRefs).toContain(
+      "《旧五代史》卷一百九《汉书·杜重威传》",
+    );
+    expect(duChongweiRelation?.sourceRefs).toContain(
+      "《旧五代史》卷一百九《汉书·杜重威传》",
+    );
+    expect(
+      allSourceRefs.some((source) =>
+        source.includes("《宋史》卷四百八十一") &&
+        source.includes("北汉刘氏"),
+      ),
+    ).toBe(false);
+    expect(
+      allSourceRefs.some((source) =>
+        source.includes("《宋史》卷四百八十二") &&
+        source.includes("北汉刘氏"),
+      ),
+    ).toBe(true);
   });
 
   it("represents northern succession and southern coexistence", () => {

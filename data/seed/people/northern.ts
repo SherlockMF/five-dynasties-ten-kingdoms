@@ -110,7 +110,7 @@ export const northernPeople: Person[] = [
     id: "du-chongwei", name: "杜重威", deathYear: 948, dynastyIds: ["later-jin", "later-han"], roles: ["后晋将领", "天雄军节度使"],
     summary: "后晋统兵大将，946 年率主力降辽，成为后晋灭亡的直接转折之一。",
     biography: "杜重威身居后晋外戚和重将之位，统军北伐时在中渡桥一带被辽军包围，最终举军投降。辽军北撤后他又降后汉，后因反叛被杀。",
-    sourceRefs: ["《旧五代史》卷一百九《晋书·杜重威传》", "《资治通鉴》卷二百八十五至卷二百八十八"], verificationStatus: "reviewed", ...mixed([4, 5]),
+    sourceRefs: ["《旧五代史》卷一百九《汉书·杜重威传》", "《资治通鉴》卷二百八十五至卷二百八十八"], verificationStatus: "reviewed", ...mixed([4, 5]),
   },
   {
     id: "liu-zhiyuan", name: "刘知远", birthYear: 895, deathYear: 948, dynastyIds: ["later-jin", "later-han"], roles: ["后汉建立者", "皇帝", "河东节度使"],
@@ -158,7 +158,7 @@ export const northernPeople: Person[] = [
     id: "liu-jiyuan", name: "刘继元", deathYear: 992, dynastyIds: ["northern-han", "northern-song"], roles: ["北汉末主", "皇帝"],
     summary: "北汉末代君主，979 年太原被宋军围困后投降。",
     biography: "刘继元在北汉宫廷政变后即位，继续依赖辽朝抵御北宋。宋太宗亲征并围攻太原，刘继元于 979 年出降，北汉灭亡。",
-    sourceRefs: ["《宋史》卷四百八十一《列传第二百四十·世家四·北汉刘氏》"], verificationStatus: "reviewed", ...historicalExtension(),
+    sourceRefs: ["《宋史》卷四百八十二《列传第二百四十一·世家五·北汉刘氏》"], verificationStatus: "reviewed", ...historicalExtension(),
   },
   {
     id: "zhao-kuangyin", name: "赵匡胤", birthYear: 927, deathYear: 976, dynastyIds: ["later-zhou", "northern-song"], roles: ["北宋建立者", "后周禁军将领"],
