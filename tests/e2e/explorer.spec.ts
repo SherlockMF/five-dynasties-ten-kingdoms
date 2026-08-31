@@ -28,7 +28,7 @@ test("map event markers stay projected and expose a bounded sourced popover", as
         const layer = anchor?.parentElement;
         const svg = layer?.previousElementSibling as SVGSVGElement | null;
         if (!anchor || !layer || !svg) throw new Error("map marker structure missing");
-        const markerBox = button.getBoundingClientRect();
+        const anchorBox = anchor.getBoundingClientRect();
         const svgBox = svg.getBoundingClientRect();
         const mapX = Number(anchor.dataset.mapX);
         const mapY = Number(anchor.dataset.mapY);
@@ -36,8 +36,8 @@ test("map event markers stay projected and expose a bounded sourced popover", as
         const expectedX = svgBox.left + (svgBox.width - 800 * scale) / 2 + mapX * scale;
         const expectedY = svgBox.top + (svgBox.height - 500 * scale) / 2 + mapY * scale;
         return Math.max(
-          Math.abs(markerBox.left + markerBox.width / 2 - expectedX),
-          Math.abs(markerBox.top + markerBox.height / 2 - expectedY),
+          Math.abs(anchorBox.left - expectedX),
+          Math.abs(anchorBox.top - expectedY),
         );
       }))
       .toBeLessThanOrEqual(2);
@@ -65,6 +65,144 @@ test("map event markers stay projected and expose a bounded sourced popover", as
   expect(dialogBox!.y).toBeGreaterThanOrEqual(0);
   expect(dialogBox!.x + dialogBox!.width).toBeLessThanOrEqual(viewport!.width);
   expect(dialogBox!.y + dialogBox!.height).toBeLessThanOrEqual(viewport!.height);
+});
+
+test("mobile map event markers keep separate full-size touch targets", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "mobile touch geometry");
+  await page.setViewportSize({ width: 412, height: 915 });
+  await page.goto("/map?year=936");
+
+  const markers = page.locator("[data-event-marker]");
+  await expect(markers).toHaveCount(19);
+  await expect(markers.first()).toBeVisible();
+  const targets = await markers.evaluateAll((buttons) =>
+    buttons.map((button) => {
+      const box = button.getBoundingClientRect();
+      return {
+        name: button.getAttribute("aria-label"),
+        x: box.x,
+        y: box.y,
+        width: box.width,
+        height: box.height,
+        clipPath: getComputedStyle(button).clipPath,
+      };
+    }),
+  );
+  for (const target of targets) {
+    expect(target.width, target.name ?? "marker").toBeGreaterThanOrEqual(44);
+    expect(target.height, target.name ?? "marker").toBeGreaterThanOrEqual(44);
+    expect(target.clipPath, target.name ?? "marker").toBe("none");
+  }
+  for (let first = 0; first < targets.length; first += 1) {
+    for (let second = first + 1; second < targets.length; second += 1) {
+      const a = targets[first];
+      const b = targets[second];
+      const overlaps =
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y;
+      expect(overlaps, `${a.name} overlaps ${b.name}`).toBe(false);
+    }
+  }
+
+  const taiyuan = page.getByRole("button", {
+    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+  });
+  await taiyuan.tap();
+  await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
+  await page.getByRole("button", { name: "关闭太原事件" }).click();
+  const youzhou = page.getByRole("button", {
+    name: "幽州：燕云十六州归辽（时称契丹）",
+  });
+  await youzhou.tap();
+  await expect(page.getByRole("dialog", { name: "幽州事件" })).toBeVisible();
+});
+
+test("map event dialog traps real keyboard focus and restores its trigger", async ({ page }) => {
+  await page.goto("/map?year=936");
+  const marker = page.getByRole("button", {
+    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+  });
+  await marker.focus();
+  await page.keyboard.press("Enter");
+
+  const dialog = page.getByRole("dialog", { name: "太原事件" });
+  const close = dialog.getByRole("button", { name: "关闭太原事件" });
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Shift+Tab");
+  await expect(
+    dialog.getByRole("note", { name: "第04集主线、史料扩展" }).last(),
+  ).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(close).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  await expect(marker).toBeFocused();
+});
+
+test("mobile map popover recomputes its viewport placement after rotation", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile", "mobile rotation geometry");
+  const sizes = [
+    { width: 412, height: 915 },
+    { width: 915, height: 412 },
+    { width: 412, height: 915 },
+  ];
+  await page.setViewportSize(sizes[0]);
+  await page.goto("/map?year=936");
+  const marker = page.getByRole("button", {
+    name: "幽州：燕云十六州归辽（时称契丹）",
+  });
+  await marker.tap();
+  const dialog = page.getByRole("dialog", { name: "幽州事件" });
+
+  for (const size of sizes) {
+    await page.setViewportSize(size);
+    await expect(dialog).toBeVisible();
+    await expect
+      .poll(async () => {
+        const box = await dialog.boundingBox();
+        if (!box) return false;
+        return (
+          box.x >= 0 &&
+          box.y >= 0 &&
+          box.x + box.width <= size.width &&
+          box.y + box.height <= size.height
+        );
+      })
+      .toBe(true);
+    const markerBox = await marker.boundingBox();
+    expect(markerBox).not.toBeNull();
+    expect(markerBox!.width).toBeGreaterThanOrEqual(44);
+    expect(markerBox!.height).toBeGreaterThanOrEqual(44);
+
+    const markerBoxes = await page.locator("[data-event-marker]").evaluateAll(
+      (buttons) =>
+        buttons.map((button) => {
+          const box = button.getBoundingClientRect();
+          return { x: box.x, y: box.y, width: box.width, height: box.height };
+        }),
+    );
+    for (let first = 0; first < markerBoxes.length; first += 1) {
+      for (let second = first + 1; second < markerBoxes.length; second += 1) {
+        const a = markerBoxes[first];
+        const b = markerBoxes[second];
+        expect(
+          a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.y + a.height > b.y,
+        ).toBe(false);
+      }
+    }
+  }
+
+  await dialog.getByRole("button", { name: "关闭幽州事件" }).click();
+  const taiyuan = page.getByRole("button", {
+    name: "太原：石敬瑭起兵、契丹援石敬瑭、后晋建立",
+  });
+  await taiyuan.tap();
+  await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
 });
 
 test("map corrects pre-907 years without dropping existing query state", async ({ page }) => {

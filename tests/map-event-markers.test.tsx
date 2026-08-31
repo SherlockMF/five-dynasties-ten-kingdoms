@@ -70,6 +70,58 @@ describe("MapEventMarkers", () => {
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 
+  it("rejects out-of-range coordinates while accepting geographic boundaries", () => {
+    const rebellion = events.find(
+      (event) => event.id === "shi-jingtang-rebellion",
+    );
+    const taiyuan = locations.find((location) => location.id === "taiyuan");
+    if (!rebellion || !taiyuan) throw new Error("fixture location missing");
+    const coordinateCases = [
+      ["east-outside", 181, 0],
+      ["west-outside", -181, 0],
+      ["north-outside", 0, 91],
+      ["south-outside", 0, -91],
+      ["east-boundary", 180, 0],
+      ["west-boundary", -180, 0],
+      ["north-boundary", 0, 90],
+      ["south-boundary", 0, -90],
+    ] as const;
+    const testLocations = coordinateCases.map(([id, longitude, latitude]) => ({
+      ...taiyuan,
+      id,
+      name: id,
+      longitude,
+      latitude,
+    }));
+    const testEvents = coordinateCases.map(([id]) => ({
+      ...rebellion,
+      id: `event-${id}`,
+      title: id,
+      locationIds: [id],
+    }));
+
+    render(
+      <MapEventMarkers
+        year={936}
+        events={testEvents}
+        locations={testLocations}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getAllByRole("button")).toHaveLength(4);
+    for (const boundary of [
+      "east-boundary",
+      "west-boundary",
+      "north-boundary",
+      "south-boundary",
+    ]) {
+      expect(
+        screen.getByRole("button", { name: `${boundary}：${boundary}` }),
+      ).toBeVisible();
+    }
+  });
+
   it("opens a sourced event list from the keyboard", async () => {
     const user = userEvent.setup();
     const onSelect = vi.fn();
@@ -87,14 +139,16 @@ describe("MapEventMarkers", () => {
     );
 
     await user.tab();
-    expect(
-      screen.getByRole("button", {
-        name: "太原：石敬瑭起兵、契丹援石敬瑭",
-      }),
-    ).toHaveFocus();
+    const marker = screen.getByRole("button", {
+      name: "太原：石敬瑭起兵、契丹援石敬瑭",
+    });
+    expect(marker).toHaveFocus();
     await user.keyboard("{Enter}");
 
     const dialog = screen.getByRole("dialog", { name: "太原事件" });
+    expect(
+      within(dialog).getByRole("button", { name: "关闭太原事件" }),
+    ).toHaveFocus();
     expect(
       within(dialog).getByRole("link", { name: "石敬瑭起兵（太原）" }),
     ).toHaveAttribute("href", "/explore/shi-jingtang-rebellion?year=936");
@@ -107,6 +161,26 @@ describe("MapEventMarkers", () => {
       }),
     ).toHaveLength(2);
     expect(onSelect).toHaveBeenCalledWith("shi-jingtang-rebellion");
+
+    await user.tab({ shift: true });
+    expect(
+      within(dialog).getAllByRole("note", {
+        name: "第04集主线、史料扩展",
+      })[1],
+    ).toHaveFocus();
+    await user.tab();
+    expect(
+      within(dialog).getByRole("button", { name: "关闭太原事件" }),
+    ).toHaveFocus();
+    await user.keyboard("{Escape}");
+    expect(dialog).not.toBeInTheDocument();
+    expect(marker).toHaveFocus();
+
+    await user.keyboard("{Enter}");
+    const reopenedDialog = screen.getByRole("dialog", { name: "太原事件" });
+    await user.keyboard("{Enter}");
+    expect(reopenedDialog).not.toBeInTheDocument();
+    expect(marker).toHaveFocus();
   });
 
   it("includes both endpoints of a multi-year event interval", () => {

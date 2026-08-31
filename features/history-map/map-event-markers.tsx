@@ -3,6 +3,7 @@
 import { MapPin, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 
 import { SourceMarker } from "@/components/history/source-marker";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,15 @@ interface MarkerGroup {
   point: [number, number];
 }
 
+interface PositionedMarkerGroup extends MarkerGroup {
+  anchorPoint: readonly [number, number];
+  markerPoint: readonly [number, number];
+}
+
 const VIEW_BOX_WIDTH = 800;
 const VIEW_BOX_HEIGHT = 500;
+const MARKER_SIZE = 44;
+const MARKER_GAP = 4;
 const defaultProjectLocation = (location: HistoricalLocation) =>
   [location.longitude, location.latitude] as [number, number];
 
@@ -48,6 +56,57 @@ function getScreenPoint(
   ] as const;
 }
 
+function positionMarkerGroups(
+  groups: MarkerGroup[],
+  viewport: { width: number; height: number },
+): PositionedMarkerGroup[] {
+  const placed: Array<readonly [number, number]> = [];
+  const halfSize = MARKER_SIZE / 2;
+  const step = MARKER_SIZE + MARKER_GAP;
+
+  return groups.map((group) => {
+    const anchorPoint = getScreenPoint(group.point, viewport);
+    if (!viewport.width || !viewport.height) {
+      return { ...group, anchorPoint, markerPoint: anchorPoint };
+    }
+
+    let markerPoint = anchorPoint;
+    let found = false;
+    for (let ring = 0; ring <= 8 && !found; ring += 1) {
+      for (let row = -ring; row <= ring && !found; row += 1) {
+        for (let column = -ring; column <= ring; column += 1) {
+          if (ring && Math.abs(row) !== ring && Math.abs(column) !== ring) {
+            continue;
+          }
+          const candidate = [
+            Math.min(
+              viewport.width - halfSize,
+              Math.max(halfSize, anchorPoint[0] + column * step),
+            ),
+            Math.min(
+              viewport.height - halfSize,
+              Math.max(halfSize, anchorPoint[1] + row * step),
+            ),
+          ] as const;
+          if (
+            placed.every(
+              ([x, y]) =>
+                Math.abs(candidate[0] - x) >= MARKER_SIZE ||
+                Math.abs(candidate[1] - y) >= MARKER_SIZE,
+            )
+          ) {
+            markerPoint = candidate;
+            found = true;
+            break;
+          }
+        }
+      }
+    }
+    placed.push(markerPoint);
+    return { ...group, anchorPoint, markerPoint };
+  });
+}
+
 export function MapEventMarkers({
   year,
   events,
@@ -56,15 +115,18 @@ export function MapEventMarkers({
   projectLocation = defaultProjectLocation,
 }: MapEventMarkersProps) {
   const layerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const activeTriggerRef = useRef<HTMLButtonElement>(null);
   const dialogId = useId();
   const [selectedLocationId, setSelectedLocationId] = useState<string>();
-  const [selectedAnchor, setSelectedAnchor] = useState<{
-    x: number;
-    y: number;
-    viewportWidth: number;
-    viewportHeight: number;
-  }>();
-  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [viewport, setViewport] = useState({
+    width: 0,
+    height: 0,
+    left: 0,
+    top: 0,
+    windowWidth: 0,
+    windowHeight: 0,
+  });
 
   useEffect(() => {
     const layer = layerRef.current;
@@ -72,12 +134,25 @@ export function MapEventMarkers({
 
     const updateViewport = () => {
       const bounds = layer.getBoundingClientRect();
-      setViewport({ width: bounds.width, height: bounds.height });
+      setViewport({
+        width: bounds.width,
+        height: bounds.height,
+        left: bounds.left,
+        top: bounds.top,
+        windowWidth: window.innerWidth,
+        windowHeight: window.innerHeight,
+      });
     };
     updateViewport();
     const observer = new ResizeObserver(updateViewport);
     observer.observe(layer);
-    return () => observer.disconnect();
+    window.addEventListener("resize", updateViewport);
+    window.addEventListener("scroll", updateViewport, { passive: true });
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateViewport);
+      window.removeEventListener("scroll", updateViewport);
+    };
   }, []);
 
   const markerGroups = useMemo(() => {
@@ -98,7 +173,11 @@ export function MapEventMarkers({
         if (
           !location ||
           !Number.isFinite(location.longitude) ||
-          !Number.isFinite(location.latitude)
+          !Number.isFinite(location.latitude) ||
+          location.longitude < -180 ||
+          location.longitude > 180 ||
+          location.latitude < -90 ||
+          location.latitude > 90
         ) {
           continue;
         }
@@ -119,9 +198,46 @@ export function MapEventMarkers({
     return [...groups.values()];
   }, [events, locations, projectLocation, year]);
 
-  const selectedGroup = markerGroups.find(
+  const positionedGroups = useMemo(
+    () => positionMarkerGroups(markerGroups, viewport),
+    [markerGroups, viewport],
+  );
+  const selectedGroup = positionedGroups.find(
     (group) => group.location.id === selectedLocationId,
   );
+
+  useEffect(() => {
+    if (selectedLocationId) closeButtonRef.current?.focus();
+  }, [selectedLocationId]);
+
+  const closeDialog = (restoreFocus = true) => {
+    setSelectedLocationId(undefined);
+    if (restoreFocus) activeTriggerRef.current?.focus();
+  };
+
+  const handleDialogKeyDown = (event: ReactKeyboardEvent<HTMLElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closeDialog();
+      return;
+    }
+    if (event.key !== "Tab") return;
+    const focusable = [
+      ...event.currentTarget.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ];
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  };
 
   return (
     <div
@@ -129,8 +245,18 @@ export function MapEventMarkers({
       aria-label={`${year}年地图事件`}
       className="pointer-events-none absolute inset-0 z-10"
     >
-      {markerGroups.map(({ location, events: locationEvents, point }) => {
-        const [left, top] = getScreenPoint(point, viewport);
+      {positionedGroups.map(({
+        location,
+        events: locationEvents,
+        point,
+        anchorPoint,
+        markerPoint,
+      }) => {
+        const [left, top] = anchorPoint;
+        const markerLeft = markerPoint[0] - anchorPoint[0];
+        const markerTop = markerPoint[1] - anchorPoint[1];
+        const leaderLength = Math.hypot(markerLeft, markerTop);
+        const leaderAngle = Math.atan2(markerTop, markerLeft) * (180 / Math.PI);
         const open = selectedLocationId === location.id;
         const accessibleName = `${location.name}：${locationEvents
           .map((event) => getShortEventTitle(event.title, location.name))
@@ -144,27 +270,34 @@ export function MapEventMarkers({
             data-map-y={point[1]}
             style={{ left, top }}
           >
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 top-0 h-px origin-left bg-paper/60"
+              style={{
+                width: leaderLength,
+                transform: `rotate(${leaderAngle}deg)`,
+              }}
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute left-0 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-paper bg-cinnabar"
+            />
             <button
+              data-event-marker
               type="button"
               aria-label={accessibleName}
               aria-expanded={open}
               aria-controls={open ? dialogId : undefined}
               onClick={(event) => {
-                setSelectedLocationId(open ? undefined : location.id);
                 if (open) {
-                  setSelectedAnchor(undefined);
+                  closeDialog();
                 } else {
-                  const bounds = event.currentTarget.getBoundingClientRect();
-                  setSelectedAnchor({
-                    x: bounds.left + bounds.width / 2,
-                    y: bounds.top + bounds.height / 2,
-                    viewportWidth: window.innerWidth,
-                    viewportHeight: window.innerHeight,
-                  });
+                  activeTriggerRef.current = event.currentTarget;
+                  setSelectedLocationId(location.id);
                   onSelect(locationEvents[0].id);
                 }
               }}
-              style={{ clipPath: "circle(12px at center)" }}
+              style={{ left: markerLeft, top: markerTop }}
               className="pointer-events-auto absolute left-0 top-0 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-paper/70 bg-cinnabar text-paper shadow-[0_6px_20px_rgba(23,40,36,.45)] transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
             >
               <MapPin aria-hidden="true" className="size-5" />
@@ -173,12 +306,11 @@ export function MapEventMarkers({
         );
       })}
       {selectedGroup ? (() => {
-        const fallbackPoint = getScreenPoint(selectedGroup.point, viewport);
-        const anchor = selectedAnchor ?? {
-          x: fallbackPoint[0],
-          y: fallbackPoint[1],
-          viewportWidth: viewport.width,
-          viewportHeight: viewport.height,
+        const anchor = {
+          x: viewport.left + selectedGroup.markerPoint[0],
+          y: viewport.top + selectedGroup.markerPoint[1],
+          viewportWidth: viewport.windowWidth,
+          viewportHeight: viewport.windowHeight,
         };
         const popupLeft = anchor.viewportWidth
           ? Math.min(
@@ -189,27 +321,30 @@ export function MapEventMarkers({
         const placeAbove =
           anchor.viewportHeight > 0 && anchor.y > anchor.viewportHeight / 2;
         const availableHeight = placeAbove
-          ? anchor.y - 36
-          : anchor.viewportHeight - anchor.y - 36;
+          ? Math.min(anchor.y, anchor.viewportHeight) - 36
+          : anchor.viewportHeight - Math.max(anchor.y, 0) - 36;
 
         return <aside
           id={dialogId}
           role="dialog"
+          aria-modal="true"
           aria-label={`${selectedGroup.location.name}事件`}
+          onKeyDown={handleDialogKeyDown}
           style={{
             left: popupLeft,
             maxHeight: Math.max(80, Math.min(anchor.viewportHeight * 0.6, availableHeight)),
             ...(placeAbove
               ? { bottom: Math.max(16, anchor.viewportHeight - anchor.y + 20) }
-              : { top: anchor.y + 20 }),
+              : { top: Math.max(16, anchor.y + 20) }),
           }}
           className="pointer-events-auto fixed z-50 w-72 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-2xl border border-ink/15 bg-paper p-4 text-ink shadow-2xl"
         >
           <Button
+            ref={closeButtonRef}
             variant="ghost"
             size="icon"
             aria-label={`关闭${selectedGroup.location.name}事件`}
-            onClick={() => { setSelectedLocationId(undefined); setSelectedAnchor(undefined); }}
+            onClick={() => closeDialog()}
             className="absolute right-2 top-2"
           >
             <X aria-hidden="true" className="size-4" />
