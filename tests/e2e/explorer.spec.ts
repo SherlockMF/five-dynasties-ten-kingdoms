@@ -1,5 +1,149 @@
 import { expect, test } from "@playwright/test";
 
+test("declares smooth scrolling so Next can normalize route transitions", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-scroll-behavior",
+    "smooth",
+  );
+});
+
+test("moves from a sourced 936 timeline event to its detail and person", async ({ page }) => {
+  await page.goto("/timeline?year=936");
+  await page.getByRole("button", { name: "辽与北方" }).click();
+
+  const yanyun = page.getByRole("article").filter({
+    has: page.getByRole("link", {
+      name: "查看燕云十六州归辽（时称契丹）详情",
+    }),
+  });
+  await expect(yanyun).toBeVisible();
+  await expect(
+    yanyun.getByRole("note", { name: "第04集主线、史料扩展" }),
+  ).toBeVisible();
+  await yanyun
+    .getByRole("link", { name: "查看燕云十六州归辽（时称契丹）详情" })
+    .click();
+
+  await expect(
+    page.getByRole("heading", { name: "燕云十六州归辽（时称契丹）" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("note", { name: "第04集主线、史料扩展" }).first(),
+  ).toBeVisible();
+  const bibliography = page.getByRole("region", { name: "参考书目" });
+  await expect(
+    bibliography.getByText("《资治通鉴》卷二百八十《后晋纪一》"),
+  ).toBeVisible();
+  await expect(
+    bibliography.getByText("《辽史》卷四《太宗本纪下》"),
+  ).toBeVisible();
+
+  await page.getByRole("link", { name: "石敬瑭", exact: true }).click();
+  await expect(page).toHaveURL(/\/people\?year=936&person=shi-jingtang$/);
+  await expect(page.getByRole("heading", { name: "石敬瑭" })).toBeVisible();
+});
+
+test("covers chronology boundaries and all four narrative filters", async ({ page }) => {
+  for (const boundary of [
+    { year: 875, period: "唐末前史", event: "查看王仙芝起事详情" },
+    { year: 880, period: "唐末前史", event: "查看黄巢军进入长安详情" },
+  ]) {
+    await page.goto(`/timeline?year=${boundary.year}`);
+    await expect(page.getByText(new RegExp(`${boundary.year}.*${boundary.period}`))).toBeVisible();
+    await expect(page.getByRole("link", { name: boundary.event })).toBeVisible();
+  }
+
+  for (const fixture of [
+    { year: 907, track: "五代主线", event: "查看后梁建立、唐亡详情" },
+    { year: 907, track: "十国并立", event: "查看前蜀建立详情" },
+    { year: 907, track: "辽与北方", event: "查看耶律阿保机成为契丹可汗详情" },
+    { year: 978, track: "宋初统一", event: "查看吴越纳土归宋详情" },
+  ]) {
+    await page.goto(`/timeline?year=${fixture.year}`);
+    const selectedTrack = page.getByRole("button", { name: fixture.track });
+    await selectedTrack.click();
+    await expect(selectedTrack).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("link", { name: fixture.event })).toBeVisible();
+  }
+
+  await page.goto("/timeline?year=907");
+  await expect(page.getByRole("combobox", { name: "直接选择年份" })).toHaveValue("907");
+  await expect(page.getByText("五代十国主体", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "辽与北方" }).click();
+  await page
+    .getByRole("link", { name: "查看耶律阿保机成为契丹可汗详情" })
+    .click();
+  await expect(page.getByRole("heading", { name: "史料异说" })).toBeVisible();
+  await expect(
+    page.getByRole("note", {
+      name: "第02、03集主线、史料扩展、存在异说",
+    }).first(),
+  ).toBeVisible();
+
+  await page.goto("/timeline?year=979");
+  await expect(page.getByRole("link", { name: "查看宋灭北汉详情" })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "查看宋辽石岭关交战详情" }),
+  ).toBeVisible();
+});
+
+test("filters people by category and role and exposes map evidence", async ({ page }) => {
+  await page.goto("/people?year=978&person=li-yu");
+  await page.getByRole("button", { name: "十国人物" }).click();
+  await page.getByRole("button", { name: "筛选文化人物" }).click();
+  const candidates = page.getByRole("region", { name: "候选人物" });
+  await expect(candidates.getByRole("button", { name: "选择李煜" })).toBeVisible();
+  await expect(candidates.getByRole("button", { name: "选择石敬瑭" })).toHaveCount(0);
+  await candidates.getByRole("button", { name: "选择李煜" }).click();
+  await expect(page.getByRole("heading", { name: "李煜" })).toBeVisible();
+  await expect(page.getByRole("note", { name: "异说", exact: true })).toBeVisible();
+
+  await page.goto("/map?year=936");
+  await page.getByRole("button", { name: "查看后晋", exact: true }).click();
+  const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
+  await expect(dynastyDialog.getByText("当年君主（年内）")).toBeVisible();
+  await expect(dynastyDialog.getByText("石敬瑭", { exact: true })).toBeVisible();
+  await expect(dynastyDialog.getByText("疆域精度")).toBeVisible();
+  await expect(dynastyDialog.getByText("示意", { exact: true }).first()).toBeVisible();
+  await dynastyDialog.getByRole("button", { name: "关闭政权详情" }).click();
+
+  await page
+    .getByRole("button", { name: "幽州：燕云十六州归辽（时称契丹）" })
+    .click();
+  const eventDialog = page.getByRole("dialog", { name: "幽州事件" });
+  await expect(
+    eventDialog.getByRole("link", { name: "燕云十六州归辽（时称契丹）" }),
+  ).toBeVisible();
+  await expect(
+    eventDialog.getByRole("note", { name: "第04集主线、史料扩展" }),
+  ).toBeVisible();
+});
+
+test("keeps research notes secondary and distinguishes local AI evidence", async ({ page }) => {
+  await page.goto("/notes");
+  await expect(page.getByRole("heading", { name: "资料与校勘", level: 1 })).toBeVisible();
+  await expect(
+    page.getByText("逐字稿不是史料原文，也不是已经核定的史实"),
+  ).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "逐字稿分集索引" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "来源账本" })).toBeVisible();
+
+  await page.goto("/explore/sixteen-prefectures-ceded?year=936");
+  await page.getByRole("button", { name: "打开问史" }).click();
+  const dialog = page.getByRole("dialog", { name: "问史助手" });
+  const question = dialog.getByRole("textbox", { name: "向问史提问" });
+  await question.fill("燕云十六州为什么归辽？");
+  await dialog.getByRole("button", { name: "发送问题" }).click();
+  await expect(dialog.getByText("知识库", { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/来源：.*燕云十六州归辽/)).toBeVisible();
+
+  await question.fill("量子芝士如何改变火星农业？");
+  await dialog.getByRole("button", { name: "发送问题" }).click();
+  await expect(dialog.getByText("未检索到", { exact: true })).toBeVisible();
+  await expect(dialog.getByText(/当前知识库中没有找到足够可靠的信息/)).toBeVisible();
+});
+
 test("explores 936 from map to person to event and asks a contextual question", async ({ page }) => {
   await page.goto("/map?year=936");
   await page.getByRole("button", { name: "查看后晋" }).click();
@@ -449,7 +593,19 @@ test("map corrects pre-907 years without dropping existing query state", async (
 });
 
 test("primary pages never overflow the viewport", async ({ page }) => {
-  for (const path of ["/", "/timeline?year=936", "/map?year=936", "/people?year=936&person=shi-jingtang", "/explore/founding-later-jin?year=936"]) {
+  for (const path of [
+    "/",
+    "/notes",
+    "/timeline?year=880",
+    "/timeline?year=936",
+    "/timeline?year=978",
+    "/map?year=936",
+    "/people?year=936&person=shi-jingtang",
+    "/people?year=978&person=li-yu",
+    "/explore/founding-later-jin?year=936",
+    "/explore/sixteen-prefectures-ceded?year=936",
+    "/explore/wuyue-submits?year=978",
+  ]) {
     await page.goto(path);
     const dimensions = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
     expect(dimensions.scrollWidth, `${path} overflows horizontally`).toBeLessThanOrEqual(dimensions.clientWidth + 1);
