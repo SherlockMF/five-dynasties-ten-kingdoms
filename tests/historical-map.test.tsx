@@ -7,11 +7,111 @@ import { useHistoryStore } from "@/features/history-state/history-store";
 import { HistoricalMap } from "@/features/history-map/historical-map";
 import * as mapEmptyModule from "@/features/history-map/map-empty";
 
-vi.mock("@/features/history-map/atlas/high-fidelity-map", () => ({
-  HighFidelityMap: () => (
-    <div aria-label="943年高保真历史地图">高保真地图</div>
-  ),
+const { atlasFixture } = vi.hoisted(() => ({
+  atlasFixture: {
+    realms: { type: "FeatureCollection", features: [] },
+    disputed: {
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: {
+            type: "Polygon",
+            coordinates: [
+              [
+                [113, 38],
+                [116, 38],
+                [116, 40],
+                [113, 38],
+              ],
+            ],
+          },
+          properties: {
+            id: "sixteen-prefectures-frontier-943",
+            dynastyId: "later-jin-liao",
+            name: "燕云十六州南缘过渡带",
+            validFromYear: 943,
+            validToYearExclusive: 944,
+            boundaryKind: "disputed",
+            accuracyLevel: "reconstructed",
+            verificationStatus: "reviewed",
+            sourceRefs: ["atlas-reference", "local-crosscheck"],
+            disputedNote: "南缘军事控制与州界表达不完全一致。",
+            labelLongitude: 114.5,
+            labelLatitude: 39,
+          },
+        },
+      ],
+    },
+    places: { type: "FeatureCollection", features: [] },
+    sources: [
+      {
+        id: "atlas-reference",
+        title: "公版五代地图",
+        reference: "https://example.com/atlas",
+        role: "georeference",
+        license: "Public domain",
+        redistributable: true,
+        note: "基础配准",
+      },
+      {
+        id: "local-crosscheck",
+        title: "本地核对图",
+        reference: "local-only:crosscheck",
+        role: "cross-check",
+        license: "Reference only",
+        redistributable: false,
+        note: "仅作核对",
+      },
+    ],
+  },
 }));
+
+vi.mock("@/features/history-map/atlas/high-fidelity-map", async () => {
+  const { useEffect } = await import("react");
+
+  return {
+    HighFidelityMap: ({
+      onAtlasReady,
+      onFallback,
+      onSelectRegion,
+    }: {
+      onAtlasReady: (dataset: typeof atlasFixture) => void;
+      onFallback: (error: Error) => void;
+      onSelectRegion?: (selection: {
+        id: string;
+        boundaryKind: "disputed";
+        dynastyId: string;
+      }) => void;
+    }) => {
+      useEffect(() => onAtlasReady(atlasFixture), [onAtlasReady]);
+
+      return (
+        <div aria-label="943年高保真历史地图">
+          高保真地图
+          <button
+            type="button"
+            onClick={() =>
+              onSelectRegion?.({
+                id: "sixteen-prefectures-frontier-943",
+                boundaryKind: "disputed",
+                dynastyId: "later-jin-liao",
+              })
+            }
+          >
+            模拟地图选择争议区
+          </button>
+          <button
+            type="button"
+            onClick={() => onFallback(new Error("模拟地图失败"))}
+          >
+            模拟地图失败
+          </button>
+        </div>
+      );
+    },
+  };
+});
 
 describe("HistoricalMap", () => {
   beforeEach(() => useHistoryStore.getState().reset({ currentYear: 936, selectedDynasty: undefined, selectedEvent: undefined }));
@@ -53,6 +153,69 @@ describe("HistoricalMap", () => {
 
     expect(useHistoryStore.getState().selectedDynasty).toBe("later-jin");
     expect(screen.getByRole("dialog", { name: "后晋详情" })).toBeVisible();
+  });
+
+  it("opens a disputed area without arbitrarily selecting one dynasty", async () => {
+    const user = userEvent.setup();
+    useHistoryStore.getState().reset({
+      currentYear: 943,
+      selectedDynasty: "later-jin",
+    });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "模拟地图选择争议区" }),
+    );
+
+    expect(useHistoryStore.getState().selectedDynasty).toBeUndefined();
+    const dialog = screen.getByRole("dialog", {
+      name: "燕云十六州南缘过渡带详情",
+    });
+    expect(dialog).toHaveTextContent("南缘军事控制与州界表达不完全一致");
+    expect(within(dialog).getByText("后晋")).toBeVisible();
+    expect(within(dialog).getByText("辽")).toBeVisible();
+    expect(within(dialog).getByRole("link", { name: "公版五代地图" }))
+      .toHaveAttribute("href", "https://example.com/atlas");
+    expect(within(dialog).getByText(/本地核对图.*本地核对资料/)).toBeVisible();
+  });
+
+  it("offers a keyboard-equivalent disputed-area entry", async () => {
+    const user = userEvent.setup();
+    useHistoryStore.getState().reset({ currentYear: 943 });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: "查看争议区燕云十六州南缘过渡带",
+      }),
+    );
+
+    expect(
+      screen.getByRole("dialog", { name: "燕云十六州南缘过渡带详情" }),
+    ).toBeVisible();
+  });
+
+  it("retries the atlas after leaving 943", async () => {
+    const user = userEvent.setup();
+    useHistoryStore.getState().reset({ currentYear: 943 });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "模拟地图失败" }),
+    );
+    expect(
+      screen.queryByLabelText("943年高保真历史地图"),
+    ).not.toBeInTheDocument();
+
+    act(() => useHistoryStore.getState().setCurrentYear(942));
+    expect(
+      screen.getByRole("img", { name: "942年末政权分布示意图" }),
+    ).toBeVisible();
+
+    act(() => useHistoryStore.getState().setCurrentYear(943));
+    expect(
+      await screen.findByLabelText("943年高保真历史地图"),
+    ).toBeVisible();
   });
 
   it("projects the current year's sourced events onto the map", () => {

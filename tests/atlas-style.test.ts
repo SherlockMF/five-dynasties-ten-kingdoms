@@ -5,6 +5,10 @@ import { createAtlasStyle } from "@/features/history-map/atlas/atlas-style";
 describe("createAtlasStyle", () => {
   it("contains terrain context but no modern cartography", () => {
     const style = createAtlasStyle();
+    expect(style.sources.protomaps).toMatchObject({
+      type: "vector",
+      url: "pmtiles:///maps/base/east-asia-z7.pmtiles",
+    });
     const ids = style.layers.map((layer) => layer.id).join(" ");
     const modernBasemapIds = style.layers
       .filter((layer) => "source" in layer && layer.source === "protomaps")
@@ -18,7 +22,8 @@ describe("createAtlasStyle", () => {
   });
 
   it("draws historical realms above the hillshade", () => {
-    const ids = createAtlasStyle().layers.map((layer) => layer.id);
+    const style = createAtlasStyle();
+    const ids = style.layers.map((layer) => layer.id);
     const interactionOrder = [
       "atlas-realms-fill",
       "atlas-disputed-fill",
@@ -37,5 +42,8 @@ describe("createAtlasStyle", () => {
     expect(ids.filter((id) => interactionOrder.includes(id))).toEqual(
       interactionOrder,
     );
+    expect(
+      style.layers.find((layer) => layer.id === "atlas-realm-labels"),
+    ).toMatchObject({ source: "realmLabels943" });
   });
 });

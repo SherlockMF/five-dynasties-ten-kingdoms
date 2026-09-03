@@ -229,7 +229,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realm-labels",
       type: "symbol",
-      source: "realms943",
+      source: "realmLabels943",
       layout: {
         "text-field": ["get", "name"],
         "text-font": ["Noto Sans Regular"],
@@ -285,6 +285,10 @@ export function createAtlasStyle(): StyleSpecification {
         attribution: '<a href="https://mapterhorn.com">Mapterhorn</a>',
       },
       realms943: {
+        type: "geojson",
+        data: EMPTY_FEATURE_COLLECTION,
+      },
+      realmLabels943: {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
       },

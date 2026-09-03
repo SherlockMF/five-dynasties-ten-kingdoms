@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 
 import { loadAtlas943 } from "@/features/history-map/atlas/atlas-schema";
+import type { AtlasRegionSelection } from "@/features/history-map/atlas/atlas-region-selection";
 import type {
   AtlasDataset,
   AtlasProjector,
 } from "@/features/history-map/atlas/atlas-types";
 import { MapEventMarkers } from "@/features/history-map/map-event-markers";
 import type {
-  Dynasty,
   HistoricalEvent,
   HistoricalLocation,
 } from "@/types/history";
@@ -19,32 +19,20 @@ import { MapFallback } from "./map-fallback";
 import { MapLibreCanvas } from "./maplibre-canvas";
 
 export interface HighFidelityMapProps {
-  dynasties: Dynasty[];
   events: HistoricalEvent[];
   locations: HistoricalLocation[];
   selectedDynastyId?: string;
-  onSelectDynasty: (dynastyId: string) => void;
+  onSelectRegion: (selection: AtlasRegionSelection) => void;
   onSelectEvent: (eventId?: string) => void;
   onAtlasReady: (dataset: AtlasDataset) => void;
   onFallback: (error: Error) => void;
 }
 
-function resolveDynastyId(candidate: string, dynasties: Dynasty[]) {
-  if (dynasties.some((dynasty) => dynasty.id === candidate)) return candidate;
-  return dynasties.find(
-    (dynasty) =>
-      candidate.startsWith(`${dynasty.id}-`) ||
-      candidate.endsWith(`-${dynasty.id}`) ||
-      candidate.includes(`-${dynasty.id}-`),
-  )?.id;
-}
-
 export function HighFidelityMap({
-  dynasties,
   events,
   locations,
   selectedDynastyId,
-  onSelectDynasty,
+  onSelectRegion,
   onSelectEvent,
   onAtlasReady,
   onFallback,
@@ -88,10 +76,7 @@ export function HighFidelityMap({
         <MapLibreCanvas
           atlas={atlas}
           selectedDynastyId={selectedDynastyId}
-          onSelectDynasty={(candidate) => {
-            const dynastyId = resolveDynastyId(candidate, dynasties);
-            if (dynastyId) onSelectDynasty(dynastyId);
-          }}
+          onSelectRegion={onSelectRegion}
           onProjectorChange={setProjector}
           onFatalError={onFallback}
         />

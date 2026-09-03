@@ -2,11 +2,12 @@
 
 import { geoArea, geoMercator, geoPath } from "d3-geo";
 import dynamic from "next/dynamic";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Geometry, MultiPolygon, Polygon } from "geojson";
 
 import { useHistoryStore } from "@/features/history-state/history-store";
 import { MapFallback } from "@/features/history-map/atlas/map-fallback";
+import type { AtlasRegionSelection } from "@/features/history-map/atlas/atlas-region-selection";
 import type {
   AtlasDataset,
   AtlasRegionFeatureCollection,
@@ -22,6 +23,7 @@ import type {
 import { DynastyListView } from "./dynasty-list-view";
 import { DynastyPopover } from "./dynasty-popover";
 import { DynastyRegion } from "./dynasty-region";
+import { DisputedAreaPopover } from "./atlas/disputed-area-popover";
 import { MapControls } from "./map-controls";
 import { MapEmpty } from "./map-empty";
 import { MapEventMarkers } from "./map-event-markers";
@@ -75,6 +77,15 @@ function regionDescribesDynasty(region: HistoricalRegion, dynastyId: string) {
   );
 }
 
+function compositeDynastyIdIncludes(candidate: string, dynastyId: string) {
+  return (
+    candidate === dynastyId ||
+    candidate.startsWith(`${dynastyId}-`) ||
+    candidate.endsWith(`-${dynastyId}`) ||
+    candidate.includes(`-${dynastyId}-`)
+  );
+}
+
 function normalizeRegionGeometry(geometry: Geometry): Geometry {
   if (geoArea(geometry) <= Math.PI * 2) return geometry;
   if (geometry.type === "Polygon") {
@@ -118,6 +129,8 @@ export function HistoricalMap({
   const selectEvent = useHistoryStore((state) => state.selectEvent);
   const [atlas, setAtlas] = useState<AtlasDataset>();
   const [atlasFailure, setAtlasFailure] = useState<string>();
+  const [selectedDisputedRegionId, setSelectedDisputedRegionId] =
+    useState<string>();
   const useHighFidelityMap = year === 943 && !atlasFailure;
   const atlasRegions = useMemo(
     () => (atlas ? atlasToHistoricalRegions(atlas) : undefined),
@@ -135,6 +148,17 @@ export function HistoricalMap({
     return [...uniqueDynasties.values()];
   }, [dynasties, visibleRegions]);
   const selected = dynasties.find((dynasty) => dynasty.id === selectedId);
+  const selectedDisputedFeature = atlas?.disputed.features.find(
+    (feature) => feature.properties.id === selectedDisputedRegionId,
+  );
+  const disputedDynasties = selectedDisputedFeature
+    ? dynasties.filter((dynasty) =>
+        compositeDynastyIdIncludes(
+          selectedDisputedFeature.properties.dynastyId,
+          dynasty.id,
+        ),
+      )
+    : [];
   const selectedRegions = selected
     ? visibleRegions.filter((region) =>
         regionDescribesDynasty(region, selected.id),
@@ -168,13 +192,41 @@ export function HistoricalMap({
   }, [dynasties, useHighFidelityMap, visibleRegions]);
   const projected = mapProjection?.projectedRegions ?? [];
 
-  const handleSelect = (id: string) => selectDynasty(id);
+  const handleSelect = (id: string) => {
+    setSelectedDisputedRegionId(undefined);
+    selectDynasty(id);
+  };
+  const handleSelectRegion = (selection: AtlasRegionSelection) => {
+    if (selection.boundaryKind === "disputed") {
+      selectDynasty(undefined);
+      setSelectedDisputedRegionId(selection.id);
+      return;
+    }
+
+    if (dynasties.some((dynasty) => dynasty.id === selection.dynastyId)) {
+      handleSelect(selection.dynastyId);
+    }
+  };
   const handleAtlasReady = useCallback((dataset: AtlasDataset) => {
     setAtlas(dataset);
   }, []);
   const handleAtlasFallback = useCallback((error: Error) => {
     setAtlasFailure(error.message);
   }, []);
+
+  useEffect(
+    () =>
+      useHistoryStore.subscribe((state, previousState) => {
+        if (
+          previousState.currentYear === 943 &&
+          state.currentYear !== 943
+        ) {
+          setAtlasFailure(undefined);
+          setSelectedDisputedRegionId(undefined);
+        }
+      }),
+    [],
+  );
 
   return (
     <section aria-label="五代十国互动历史地图" className="overflow-hidden rounded-[1.25rem] border border-ink/15 bg-ink shadow-[0_24px_70px_rgba(23,40,36,.14)]">
@@ -189,11 +241,10 @@ export function HistoricalMap({
           </div>
           {useHighFidelityMap ? (
             <HighFidelityMap
-              dynasties={dynasties}
               events={events}
               locations={locations}
               selectedDynastyId={selectedId}
-              onSelectDynasty={handleSelect}
+              onSelectRegion={handleSelectRegion}
               onSelectEvent={selectEvent}
               onAtlasReady={handleAtlasReady}
               onFallback={handleAtlasFallback}
@@ -212,10 +263,45 @@ export function HistoricalMap({
             </div>
           ) : null}
           {selected ? <DynastyPopover dynasty={selected} year={year} events={selectedEvents} regions={selectedRegions} atlasSources={year === 943 ? atlas?.sources : undefined} onClose={() => selectDynasty(undefined)} /> : null}
+          {selectedDisputedFeature ? (
+            <DisputedAreaPopover
+              feature={selectedDisputedFeature}
+              sources={atlas?.sources ?? []}
+              dynasties={disputedDynasties}
+              onSelectDynasty={handleSelect}
+              onClose={() => setSelectedDisputedRegionId(undefined)}
+            />
+          ) : null}
         </div>
         <aside className="border-t border-white/10 bg-paper p-4 lg:border-l lg:border-t-0">
           <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">当前政权 · {visibleDynasties.length}</p>
           <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={handleSelect} />
+          {year === 943 && atlas && !atlasFailure && atlas.disputed.features.length ? (
+            <section className="mt-5 border-t border-ink/10 pt-4" aria-label="争议区列表">
+              <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">
+                争议区 · {atlas.disputed.features.length}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                {atlas.disputed.features.map((feature) => (
+                  <button
+                    key={feature.properties.id}
+                    type="button"
+                    aria-label={`查看争议区${feature.properties.name}`}
+                    onClick={() =>
+                      handleSelectRegion({
+                        id: feature.properties.id,
+                        boundaryKind: feature.properties.boundaryKind,
+                        dynastyId: feature.properties.dynastyId,
+                      })
+                    }
+                    className="rounded-xl border border-dashed border-gold/45 bg-gold/10 px-4 py-3 text-left font-serif text-sm leading-5 text-ink transition-colors hover:border-cinnabar hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar"
+                  >
+                    {feature.properties.name}
+                  </button>
+                ))}
+              </div>
+            </section>
+          ) : null}
         </aside>
       </div>
     </section>
