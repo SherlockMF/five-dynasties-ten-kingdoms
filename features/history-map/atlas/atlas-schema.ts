@@ -1,11 +1,11 @@
 import { z } from "zod";
 
-import { ATLAS_943_URLS } from "@/features/history-map/atlas/atlas-config";
 import type {
   AtlasDataset,
   AtlasPlaceFeatureCollection,
   AtlasRegionFeatureCollection,
   AtlasSourceRecord,
+  MapSnapshotManifest,
 } from "@/features/history-map/atlas/atlas-types";
 
 const longitudeSchema = z.number().finite().min(-180).max(180);
@@ -26,15 +26,22 @@ const sourceRefsSchema = z.preprocess((value) => {
   }
 }, z.array(z.string().min(1)).min(1, "sourceRefs must not be empty"));
 
-const regionPropertiesSchema = z.object({
+const regionPropertiesSchema = z
+  .object({
   id: z.string().min(1),
   dynastyId: z.string().min(1),
   name: z.string().min(1),
-  validFromYear: z.literal(943),
-  validToYearExclusive: z.literal(944),
+  snapshotId: z.string().min(1).optional(),
+  validFromYear: z.number().int().min(907).max(979),
+  validToYearExclusive: z.number().int().min(908).max(980),
   boundaryKind: z.enum(["controlled", "influence", "disputed"]),
-  accuracyLevel: z.enum(["attested", "reconstructed", "approximate"]),
-  verificationStatus: z.enum(["verified", "reviewed"]),
+  accuracyLevel: z.enum([
+    "attested",
+    "reconstructed",
+    "approximate",
+    "illustrative",
+  ]),
+  verificationStatus: z.enum(["verified", "reviewed", "illustrative"]),
   sourceRefs: sourceRefsSchema,
   disputedNote: z
     .string()
@@ -43,7 +50,24 @@ const regionPropertiesSchema = z.object({
     .transform((value) => value ?? undefined),
   labelLongitude: longitudeSchema,
   labelLatitude: latitudeSchema,
-});
+  })
+  .refine(
+    (properties) =>
+      properties.validToYearExclusive > properties.validFromYear,
+    {
+      message: "validToYearExclusive must be greater than validFromYear",
+      path: ["validToYearExclusive"],
+    },
+  )
+  .refine(
+    (properties) =>
+      !["approximate", "illustrative"].includes(properties.accuracyLevel) ||
+      Boolean(properties.disputedNote),
+    {
+      message: "inferred boundary requires an inference note",
+      path: ["disputedNote"],
+    },
+  );
 
 const regionGeometrySchema = z.discriminatedUnion("type", [
   z.object({
@@ -188,30 +212,78 @@ function emptyPlaceCollection(): AtlasPlaceFeatureCollection {
   return { type: "FeatureCollection", features: [] };
 }
 
-export async function loadAtlas943(signal?: AbortSignal): Promise<AtlasDataset> {
+type ParsedRegionCollection = z.infer<typeof regionCollectionSchema>;
+
+function attachSnapshotId(
+  collection: ParsedRegionCollection,
+  snapshotId: string,
+): AtlasRegionFeatureCollection {
+  return {
+    ...collection,
+    features: collection.features.map((feature) => ({
+      ...feature,
+      properties: { ...feature.properties, snapshotId },
+    })),
+  };
+}
+
+function assertCoversAnchorYear(
+  filename: string,
+  collection: AtlasRegionFeatureCollection,
+  anchorYear: number | null,
+): void {
+  if (anchorYear === null) return;
+  for (const feature of collection.features) {
+    const { validFromYear, validToYearExclusive } = feature.properties;
+    if (!(validFromYear <= anchorYear && anchorYear < validToYearExclusive)) {
+      throw new Error(
+        `${filename}: feature "${feature.properties.id}" does not cover anchorYear ${anchorYear}`,
+      );
+    }
+  }
+}
+
+export async function loadAtlasSnapshot(
+  manifest: MapSnapshotManifest,
+  signal?: AbortSignal,
+): Promise<AtlasDataset> {
+  const { realms: realmsUrl, sources: sourcesUrl } = manifest.files;
+  if (!realmsUrl || !sourcesUrl) {
+    throw new Error(`${manifest.id}: missing required snapshot files`);
+  }
+
   const [realmsValue, sourcesValue, disputedResult, placesResult] =
     await Promise.all([
-      fetchJson("realms.geojson", ATLAS_943_URLS.realms, signal),
-      fetchJson("sources.json", ATLAS_943_URLS.sources, signal),
-      loadOptionalPublishedFile(
-        "disputed.geojson",
-        ATLAS_943_URLS.disputed,
-        regionCollectionSchema,
-        signal,
-      ),
-      loadOptionalPublishedFile(
-        "places.geojson",
-        ATLAS_943_URLS.places,
-        placeCollectionSchema,
-        signal,
-      ),
+      fetchJson("realms.geojson", realmsUrl, signal),
+      fetchJson("sources.json", sourcesUrl, signal),
+      manifest.files.disputed
+        ? loadOptionalPublishedFile(
+            "disputed.geojson",
+            manifest.files.disputed,
+            regionCollectionSchema,
+            signal,
+          )
+        : Promise.resolve({
+            data: emptyRegionCollection() as unknown as ParsedRegionCollection,
+          }),
+      manifest.files.places
+        ? loadOptionalPublishedFile(
+            "places.geojson",
+            manifest.files.places,
+            placeCollectionSchema,
+            signal,
+          )
+        : Promise.resolve({ data: emptyPlaceCollection() }),
     ]);
 
-  const realms = parsePublishedFile(
-    "realms.geojson",
-    regionCollectionSchema,
-    realmsValue,
-  ) as AtlasRegionFeatureCollection;
+  const realms = attachSnapshotId(
+    parsePublishedFile(
+      "realms.geojson",
+      regionCollectionSchema,
+      realmsValue,
+    ),
+    manifest.id,
+  );
   const sources = parsePublishedFile(
     "sources.json",
     sourceRecordsSchema,
@@ -219,14 +291,34 @@ export async function loadAtlas943(signal?: AbortSignal): Promise<AtlasDataset> 
   ) as AtlasSourceRecord[];
   const sourceIds = new Set(sources.map((source) => source.id));
 
+  for (const sourceRef of manifest.sourceRefs) {
+    if (!sourceIds.has(sourceRef)) {
+      throw new Error(
+        `sources.json: manifest contains unknown source "${sourceRef}"`,
+      );
+    }
+  }
+
   assertKnownSources("realms.geojson", sourceIds, realms);
+  assertCoversAnchorYear("realms.geojson", realms, manifest.anchorYear);
 
   const warnings: string[] = [];
-  let disputed = disputedResult.data;
-  if (disputedResult.warning) warnings.push(disputedResult.warning);
+  if ("warning" in disputedResult && disputedResult.warning) {
+    warnings.push(disputedResult.warning);
+  }
+  const disputedData =
+    "data" in disputedResult ? disputedResult.data : undefined;
+  let disputed = disputedData
+    ? attachSnapshotId(disputedData, manifest.id)
+    : undefined;
   if (disputed) {
     try {
       assertKnownSources("disputed.geojson", sourceIds, disputed);
+      assertCoversAnchorYear(
+        "disputed.geojson",
+        disputed,
+        manifest.anchorYear,
+      );
     } catch (error) {
       warnings.push(`${errorMessage(error)}；已使用空图层。`);
       disputed = undefined;
@@ -234,7 +326,9 @@ export async function loadAtlas943(signal?: AbortSignal): Promise<AtlasDataset> 
   }
 
   let places = placesResult.data;
-  if (placesResult.warning) warnings.push(placesResult.warning);
+  if ("warning" in placesResult && placesResult.warning) {
+    warnings.push(placesResult.warning);
+  }
   if (places) {
     try {
       assertKnownSources("places.geojson", sourceIds, places);

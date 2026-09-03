@@ -6,8 +6,8 @@ export interface MapFallbackProps {
 export function MapFallback({ state, detail }: MapFallbackProps) {
   const message =
     state === "loading"
-      ? "正在载入 943 年高保真地图"
-      : "高保真地图暂不可用，已切回示意图";
+      ? "正在载入互动历史地图"
+      : "正式疆域快照暂不可用";
 
   return (
     <div

@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "candidates": [
+    {
+      "snapshotId": "snapshot-908",
+      "anchorYear": 908,
+      "priority": 1,
+      "evidenceSourceIds": ["atlas-page-84-liang-jin-qi-lulong"],
+      "purpose": "补齐后梁、河东晋、岐与卢龙并立的北方五代起点。"
+    },
+    {
+      "snapshotId": "snapshot-934",
+      "anchorYear": 934,
+      "priority": 1,
+      "evidenceSourceIds": [
+        "atlas-page-85-later-tang",
+        "atlas-page-89-min",
+        "atlas-page-89-wu",
+        "atlas-page-89-wuyue"
+      ],
+      "purpose": "补齐后唐末期并整合闽、吴、吴越区域证据。"
+    },
+    {
+      "snapshotId": "snapshot-949",
+      "anchorYear": 949,
+      "priority": 1,
+      "evidenceSourceIds": ["atlas-page-87-later-han"],
+      "purpose": "补齐短命后汉时期的北方核心政权格局。"
+    },
+    {
+      "snapshotId": "snapshot-959",
+      "anchorYear": 959,
+      "priority": 1,
+      "evidenceSourceIds": [
+        "atlas-page-88-later-zhou",
+        "atlas-page-88-northern-han"
+      ],
+      "purpose": "补齐后周末年与北汉、辽相邻的北方格局。"
+    },
+    {
+      "snapshotId": "snapshot-924",
+      "anchorYear": 924,
+      "priority": 2,
+      "evidenceSourceIds": ["atlas-page-91-former-shu"],
+      "purpose": "补充前蜀灭亡前的西南区域快照。"
+    },
+    {
+      "snapshotId": "snapshot-954",
+      "anchorYear": 954,
+      "priority": 2,
+      "evidenceSourceIds": [
+        "atlas-page-90-southern-tang",
+        "atlas-page-90-wuyue",
+        "atlas-page-91-later-shu",
+        "atlas-page-92-southern-han"
+      ],
+      "purpose": "整合南唐、吴越、后蜀与南汉的南方区域证据。"
+    }
+  ],
+  "reviewGroups": [
+    {
+      "anchorYear": 943,
+      "evidenceSourceIds": [
+        "atlas-page-82-overview",
+        "atlas-page-86-later-jin",
+        "atlas-page-93-chu",
+        "atlas-page-93-jingnan",
+        "atlas-page-94-western-regions"
+      ],
+      "purpose": "复核现有 943 年正式重建，不另建重复快照。"
+    }
+  ]
+}

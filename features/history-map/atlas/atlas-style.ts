@@ -21,14 +21,24 @@ const FORBIDDEN_MODERN_LAYER =
 const REALM_COLOR: ExpressionSpecification = [
   "match",
   ["get", "dynastyId"],
+  "later-liang",
+  "#9e5b45",
+  "later-tang",
+  "#466c63",
   "later-jin",
   "#806d9a",
+  "later-han",
+  "#80604f",
+  "later-zhou",
+  "#b09348",
   "liao",
   "#495a62",
   "southern-tang",
   "#477f78",
   "wuyue",
   "#5b8f92",
+  "wu",
+  "#71918d",
   "min",
   "#8a7f4f",
   "chu",
@@ -37,8 +47,14 @@ const REALM_COLOR: ExpressionSpecification = [
   "#6b8b66",
   "later-shu",
   "#a47f57",
+  "former-shu",
+  "#9d7953",
   "jingnan",
   "#8a8069",
+  "northern-han",
+  "#7b5960",
+  "northern-song",
+  "#af3f35",
   "#9f4036",
 ];
 
@@ -114,7 +130,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-fill",
       type: "fill",
-      source: "realms943",
+      source: "realms",
       paint: {
         "fill-color": REALM_COLOR,
         "fill-opacity": [
@@ -129,7 +145,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-disputed-fill",
       type: "fill",
-      source: "disputed943",
+      source: "disputed",
       paint: {
         "fill-color": "#b79755",
         "fill-opacity": 0.16,
@@ -138,7 +154,8 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-line",
       type: "line",
-      source: "realms943",
+      source: "realms",
+      filter: ["!", ["in", ["get", "accuracyLevel"], ["literal", ["approximate", "illustrative"]]]],
       paint: {
         "line-color": REALM_COLOR,
         "line-opacity": 0.94,
@@ -146,9 +163,25 @@ function createHistoricalLayers(): LayerSpecification[] {
       },
     },
     {
+      id: "atlas-realms-inferred-line",
+      type: "line",
+      source: "realms",
+      filter: [
+        "in",
+        ["get", "accuracyLevel"],
+        ["literal", ["approximate", "illustrative"]],
+      ],
+      paint: {
+        "line-color": REALM_COLOR,
+        "line-dasharray": [2.4, 1.8],
+        "line-opacity": 0.9,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.1, 7, 2.2],
+      },
+    },
+    {
       id: "atlas-disputed-line",
       type: "line",
-      source: "disputed943",
+      source: "disputed",
       paint: {
         "line-color": "#8b6f37",
         "line-dasharray": [2, 1.6],
@@ -159,7 +192,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-hover",
       type: "line",
-      source: "realms943",
+      source: "realms",
       filter: ["==", ["get", "id"], ""],
       paint: {
         "line-color": "#172824",
@@ -170,7 +203,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-disputed-hover",
       type: "line",
-      source: "disputed943",
+      source: "disputed",
       filter: ["==", ["get", "id"], ""],
       paint: {
         "line-color": "#172824",
@@ -182,7 +215,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-selected",
       type: "line",
-      source: "realms943",
+      source: "realms",
       filter: ["==", ["get", "dynastyId"], ""],
       paint: {
         "line-color": "#9f4036",
@@ -193,7 +226,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-disputed-selected",
       type: "line",
-      source: "disputed943",
+      source: "disputed",
       filter: ["==", ["get", "dynastyId"], ""],
       paint: {
         "line-color": "#9f4036",
@@ -205,7 +238,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-prefectures",
       type: "circle",
-      source: "places943",
+      source: "places",
       filter: ["==", ["get", "placeKind"], "prefecture"],
       paint: {
         "circle-color": "#f3f0e7",
@@ -217,7 +250,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-capitals",
       type: "circle",
-      source: "places943",
+      source: "places",
       filter: ["==", ["get", "placeKind"], "capital"],
       paint: {
         "circle-color": "#9f4036",
@@ -229,7 +262,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realm-labels",
       type: "symbol",
-      source: "realmLabels943",
+      source: "realmLabels",
       layout: {
         "text-field": ["get", "name"],
         "text-font": ["Noto Sans Regular"],
@@ -245,7 +278,7 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-capital-labels",
       type: "symbol",
-      source: "places943",
+      source: "places",
       filter: ["==", ["get", "placeKind"], "capital"],
       layout: {
         "text-anchor": "left",
@@ -266,7 +299,7 @@ function createHistoricalLayers(): LayerSpecification[] {
 export function createAtlasStyle(): StyleSpecification {
   return {
     version: 8,
-    name: "943 年末历史疆域",
+    name: "五代十国互动历史地图",
     glyphs:
       "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
     sources: {
@@ -285,19 +318,19 @@ export function createAtlasStyle(): StyleSpecification {
         attribution:
           '<a href="https://mapterhorn.com/attribution/">© Mapterhorn</a>',
       },
-      realms943: {
+      realms: {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
       },
-      realmLabels943: {
+      realmLabels: {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
       },
-      disputed943: {
+      disputed: {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
       },
-      places943: {
+      places: {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
       },

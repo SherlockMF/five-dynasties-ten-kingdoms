@@ -5,9 +5,43 @@ import type {
   Polygon,
 } from "geojson";
 
-export type AtlasAccuracy = "attested" | "reconstructed" | "approximate";
+export type AtlasAccuracy =
+  | "attested"
+  | "reconstructed"
+  | "approximate"
+  | "illustrative";
 
 export type AtlasBoundaryKind = "controlled" | "influence" | "disputed";
+
+export type MapBoundaryMode = "reconstructed" | "illustrative";
+
+export type MapConfidence = "high" | "medium" | "low";
+
+export type MapYearRecord = {
+  year: number;
+  snapshotId: string;
+  anchorYear: number | null;
+  boundaryMode: MapBoundaryMode;
+  confidence: MapConfidence;
+  mapNote: string;
+  eventIds: readonly string[];
+};
+
+export type MapSnapshotManifest = {
+  id: string;
+  anchorYear: number | null;
+  version: string;
+  bbox: readonly [west: number, south: number, east: number, north: number];
+  files: Readonly<{
+    realms?: string;
+    disputed?: string;
+    places?: string;
+    sources?: string;
+  }>;
+  sourceRefs: readonly string[];
+  inferenceNotes: readonly string[];
+  confidence: MapConfidence;
+};
 
 export type AtlasSourceRecord = {
   id: string;
@@ -23,11 +57,12 @@ export type AtlasRegionProperties = {
   id: string;
   dynastyId: string;
   name: string;
-  validFromYear: 943;
-  validToYearExclusive: 944;
+  snapshotId: string;
+  validFromYear: number;
+  validToYearExclusive: number;
   boundaryKind: AtlasBoundaryKind;
   accuracyLevel: AtlasAccuracy;
-  verificationStatus: "verified" | "reviewed";
+  verificationStatus: "verified" | "reviewed" | "illustrative";
   sourceRefs: string[];
   disputedNote?: string;
   labelLongitude: number;

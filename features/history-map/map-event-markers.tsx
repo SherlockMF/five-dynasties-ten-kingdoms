@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, X } from "lucide-react";
+import { X } from "lucide-react";
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import {
@@ -417,7 +417,7 @@ export function MapEventMarkers({
             />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute left-0 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-paper bg-cinnabar"
+              className="pointer-events-none absolute left-0 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-paper bg-ink/75"
             />
             <button
               data-event-marker
@@ -439,9 +439,15 @@ export function MapEventMarkers({
                 }
               }}
               style={{ left: markerLeft, top: markerTop }}
-              className="pointer-events-auto absolute left-0 top-0 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-paper/70 bg-cinnabar text-paper shadow-[0_6px_20px_rgba(23,40,36,.45)] transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
+              className="group pointer-events-auto absolute left-0 top-0 flex size-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center border-0 bg-transparent text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold focus-visible:ring-offset-2 focus-visible:ring-offset-ink"
             >
-              <MapPin aria-hidden="true" className="size-5" />
+              <span
+                data-marker-glyph="seal"
+                aria-hidden="true"
+                className="relative flex size-7 rotate-45 items-center justify-center rounded-[2px] border border-paper/90 bg-cinnabar shadow-[0_4px_12px_rgba(23,40,36,.38),inset_0_0_0_2px_rgba(243,240,231,.24)] transition-transform group-hover:scale-110 group-focus-visible:scale-110"
+              >
+                <span className="size-2 border border-paper/80 bg-ink/20" />
+              </span>
             </button>
           </div>
         );

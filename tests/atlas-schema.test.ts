@@ -1,6 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { loadAtlas943 } from "@/features/history-map/atlas/atlas-schema";
+import { loadAtlasSnapshot } from "@/features/history-map/atlas/atlas-schema";
+import { MAP_SNAPSHOT_MANIFESTS } from "@/features/history-map/atlas/map-year-records";
+
+const manifest = {
+  ...MAP_SNAPSHOT_MANIFESTS["snapshot-943"],
+  sourceRefs: ["atlas-1935-936-946"],
+};
 
 function stubAtlasFetch({
   sourceRefs,
@@ -93,7 +99,7 @@ function stubAtlasFetch({
   );
 }
 
-describe("loadAtlas943", () => {
+describe("loadAtlasSnapshot", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
@@ -101,15 +107,18 @@ describe("loadAtlas943", () => {
   it("rejects a realm without provenance", async () => {
     stubAtlasFetch({ sourceRefs: "[]" });
 
-    await expect(loadAtlas943()).rejects.toThrow(/sourceRefs/);
+    await expect(loadAtlasSnapshot(manifest)).rejects.toThrow(/sourceRefs/);
   });
 
   it("normalizes a null disputed note from published GeoJSON", async () => {
     stubAtlasFetch({ sourceRefs: '["atlas-1935-936-946"]' });
 
-    const atlas = await loadAtlas943();
+    const atlas = await loadAtlasSnapshot(manifest);
 
     expect(atlas.realms.features[0].properties.disputedNote).toBeUndefined();
+    expect(atlas.realms.features[0].properties.snapshotId).toBe(
+      "snapshot-943",
+    );
   });
 
   it("keeps realms when optional disputed and place layers fail", async () => {
@@ -118,7 +127,7 @@ describe("loadAtlas943", () => {
       optionalFailure: true,
     });
 
-    const atlas = await loadAtlas943();
+    const atlas = await loadAtlasSnapshot(manifest);
 
     expect(atlas.realms.features).toHaveLength(1);
     expect(atlas.disputed.features).toEqual([]);
@@ -127,5 +136,40 @@ describe("loadAtlas943", () => {
       expect.stringContaining("disputed.geojson"),
       expect.stringContaining("places.geojson"),
     ]);
+  });
+
+  it("rejects an invalid validity interval", async () => {
+    stubAtlasFetch({ sourceRefs: '["atlas-1935-936-946"]' });
+    const fetchMock = vi.mocked(fetch);
+    const original = fetchMock.getMockImplementation();
+    fetchMock.mockImplementation(async (input) => {
+      const response = await original!(input);
+      if (!String(input).endsWith("realms.geojson")) return response;
+      const value = await response.json();
+      value.features[0].properties.validToYearExclusive = 943;
+      return { ok: true, json: async () => value } as Response;
+    });
+
+    await expect(loadAtlasSnapshot(manifest)).rejects.toThrow(
+      /validToYearExclusive/,
+    );
+  });
+
+  it("rejects a feature that does not cover the snapshot anchor year", async () => {
+    stubAtlasFetch({ sourceRefs: '["atlas-1935-936-946"]' });
+    const fetchMock = vi.mocked(fetch);
+    const original = fetchMock.getMockImplementation();
+    fetchMock.mockImplementation(async (input) => {
+      const response = await original!(input);
+      if (!String(input).endsWith("realms.geojson")) return response;
+      const value = await response.json();
+      value.features[0].properties.validFromYear = 908;
+      value.features[0].properties.validToYearExclusive = 909;
+      return { ok: true, json: async () => value } as Response;
+    });
+
+    await expect(loadAtlasSnapshot(manifest)).rejects.toThrow(
+      /does not cover anchorYear 943/,
+    );
   });
 });

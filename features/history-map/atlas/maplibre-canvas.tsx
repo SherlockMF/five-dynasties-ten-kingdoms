@@ -15,8 +15,8 @@ import { Protocol } from "pmtiles";
 import { useEffect, useRef, useState } from "react";
 
 import {
-  ATLAS_943_BOUNDS,
-  ATLAS_943_INITIAL_VIEW,
+  ATLAS_BOUNDS,
+  ATLAS_INITIAL_VIEW,
 } from "@/features/history-map/atlas/atlas-config";
 import { createAtlasStyle } from "@/features/history-map/atlas/atlas-style";
 import type { AtlasRegionSelection } from "@/features/history-map/atlas/atlas-region-selection";
@@ -28,10 +28,12 @@ import type {
 
 export interface MapLibreCanvasProps {
   atlas: AtlasDataset;
+  year: number;
   selectedDynastyId?: string;
   onSelectRegion: (selection: AtlasRegionSelection) => void;
   onProjectorChange: (projector: AtlasProjector) => void;
   onFatalError: (error: Error) => void;
+  onRenderSuccess: (year: number) => void;
 }
 
 type InteractiveLayer = {
@@ -140,38 +142,45 @@ function getGeoJsonSource(map: MapLibreMap, sourceId: string) {
 
 export function MapLibreCanvas({
   atlas,
+  year,
   selectedDynastyId,
   onSelectRegion,
   onProjectorChange,
   onFatalError,
+  onRenderSuccess,
 }: MapLibreCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const atlasRef = useRef(atlas);
+  const yearRef = useRef(year);
   const selectedDynastyIdRef = useRef(selectedDynastyId);
   const onSelectRegionRef = useRef(onSelectRegion);
   const onProjectorChangeRef = useRef(onProjectorChange);
   const onFatalErrorRef = useRef(onFatalError);
+  const onRenderSuccessRef = useRef(onRenderSuccess);
   const revisionRef = useRef(0);
   const loadedRef = useRef(false);
   const removedRef = useRef(false);
   const fatalReportedRef = useRef(false);
-  const [warning, setWarning] = useState<string | undefined>(
-    () => atlas.warnings[0],
-  );
+  const [runtimeWarning, setRuntimeWarning] = useState<string>();
+  const warning = atlas.warnings[0] ?? runtimeWarning;
 
   useEffect(() => {
     atlasRef.current = atlas;
+    yearRef.current = year;
     selectedDynastyIdRef.current = selectedDynastyId;
     onSelectRegionRef.current = onSelectRegion;
     onProjectorChangeRef.current = onProjectorChange;
     onFatalErrorRef.current = onFatalError;
+    onRenderSuccessRef.current = onRenderSuccess;
   }, [
     atlas,
     onFatalError,
     onProjectorChange,
+    onRenderSuccess,
     onSelectRegion,
     selectedDynastyId,
+    year,
   ]);
 
   useEffect(() => {
@@ -193,9 +202,9 @@ export function MapLibreCanvas({
       map = new MapLibreMap({
         container,
         style: createAtlasStyle(),
-        center: [...ATLAS_943_INITIAL_VIEW.center],
-        zoom: ATLAS_943_INITIAL_VIEW.zoom,
-        maxBounds: ATLAS_943_BOUNDS as unknown as [
+        center: [...ATLAS_INITIAL_VIEW.center],
+        zoom: ATLAS_INITIAL_VIEW.zoom,
+        maxBounds: ATLAS_BOUNDS as unknown as [
           [number, number],
           [number, number],
         ],
@@ -205,7 +214,7 @@ export function MapLibreCanvas({
         renderWorldCopies: false,
       });
     } catch (error) {
-      reportFatal(error, "无法初始化 943 年高保真地图");
+      reportFatal(error, "无法初始化互动历史地图");
       return;
     }
 
@@ -241,7 +250,7 @@ export function MapLibreCanvas({
     };
 
     const injectOptionalSource = (
-      sourceId: "realmLabels943" | "disputed943" | "places943",
+      sourceId: "realmLabels" | "disputed" | "places",
       data: Parameters<GeoJSONSource["setData"]>[0],
     ) => {
       try {
@@ -251,7 +260,7 @@ export function MapLibreCanvas({
         }
         source.setData(data);
       } catch {
-        setWarning(
+        setRuntimeWarning(
           (current) =>
             current ?? "部分辅助地图资料暂未载入，核心疆域仍可使用。",
         );
@@ -262,41 +271,61 @@ export function MapLibreCanvas({
       if (loadedRef.current) return;
 
       try {
-        const realmsSource = getGeoJsonSource(map, "realms943");
+        const realmsSource = getGeoJsonSource(map, "realms");
         if (!realmsSource) {
-          throw new Error("Missing GeoJSON source: realms943");
+          throw new Error("Missing GeoJSON source: realms");
         }
         realmsSource.setData(atlasRef.current.realms);
       } catch (error) {
-        reportFatal(error, "943 年核心疆域无法载入");
+        reportFatal(error, "当前年份核心疆域无法载入");
         return;
       }
 
-      injectOptionalSource("disputed943", atlasRef.current.disputed);
-      injectOptionalSource("places943", atlasRef.current.places);
+      injectOptionalSource("disputed", atlasRef.current.disputed);
+      injectOptionalSource("places", atlasRef.current.places);
       injectOptionalSource(
-        "realmLabels943",
+        "realmLabels",
         createRealmLabelCollection(atlasRef.current),
       );
 
       try {
         applySelectedFilter();
       } catch (error) {
-        reportFatal(error, "943 年地图样式无法应用");
+        reportFatal(error, "互动历史地图样式无法应用");
         return;
       }
 
       loadedRef.current = true;
       publishProjector();
+      onRenderSuccessRef.current(yearRef.current);
     };
 
     const handleError = (event: ErrorEvent) => {
       const atlasError = event as AtlasErrorEvent;
-      if (!atlasError.sourceId && !atlasError.tile) {
-        reportFatal(atlasError.error, "943 年地图样式载入失败");
+      if (atlasError.sourceId === "realms") {
+        reportFatal(atlasError.error, "当前年份核心疆域无法载入");
         return;
       }
-      setWarning(
+      if (
+        atlasError.sourceId === "realmLabels" ||
+        atlasError.sourceId === "disputed" ||
+        atlasError.sourceId === "places"
+      ) {
+        setRuntimeWarning(
+          (current) =>
+            current ?? "部分辅助地图资料暂未载入，核心疆域仍可使用。",
+        );
+        return;
+      }
+      if (
+        atlasError.sourceId !== "terrain" &&
+        atlasError.sourceId !== "protomaps" &&
+        !atlasError.tile
+      ) {
+        reportFatal(atlasError.error, "互动历史地图样式载入失败");
+        return;
+      }
+      setRuntimeWarning(
         (current) =>
           current ?? "部分地形底图暂未载入，疆域与历史信息仍可使用。",
       );
@@ -354,6 +383,31 @@ export function MapLibreCanvas({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loadedRef.current) return;
+    fatalReportedRef.current = false;
+
+    try {
+      const realms = getGeoJsonSource(map, "realms");
+      if (!realms) throw new Error("Missing GeoJSON source: realms");
+      realms.setData(atlas.realms);
+      getGeoJsonSource(map, "disputed")?.setData(atlas.disputed);
+      getGeoJsonSource(map, "places")?.setData(atlas.places);
+      getGeoJsonSource(map, "realmLabels")?.setData(
+        createRealmLabelCollection(atlas),
+      );
+      onRenderSuccessRef.current(year);
+    } catch (error) {
+      if (!fatalReportedRef.current) {
+        fatalReportedRef.current = true;
+        onFatalErrorRef.current(
+          asError(error, "当前年份核心疆域无法更新"),
+        );
+      }
+    }
+  }, [atlas, year]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current) return;
 
     const filter: FilterSpecification = selectedDynastyId
       ? ["==", ["get", "dynastyId"], selectedDynastyId]
@@ -365,14 +419,14 @@ export function MapLibreCanvas({
     } catch (error) {
       if (!fatalReportedRef.current) {
         fatalReportedRef.current = true;
-        onFatalErrorRef.current(asError(error, "943 年地图样式无法更新"));
+        onFatalErrorRef.current(asError(error, "互动历史地图样式无法更新"));
       }
     }
   }, [selectedDynastyId]);
 
   const resetExtent = () => {
     mapRef.current?.fitBounds(
-      ATLAS_943_BOUNDS as unknown as [[number, number], [number, number]],
+      ATLAS_BOUNDS as unknown as [[number, number], [number, number]],
       { duration: 700, padding: 48 },
     );
   };
@@ -381,7 +435,7 @@ export function MapLibreCanvas({
     <div
       role="region"
       className="atlas-map h-full min-h-[32rem] w-full"
-      aria-label="943年高保真历史地图"
+      aria-label={`${year}年互动历史地图`}
     >
       <div ref={containerRef} className="absolute inset-0" />
       <button

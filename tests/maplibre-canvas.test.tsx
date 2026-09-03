@@ -2,7 +2,7 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ATLAS_943_BOUNDS } from "@/features/history-map/atlas/atlas-config";
+import { ATLAS_BOUNDS } from "@/features/history-map/atlas/atlas-config";
 import type { AtlasDataset } from "@/features/history-map/atlas/atlas-types";
 import { MapLibreCanvas } from "@/features/history-map/atlas/maplibre-canvas";
 
@@ -11,10 +11,10 @@ type Handler = (event?: unknown) => void;
 const maplibre = vi.hoisted(() => {
   const handlers = new globalThis.Map<string, Handler>();
   const sources = {
-    realms943: { setData: vi.fn() },
-    realmLabels943: { setData: vi.fn() },
-    disputed943: { setData: vi.fn() },
-    places943: { setData: vi.fn() },
+    realms: { setData: vi.fn() },
+    realmLabels: { setData: vi.fn() },
+    disputed: { setData: vi.fn() },
+    places: { setData: vi.fn() },
   };
   const canvas = { style: { cursor: "" } };
   const instance = {
@@ -86,6 +86,7 @@ const atlas: AtlasDataset = {
           id: "later-jin-943",
           dynastyId: "later-jin",
           name: "后晋",
+          snapshotId: "snapshot-943",
           validFromYear: 943,
           validToYearExclusive: 944,
           boundaryKind: "controlled",
@@ -118,6 +119,7 @@ function createCallbacks() {
   return {
     onFatalError: vi.fn(),
     onProjectorChange: vi.fn(),
+    onRenderSuccess: vi.fn(),
     onSelectRegion: vi.fn(),
   };
 }
@@ -146,7 +148,7 @@ describe("MapLibreCanvas", () => {
     const atlasWarning = "disputed.geojson 暂不可用；已使用空图层。";
     const atlasWithWarning = { ...atlas, warnings: [atlasWarning] };
     const { rerender, unmount } = render(
-      <MapLibreCanvas atlas={atlasWithWarning} {...callbacks} />,
+      <MapLibreCanvas atlas={atlasWithWarning} year={943} {...callbacks} />,
     );
 
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
@@ -161,10 +163,10 @@ describe("MapLibreCanvas", () => {
     expect(screen.getByRole("status")).toHaveTextContent(atlasWarning);
 
     fire("style.load");
-    expect(maplibre.sources.realms943.setData).toHaveBeenCalledWith(
+    expect(maplibre.sources.realms.setData).toHaveBeenCalledWith(
       atlas.realms,
     );
-    expect(maplibre.sources.realmLabels943.setData).toHaveBeenCalledWith({
+    expect(maplibre.sources.realmLabels.setData).toHaveBeenCalledWith({
       type: "FeatureCollection",
       features: [
         {
@@ -178,12 +180,38 @@ describe("MapLibreCanvas", () => {
         },
       ],
     });
-    expect(maplibre.sources.disputed943.setData).toHaveBeenCalledWith(
+    expect(maplibre.sources.disputed.setData).toHaveBeenCalledWith(
       atlas.disputed,
     );
-    expect(maplibre.sources.places943.setData).toHaveBeenCalledWith(
+    expect(maplibre.sources.places.setData).toHaveBeenCalledWith(
       atlas.places,
     );
+
+    const nextAtlas: AtlasDataset = {
+      ...atlasWithWarning,
+      realms: {
+        ...atlas.realms,
+        features: atlas.realms.features.map((feature) => ({
+          ...feature,
+          properties: {
+            ...feature.properties,
+            id: "later-jin-944-illustrative",
+            snapshotId: "legacy-illustrative",
+            validFromYear: 944,
+            validToYearExclusive: 945,
+          },
+        })),
+      },
+    };
+    rerender(
+      <MapLibreCanvas atlas={nextAtlas} year={944} {...callbacks} />,
+    );
+    expect(maplibre.mapConstructor).toHaveBeenCalledTimes(1);
+    expect(maplibre.sources.realms.setData).toHaveBeenLastCalledWith(
+      nextAtlas.realms,
+    );
+    expect(screen.getByRole("region", { name: "944年互动历史地图" }))
+      .toBeVisible();
 
     fire("click", "atlas-realms-fill", {
       features: [
@@ -214,6 +242,7 @@ describe("MapLibreCanvas", () => {
     rerender(
       <MapLibreCanvas
         atlas={atlasWithWarning}
+        year={943}
         {...callbacks}
         selectedDynastyId="later-jin"
       />,
@@ -227,7 +256,7 @@ describe("MapLibreCanvas", () => {
       screen.getByRole("button", { name: "复位地图范围" }),
     );
     expect(maplibre.instance.fitBounds).toHaveBeenCalledWith(
-      ATLAS_943_BOUNDS,
+      ATLAS_BOUNDS,
       expect.objectContaining({ duration: expect.any(Number) }),
     );
 
@@ -248,7 +277,7 @@ describe("MapLibreCanvas", () => {
     expect(maplibre.instance.remove).toHaveBeenCalledTimes(1);
 
     const second = render(
-      <MapLibreCanvas atlas={atlasWithWarning} {...callbacks} />,
+      <MapLibreCanvas atlas={atlasWithWarning} year={943} {...callbacks} />,
     );
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
     expect(maplibre.setWorkerUrl).toHaveBeenCalledTimes(1);
@@ -263,10 +292,67 @@ describe("MapLibreCanvas", () => {
       throw new Error("WebGL unavailable");
     });
 
-    render(<MapLibreCanvas atlas={atlas} {...callbacks} />);
+    render(<MapLibreCanvas atlas={atlas} year={943} {...callbacks} />);
 
     expect(callbacks.onFatalError).toHaveBeenCalledWith(
       expect.objectContaining({ message: "WebGL unavailable" }),
     );
+  });
+
+  it("treats a core realm source error as fatal but auxiliary source errors as warnings", () => {
+    const callbacks = createCallbacks();
+    render(<MapLibreCanvas atlas={atlas} year={943} {...callbacks} />);
+    fire("style.load");
+
+    fire("error", undefined, {
+      error: new Error("realm worker failure"),
+      sourceId: "realms",
+    });
+    expect(callbacks.onFatalError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: "realm worker failure" }),
+    );
+
+    fire("error", undefined, {
+      error: new Error("place worker failure"),
+      sourceId: "places",
+    });
+    expect(callbacks.onFatalError).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "部分辅助地图资料暂未载入，核心疆域仍可使用。",
+    );
+  });
+
+  it("resets fatal reporting for a new atlas revision and reports successful rendering", () => {
+    const callbacks = createCallbacks();
+    const { rerender } = render(
+      <MapLibreCanvas atlas={atlas} year={943} {...callbacks} />,
+    );
+    fire("style.load");
+    expect(callbacks.onRenderSuccess).toHaveBeenLastCalledWith(943);
+
+    fire("error", undefined, {
+      error: new Error("first realm failure"),
+      sourceId: "realms",
+    });
+    fire("error", undefined, {
+      error: new Error("duplicate realm failure"),
+      sourceId: "realms",
+    });
+    expect(callbacks.onFatalError).toHaveBeenCalledTimes(1);
+
+    const nextAtlas = {
+      ...atlas,
+      warnings: ["new atlas revision"],
+    };
+    rerender(
+      <MapLibreCanvas atlas={nextAtlas} year={944} {...callbacks} />,
+    );
+    expect(callbacks.onRenderSuccess).toHaveBeenLastCalledWith(944);
+
+    fire("error", undefined, {
+      error: new Error("second realm failure"),
+      sourceId: "realms",
+    });
+    expect(callbacks.onFatalError).toHaveBeenCalledTimes(2);
   });
 });

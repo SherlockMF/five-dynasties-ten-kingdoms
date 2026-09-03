@@ -129,9 +129,11 @@ describe("MapEventMarkers", () => {
       />,
     );
 
-    expect(
-      screen.getByRole("button", { name: "太原：石敬瑭起兵" }),
-    ).toBeVisible();
+    const marker = screen.getByRole("button", { name: "太原：石敬瑭起兵" });
+    expect(marker).toBeVisible();
+    expect(marker).toHaveClass("size-11");
+    expect(marker.querySelector("[data-marker-glyph='seal']")).toBeVisible();
+    expect(marker.querySelector("svg")).not.toBeInTheDocument();
   });
 
   it("merges multiple active events at the same location into one marker", () => {

@@ -5,9 +5,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { dynasties, events, locations, regions } from "@/data/seed";
 import { useHistoryStore } from "@/features/history-state/history-store";
 import { HistoricalMap } from "@/features/history-map/historical-map";
-import * as mapEmptyModule from "@/features/history-map/map-empty";
+import type { HistoricalEvent, HistoricalLocation } from "@/types/history";
 
-const { atlasFixture } = vi.hoisted(() => ({
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, reject, resolve };
+}
+
+const { atlasFixture, atlasMounts, loadAtlasSnapshot } = vi.hoisted(() => ({
+  atlasMounts: { value: 0 },
+  loadAtlasSnapshot: vi.fn(),
   atlasFixture: {
     realms: { type: "FeatureCollection", features: [] },
     disputed: {
@@ -30,6 +42,7 @@ const { atlasFixture } = vi.hoisted(() => ({
             id: "sixteen-prefectures-frontier-943",
             dynastyId: "later-jin-liao",
             name: "燕云十六州南缘过渡带",
+            snapshotId: "snapshot-943",
             validFromYear: 943,
             validToYearExclusive: 944,
             boundaryKind: "disputed",
@@ -67,28 +80,47 @@ const { atlasFixture } = vi.hoisted(() => ({
   },
 }));
 
-vi.mock("@/features/history-map/atlas/high-fidelity-map", async () => {
+vi.mock("@/features/history-map/atlas/atlas-schema", () => ({
+  loadAtlasSnapshot,
+}));
+
+vi.mock("@/features/history-map/atlas/historical-atlas-map", async () => {
   const { useEffect } = await import("react");
+  const { MapEventMarkers } = await import(
+    "@/features/history-map/map-event-markers"
+  );
 
   return {
-    HighFidelityMap: ({
-      onAtlasReady,
-      onFallback,
+    HistoricalAtlasMap: ({
+      yearRecord,
+      onFatalError,
+      onRenderSuccess,
       onSelectRegion,
+      events,
+      locations,
+      onSelectEvent,
     }: {
-      onAtlasReady: (dataset: typeof atlasFixture) => void;
-      onFallback: (error: Error) => void;
+      yearRecord: { year: number; boundaryMode: string };
+      onFatalError: (error: Error) => void;
+      onRenderSuccess: (year: number) => void;
+      events: HistoricalEvent[];
+      locations: HistoricalLocation[];
+      onSelectEvent: (eventId?: string) => void;
       onSelectRegion?: (selection: {
         id: string;
         boundaryKind: "disputed";
         dynastyId: string;
       }) => void;
     }) => {
-      useEffect(() => onAtlasReady(atlasFixture), [onAtlasReady]);
-
+      useEffect(() => {
+        atlasMounts.value += 1;
+        return () => {
+          atlasMounts.value -= 1;
+        };
+      }, []);
       return (
-        <div aria-label="943年高保真历史地图">
-          高保真地图
+        <div aria-label={`${yearRecord.year}年互动历史地图`}>
+          统一互动地图
           <button
             type="button"
             onClick={() =>
@@ -103,10 +135,23 @@ vi.mock("@/features/history-map/atlas/high-fidelity-map", async () => {
           </button>
           <button
             type="button"
-            onClick={() => onFallback(new Error("模拟地图失败"))}
+            onClick={() => onFatalError(new Error("模拟地图失败"))}
           >
             模拟地图失败
           </button>
+          <button
+            type="button"
+            onClick={() => onRenderSuccess(yearRecord.year)}
+          >
+            模拟地图恢复
+          </button>
+          <MapEventMarkers
+            year={yearRecord.year}
+            events={events}
+            locations={locations}
+            onSelect={onSelectEvent}
+            projectLocation={() => [100, 100]}
+          />
         </div>
       );
     },
@@ -114,7 +159,11 @@ vi.mock("@/features/history-map/atlas/high-fidelity-map", async () => {
 });
 
 describe("HistoricalMap", () => {
-  beforeEach(() => useHistoryStore.getState().reset({ currentYear: 936, selectedDynasty: undefined, selectedEvent: undefined }));
+  beforeEach(() => {
+    atlasMounts.value = 0;
+    loadAtlasSnapshot.mockResolvedValue(atlasFixture);
+    useHistoryStore.getState().reset({ currentYear: 936, selectedDynasty: undefined, selectedEvent: undefined });
+  });
   afterEach(() => vi.restoreAllMocks());
 
   it("renders the year-end regime rather than both sides of a transition", () => {
@@ -122,27 +171,86 @@ describe("HistoricalMap", () => {
 
     expect(screen.getByText("后晋", { selector: "span" })).toBeVisible();
     expect(screen.queryByText("后唐", { selector: "span" })).not.toBeInTheDocument();
-    expect(screen.getByText(/年末格局/)).toBeVisible();
+    expect(screen.getByText(/^936 · legacy-illustrative/)).toBeVisible();
   });
 
-  it("uses the high-fidelity atlas only for 943", async () => {
-    useHistoryStore.getState().reset({ currentYear: 943 });
+  it("keeps one atlas runtime while switching illustrative and reconstructed years", async () => {
+    useHistoryStore.getState().reset({ currentYear: 942 });
     render(<HistoricalMap regions={regions} dynasties={dynasties} />);
 
     expect(
-      await screen.findByLabelText("943年高保真历史地图"),
+      await screen.findByLabelText("942年互动历史地图"),
     ).toBeVisible();
-    expect(screen.getByText("高保真重建")).toBeVisible();
+    expect(screen.getByText(/legacy-illustrative · 示意边界/)).toBeVisible();
+    expect(atlasMounts.value).toBe(1);
 
-    act(() => useHistoryStore.getState().setCurrentYear(942));
+    act(() => useHistoryStore.getState().setCurrentYear(943));
 
     expect(
-      screen.getByRole("img", { name: "942年末政权分布示意图" }),
+      await screen.findByLabelText("943年互动历史地图"),
     ).toBeVisible();
-    expect(screen.getByText("示意数据")).toBeVisible();
-    expect(
-      screen.queryByLabelText("943年高保真历史地图"),
-    ).not.toBeInTheDocument();
+    expect(screen.getByText(/锚点 943 · 正式重建/)).toBeVisible();
+
+    act(() => useHistoryStore.getState().setCurrentYear(944));
+    expect(await screen.findByLabelText("944年互动历史地图")).toBeVisible();
+    expect(screen.getByText(/legacy-illustrative · 示意边界/)).toBeVisible();
+    expect(atlasMounts.value).toBe(1);
+  });
+
+  it("labels the temporary 943 dataset as illustrative until the snapshot resolves", async () => {
+    const pending = deferred<typeof atlasFixture>();
+    loadAtlasSnapshot.mockReturnValueOnce(pending.promise);
+    useHistoryStore.getState().reset({ currentYear: 943 });
+
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    expect(await screen.findByText(/943 · legacy-illustrative/)).toBeVisible();
+    expect(screen.queryByText(/锚点 943 · 正式重建/)).not.toBeInTheDocument();
+
+    await act(async () => pending.resolve(atlasFixture));
+
+    expect(await screen.findByText(/943 · 锚点 943 · 正式重建/)).toBeVisible();
+  });
+
+  it("does not let a completed snapshot request erase a renderer failure", async () => {
+    const user = userEvent.setup();
+    const pending = deferred<typeof atlasFixture>();
+    loadAtlasSnapshot.mockReturnValueOnce(pending.promise);
+    useHistoryStore.getState().reset({ currentYear: 943 });
+
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+    await user.click(
+      await screen.findByRole("button", { name: "模拟地图失败" }),
+    );
+    expect(screen.getByText(/943 · legacy-illustrative/)).toBeVisible();
+
+    await act(async () => pending.resolve(atlasFixture));
+
+    expect(screen.getByText(/943 · legacy-illustrative/)).toBeVisible();
+    expect(screen.getByText(/模拟地图失败；已降级为本年示意边界/))
+      .toBeVisible();
+    expect(screen.queryByText(/锚点 943 · 正式重建/)).not.toBeInTheDocument();
+  });
+
+  it("keeps a same-year renderer failure but recovers after a new year renders", async () => {
+    const user = userEvent.setup();
+    useHistoryStore.getState().reset({ currentYear: 942 });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    await user.click(
+      await screen.findByRole("button", { name: "模拟地图失败" }),
+    );
+    await user.click(screen.getByRole("button", { name: "模拟地图恢复" }));
+    expect(screen.getByText(/模拟地图失败；已降级为本年示意边界/))
+      .toBeVisible();
+
+    act(() => useHistoryStore.getState().setCurrentYear(943));
+    await user.click(
+      await screen.findByRole("button", { name: "模拟地图恢复" }),
+    );
+
+    expect(await screen.findByText(/943 · 锚点 943 · 正式重建/)).toBeVisible();
+    expect(screen.queryByText(/模拟地图失败；已降级/)).not.toBeInTheDocument();
   });
 
   it("selects a dynasty from the accessible list", async () => {
@@ -195,27 +303,16 @@ describe("HistoricalMap", () => {
     ).toBeVisible();
   });
 
-  it("retries the atlas after leaving 943", async () => {
-    const user = userEvent.setup();
+  it("keeps the illustrative map available when a formal snapshot fails", async () => {
+    loadAtlasSnapshot.mockRejectedValueOnce(new Error("模拟地图失败"));
     useHistoryStore.getState().reset({ currentYear: 943 });
     render(<HistoricalMap regions={regions} dynasties={dynasties} />);
 
-    await user.click(
-      await screen.findByRole("button", { name: "模拟地图失败" }),
-    );
+    expect(await screen.findByLabelText("943年互动历史地图")).toBeVisible();
     expect(
-      screen.queryByLabelText("943年高保真历史地图"),
-    ).not.toBeInTheDocument();
-
-    act(() => useHistoryStore.getState().setCurrentYear(942));
-    expect(
-      screen.getByRole("img", { name: "942年末政权分布示意图" }),
+      await screen.findByText("模拟地图失败；已降级为本年示意边界。"),
     ).toBeVisible();
-
-    act(() => useHistoryStore.getState().setCurrentYear(943));
-    expect(
-      await screen.findByLabelText("943年高保真历史地图"),
-    ).toBeVisible();
+    expect(screen.getByText(/943 · legacy-illustrative/)).toBeVisible();
   });
 
   it("projects the current year's sourced events onto the map", () => {
@@ -296,24 +393,25 @@ describe("HistoricalMap", () => {
   });
 
   it("never renders a late-injected pre-map year", () => {
-    const mapEmpty = vi.spyOn(mapEmptyModule, "MapEmpty");
     render(<HistoricalMap regions={regions} dynasties={dynasties} />);
-    mapEmpty.mockClear();
 
     act(() => {
       useHistoryStore.getState().reset({ currentYear: 884 });
     });
 
-    expect(mapEmpty).not.toHaveBeenCalled();
-    expect(screen.getByText(/^907 · 年末格局/)).toBeVisible();
+    expect(screen.getByText(/^907 · legacy-illustrative/)).toBeVisible();
     expect(
-      screen.getByRole("img", { name: "907年末政权分布示意图" }),
+      screen.getByLabelText("907年互动历史地图"),
     ).toBeVisible();
     expect(screen.queryByText(/^884 ·/)).not.toBeInTheDocument();
     expect(useHistoryStore.getState().currentYear).toBe(907);
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "地图仅展示907—979年，已校正为907年",
-    );
+    expect(
+      screen
+        .getAllByRole("status")
+        .some((item) =>
+          item.textContent?.includes("地图仅展示907—979年，已校正为907年"),
+        ),
+    ).toBe(true);
   });
 
   it("describes every active region when one dynasty has multiple regions", () => {

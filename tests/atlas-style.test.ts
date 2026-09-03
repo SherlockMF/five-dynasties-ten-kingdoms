@@ -44,6 +44,12 @@ describe("createAtlasStyle", () => {
     );
     expect(
       style.layers.find((layer) => layer.id === "atlas-realm-labels"),
-    ).toMatchObject({ source: "realmLabels943" });
+    ).toMatchObject({ source: "realmLabels" });
+    expect(style.sources).toHaveProperty("realms");
+    expect(style.sources).toHaveProperty("realmLabels");
+    expect(style.sources).toHaveProperty("disputed");
+    expect(style.sources).toHaveProperty("places");
+    expect(style.sources).not.toHaveProperty("realms943");
+    expect(ids).toContain("atlas-realms-inferred-line");
   });
 });
