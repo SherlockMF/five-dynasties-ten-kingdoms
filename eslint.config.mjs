@@ -10,5 +10,7 @@ export default defineConfig([
     ".worktrees/**",
     "coverage/**",
     "playwright-report/**",
+    "public/maplibre/maplibre-gl-worker.mjs",
+    "public/maplibre/maplibre-gl-shared.mjs",
   ]),
 ]);
