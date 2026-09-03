@@ -166,6 +166,15 @@ describe("HistoricalMap", () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
+  it("contains the desktop dynasty rail in a dedicated scroll region", () => {
+    useHistoryStore.getState().reset({ currentYear: 956 });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    const rail = screen.getByTestId("map-dynasty-scroll");
+    expect(rail).toHaveClass("lg:overflow-y-auto", "atlas-scrollbar");
+    expect(within(rail).getByLabelText("当前政权列表")).toBeVisible();
+  });
+
   it("renders the year-end regime rather than both sides of a transition", () => {
     render(<HistoricalMap regions={regions} dynasties={dynasties} />);
 

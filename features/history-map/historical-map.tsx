@@ -303,21 +303,26 @@ export function HistoricalMap({
             <DisputedAreaPopover feature={selectedDisputedFeature} sources={atlas.sources} dynasties={disputedDynasties} onSelectDynasty={handleSelect} onClose={() => setSelectedDisputedRegionId(undefined)} />
           ) : null}
         </div>
-        <aside className="border-t border-white/10 bg-paper p-4 lg:border-l lg:border-t-0">
-          <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">当前政权 · {visibleDynasties.length}</p>
-          <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={handleSelect} />
-          {atlas.disputed.features.length ? (
-            <section className="mt-5 border-t border-ink/10 pt-4" aria-label="争议区列表">
-              <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">争议区 · {atlas.disputed.features.length}</p>
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
-                {atlas.disputed.features.map((feature) => (
-                  <button key={feature.properties.id} type="button" aria-label={`查看争议区${feature.properties.name}`} onClick={() => handleSelectRegion({ id: feature.properties.id, boundaryKind: feature.properties.boundaryKind, dynastyId: feature.properties.dynastyId })} className="rounded-xl border border-dashed border-gold/45 bg-gold/10 px-4 py-3 text-left font-serif text-sm leading-5 text-ink transition-colors hover:border-cinnabar hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar">
-                    {feature.properties.name}
-                  </button>
-                ))}
-              </div>
-            </section>
-          ) : null}
+        <aside className="flex flex-col border-t border-white/10 bg-paper p-4 lg:max-h-[min(52rem,calc(100dvh-9rem))] lg:min-h-0 lg:border-l lg:border-t-0">
+          <p className="mb-3 shrink-0 text-[10px] tracking-[0.16em] text-muted uppercase">当前政权 · {visibleDynasties.length}</p>
+          <div
+            data-testid="map-dynasty-scroll"
+            className="atlas-scrollbar min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
+          >
+            <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={handleSelect} />
+            {atlas.disputed.features.length ? (
+              <section className="mt-5 border-t border-ink/10 pt-4" aria-label="争议区列表">
+                <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">争议区 · {atlas.disputed.features.length}</p>
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-1">
+                  {atlas.disputed.features.map((feature) => (
+                    <button key={feature.properties.id} type="button" aria-label={`查看争议区${feature.properties.name}`} onClick={() => handleSelectRegion({ id: feature.properties.id, boundaryKind: feature.properties.boundaryKind, dynastyId: feature.properties.dynastyId })} className="rounded-xl border border-dashed border-gold/45 bg-gold/10 px-4 py-3 text-left font-serif text-sm leading-5 text-ink transition-colors hover:border-cinnabar hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar">
+                      {feature.properties.name}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+          </div>
         </aside>
       </div>
     </section>
