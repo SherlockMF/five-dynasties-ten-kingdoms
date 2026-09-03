@@ -22,14 +22,15 @@ function region(input: RegionInput): HistoricalRegion {
 }
 
 const north = [[104, 32], [111, 31], [118, 33], [119, 38], [115, 40], [108, 40], [103, 36], [104, 32]];
+const northWithoutHedong = [[104, 32], [111, 31], [118, 33], [119, 38], [115, 40], [114, 40], [114, 36], [110, 36], [110, 40], [108, 40], [103, 36], [104, 32]];
 
 export const regions: HistoricalRegion[] = [
   region({ dynastyId: "later-liang", validFromYear: 907, validToYearExclusive: 923, labelPoint: [112, 35.5], coordinates: north, ...mixed([2, 3]) }),
   region({ dynastyId: "later-tang", validFromYear: 923, validToYearExclusive: 936, labelPoint: [112, 35.5], coordinates: north, ...mixed([3, 4]) }),
   region({ dynastyId: "later-jin", validFromYear: 936, validToYearExclusive: 947, labelPoint: [112, 35.5], coordinates: north, ...mixed([4, 5]) }),
   region({ dynastyId: "later-han", validFromYear: 947, validToYearExclusive: 951, labelPoint: [112, 35.5], coordinates: north, ...mixed([5]) }),
-  region({ dynastyId: "later-zhou", validFromYear: 951, validToYearExclusive: 960, labelPoint: [112, 35.5], coordinates: north, ...mixed([5, 6]) }),
-  region({ dynastyId: "northern-song", validFromYear: 960, validToYearExclusive: 980, labelPoint: [112, 35.5], coordinates: north, ...mixed([6]) }),
+  region({ dynastyId: "later-zhou", validFromYear: 951, validToYearExclusive: 960, labelPoint: [112, 34.7], coordinates: northWithoutHedong, ...mixed([5, 6]) }),
+  region({ dynastyId: "northern-song", validFromYear: 960, validToYearExclusive: 980, labelPoint: [112, 34.7], coordinates: northWithoutHedong, ...mixed([6]) }),
   region({ dynastyId: "liao", validFromYear: 916, validToYearExclusive: 980, labelPoint: [116, 41], coordinates: [[109, 39], [119, 38], [124, 42], [121, 45], [111, 45], [109, 39]], ...mixed([3, 4, 5, 6]) }),
   region({ dynastyId: "wuyue", validFromYear: 907, validToYearExclusive: 978, labelPoint: [120, 29], coordinates: [[118, 27], [122, 28], [122, 31], [119, 31], [118, 27]], ...historicalExtension() }),
   region({ dynastyId: "wu", validFromYear: 902, validToYearExclusive: 937, labelPoint: [117, 31], coordinates: [[114, 29], [120, 29], [120, 33], [115, 34], [114, 29]], ...historicalExtension() }),

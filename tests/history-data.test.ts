@@ -4,6 +4,7 @@ import { seedData } from "@/data/seed";
 import { validateHistoryData } from "@/lib/validation/history-data";
 import type {
   HistoricalEvent,
+  HistoricalRegion,
   HistoryDataSet,
   SourcedEntity,
 } from "@/types/history";
@@ -49,6 +50,34 @@ void invalidMixedContent;
 void invalidTranscriptCore;
 void rejectEpisodeMutation;
 
+function ringContainsPoint(
+  ring: number[][],
+  [x, y]: readonly [number, number],
+) {
+  let inside = false;
+  for (
+    let index = 0, previous = ring.length - 1;
+    index < ring.length;
+    previous = index++
+  ) {
+    const [x1, y1] = ring[index];
+    const [x2, y2] = ring[previous];
+    const crosses = y1 > y !== y2 > y;
+    if (crosses && x < ((x2 - x1) * (y - y1)) / (y2 - y1) + x1) {
+      inside = !inside;
+    }
+  }
+  return inside;
+}
+
+function polygonContains(
+  geometry: HistoricalRegion["geometry"],
+  point: readonly [number, number],
+) {
+  if (geometry.type !== "Polygon") return false;
+  return ringContainsPoint(geometry.coordinates[0], point);
+}
+
 function replaceFirstEvent(
   overrides: Partial<HistoricalEvent>,
 ): HistoryDataSet {
@@ -66,6 +95,18 @@ function replaceFirstEvent(
 }
 
 describe("history seed data", () => {
+  it.each(["later-zhou", "northern-song"])(
+    "%s illustrative boundary leaves Hedong to Northern Han",
+    (dynastyId) => {
+      const realm = seedData.regions.find(
+        (region) => region.dynastyId === dynastyId,
+      );
+
+      expect(realm).toBeDefined();
+      expect(polygonContains(realm!.geometry, [112, 38])).toBe(false);
+      expect(realm!.labelPoint[1]).toBeLessThan(36);
+    },
+  );
   it("has no dangling ids or invalid year ranges", () => {
     expect(validateHistoryData(seedData)).toEqual([]);
   });
