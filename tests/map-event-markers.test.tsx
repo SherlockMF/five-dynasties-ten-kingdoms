@@ -10,6 +10,43 @@ import {
 } from "@/features/history-map/map-event-markers";
 
 describe("MapEventMarkers", () => {
+  it("repositions events when a MapLibre projection revision changes", () => {
+    const bounds = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockReturnValue(new DOMRect(0, 0, 400, 250));
+    const rebellion = events.find(
+      (event) => event.id === "shi-jingtang-rebellion",
+    );
+    if (!rebellion) throw new Error("fixture event missing");
+    let projectedPoint: [number, number] = [100, 120];
+    const projectLocation = () => projectedPoint;
+    const props = {
+      year: 936,
+      events: [rebellion],
+      locations,
+      onSelect: vi.fn(),
+      projectLocation,
+    };
+    try {
+      const { rerender } = render(
+        <MapEventMarkers {...props} projectionRevision={1} />,
+      );
+
+      expect(
+        screen.getByRole("button", { name: /太原/ }).parentElement,
+      ).toHaveStyle({ left: "100px", top: "120px" });
+
+      projectedPoint = [220, 240];
+      rerender(<MapEventMarkers {...props} projectionRevision={2} />);
+
+      expect(
+        screen.getByRole("button", { name: /太原/ }).parentElement,
+      ).toHaveStyle({ left: "220px", top: "240px" });
+    } finally {
+      bounds.mockRestore();
+    }
+  });
+
   it("builds and positions marker groups deterministically for shuffled dense input", () => {
     const selectedEvents = events.filter((event) => event.startYear === 936);
     const projectLocation = (location: (typeof locations)[number]) =>

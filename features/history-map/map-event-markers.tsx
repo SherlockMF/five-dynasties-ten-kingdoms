@@ -25,6 +25,7 @@ interface MapEventMarkersProps {
   projectLocation?: (
     location: HistoricalLocation,
   ) => [number, number] | null;
+  projectionRevision?: number;
 }
 
 export interface MapEventMarkerGroup {
@@ -67,6 +68,7 @@ function getScreenPoint(
 export function positionMapEventMarkerGroups(
   groups: MapEventMarkerGroup[],
   viewport: { width: number; height: number },
+  pointsAlreadyProjected = false,
 ): PositionedMapEventMarkerGroup[] {
   const placed: Array<readonly [number, number]> = [];
   const halfSize = MARKER_SIZE / 2;
@@ -75,7 +77,9 @@ export function positionMapEventMarkerGroups(
   return [...groups]
     .sort((left, right) => left.location.id.localeCompare(right.location.id))
     .map((group) => {
-    const anchorPoint = getScreenPoint(group.point, viewport);
+    const anchorPoint = pointsAlreadyProjected
+      ? group.point
+      : getScreenPoint(group.point, viewport);
     if (!viewport.width || !viewport.height) {
       return { ...group, anchorPoint, markerPoint: anchorPoint };
     }
@@ -179,6 +183,7 @@ export function MapEventMarkers({
   locations,
   onSelect,
   projectLocation = defaultProjectLocation,
+  projectionRevision,
 }: MapEventMarkersProps) {
   const layerRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -234,13 +239,26 @@ export function MapEventMarkers({
   }, []);
 
   const markerGroups = useMemo(
-    () => buildMapEventMarkerGroups({ year, events, locations, projectLocation }),
-    [events, locations, projectLocation, year],
+    () => {
+      void projectionRevision;
+      return buildMapEventMarkerGroups({
+        year,
+        events,
+        locations,
+        projectLocation,
+      });
+    },
+    [events, locations, projectLocation, projectionRevision, year],
   );
 
   const positionedGroups = useMemo(
-    () => positionMapEventMarkerGroups(markerGroups, viewportSize),
-    [markerGroups, viewportSize],
+    () =>
+      positionMapEventMarkerGroups(
+        markerGroups,
+        viewportSize,
+        projectionRevision !== undefined,
+      ),
+    [markerGroups, projectionRevision, viewportSize],
   );
   const selectedGroup = positionedGroups.find(
     (group) => group.location.id === selectedLocationId,

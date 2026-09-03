@@ -7,6 +7,12 @@ import { useHistoryStore } from "@/features/history-state/history-store";
 import { HistoricalMap } from "@/features/history-map/historical-map";
 import * as mapEmptyModule from "@/features/history-map/map-empty";
 
+vi.mock("@/features/history-map/atlas/high-fidelity-map", () => ({
+  HighFidelityMap: () => (
+    <div aria-label="943年高保真历史地图">高保真地图</div>
+  ),
+}));
+
 describe("HistoricalMap", () => {
   beforeEach(() => useHistoryStore.getState().reset({ currentYear: 936, selectedDynasty: undefined, selectedEvent: undefined }));
   afterEach(() => vi.restoreAllMocks());
@@ -17,6 +23,26 @@ describe("HistoricalMap", () => {
     expect(screen.getByText("后晋", { selector: "span" })).toBeVisible();
     expect(screen.queryByText("后唐", { selector: "span" })).not.toBeInTheDocument();
     expect(screen.getByText(/年末格局/)).toBeVisible();
+  });
+
+  it("uses the high-fidelity atlas only for 943", async () => {
+    useHistoryStore.getState().reset({ currentYear: 943 });
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    expect(
+      await screen.findByLabelText("943年高保真历史地图"),
+    ).toBeVisible();
+    expect(screen.getByText("高保真重建")).toBeVisible();
+
+    act(() => useHistoryStore.getState().setCurrentYear(942));
+
+    expect(
+      screen.getByRole("img", { name: "942年末政权分布示意图" }),
+    ).toBeVisible();
+    expect(screen.getByText("示意数据")).toBeVisible();
+    expect(
+      screen.queryByLabelText("943年高保真历史地图"),
+    ).not.toBeInTheDocument();
   });
 
   it("selects a dynasty from the accessible list", async () => {

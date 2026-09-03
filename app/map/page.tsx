@@ -10,5 +10,5 @@ export const metadata: Metadata = { title: "互动历史地图" };
 export default async function MapPage() {
   const repository = getHistoryRepository();
   const [regions, dynasties, events, locations] = await Promise.all([repository.getRegionsInRange(MAP_MIN_YEAR, MAX_YEAR), repository.getAllDynasties(), repository.getEventsInRange(MAP_MIN_YEAR, MAX_YEAR), repository.getAllLocations()]);
-  return <PageShell eyebrow="Historical atlas" title="同一年，不止一个天下" description="地图展示所选年份年末的简化势力格局。移动年份，观察北方更替与南方并存如何同时发生。"><HistoricalMap regions={regions} dynasties={dynasties} events={events} locations={locations} /></PageShell>;
+  return <PageShell eyebrow="Historical atlas" title="同一年，不止一个天下" description="943 年提供真实地理底图与校勘疆域；其他年份仍为简化示意。移动年份，比较政权更替与空间并存。"><HistoricalMap regions={regions} dynasties={dynasties} events={events} locations={locations} /></PageShell>;
 }

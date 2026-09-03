@@ -16,6 +16,15 @@ export const regionAccuracyContent: Record<
     label: "核定",
     explanation: "边界有明确研究依据支持，并经过资料核对。",
   },
+  attested: {
+    label: "史料可证",
+    explanation: "核心控制范围有同期行政归属或多份资料相互支持。",
+  },
+  reconstructed: {
+    label: "重建",
+    explanation:
+      "依据同期地图、州府归属和自然地理综合复原，线位仍非现代测绘边界。",
+  },
 };
 
 export function getRegionAccuracySummary(regions: HistoricalRegion[]) {

@@ -145,7 +145,12 @@ export type HistoricalRegion = SourcedEntity & {
   geometry: Geometry;
   labelPoint: [number, number];
   temporalBasis: "year-end";
-  accuracyLevel: "illustrative" | "approximate" | "verified";
+  accuracyLevel:
+    | "illustrative"
+    | "approximate"
+    | "verified"
+    | "attested"
+    | "reconstructed";
   version: string;
 };
 
