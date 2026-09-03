@@ -136,6 +136,22 @@ describe("generic atlas snapshot exporter", () => {
     expect(output).toContain("Output root must remain inside public/maps");
   });
 
+  it("rejects reparse points before publishing or deleting atlas directories", () => {
+    const script = readFileSync(scriptPath, "utf8");
+
+    expect(script).toContain("function Assert-NoReparsePointInPath");
+    expect(script).toContain("[System.IO.FileAttributes]::ReparsePoint");
+    expect(script).toMatch(
+      /Assert-NoReparsePointInPath\s+-Path\s+\$mapsRoot/,
+    );
+    expect(script).toMatch(
+      /function Remove-TemporaryAtlasDirectory[\s\S]+Assert-NoReparsePointInPath\s+-Path\s+\$Path/,
+    );
+    expect(script).toMatch(
+      /if \(Test-Path -LiteralPath \$outputDirectory\)[\s\S]+Assert-NoReparsePointInPath\s+-Path\s+\$outputDirectory[\s\S]+Move-Item/,
+    );
+  });
+
   it("keeps the generic and 943 npm commands backward compatible", () => {
     const packageJson = JSON.parse(
       readFileSync(resolve("package.json"), "utf8"),

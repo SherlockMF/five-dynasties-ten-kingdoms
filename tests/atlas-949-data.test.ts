@@ -200,6 +200,21 @@ describe("949 staged atlas publication", () => {
     expect(ringContainsPoint(outerRing(liao), [116.4, 39.9], true)).toBe(true);
   });
 
+  it("keeps every pair of controlled realms free of interior overlap", () => {
+    const realms = readPublished<RegionCollection>("realms.geojson");
+
+    for (let left = 0; left < realms.features.length; left += 1) {
+      for (let right = left + 1; right < realms.features.length; right += 1) {
+        const leftRealm = realms.features[left];
+        const rightRealm = realms.features[right];
+        expect(
+          ringsOverlapInterior(outerRing(leftRealm), outerRing(rightRealm)),
+          `${leftRealm.properties.name} overlaps ${rightRealm.properties.name}`,
+        ).toBe(false);
+      }
+    }
+  });
+
   it("marks every southern realm as a reviewed neighboring-year approximation", () => {
     const realms = readPublished<RegionCollection>("realms.geojson");
     const southernIds = [

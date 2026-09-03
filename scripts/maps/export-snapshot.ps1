@@ -47,6 +47,26 @@ function Test-IsInsideDirectory {
   )
 }
 
+function Assert-NoReparsePointInPath {
+  param([Parameter(Mandatory = $true)][string]$Path)
+
+  $currentPath = [System.IO.Path]::GetFullPath($Path)
+  while (-not [string]::IsNullOrEmpty($currentPath)) {
+    if (Test-Path -LiteralPath $currentPath) {
+      $item = Get-Item -LiteralPath $currentPath -Force
+      if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
+        throw "Atlas export paths must not contain reparse points: $currentPath"
+      }
+    }
+
+    $parent = [System.IO.Directory]::GetParent($currentPath)
+    if ($null -eq $parent) {
+      break
+    }
+    $currentPath = $parent.FullName
+  }
+}
+
 if ([string]::IsNullOrWhiteSpace($GeoPackagePath)) {
   $GeoPackagePath = Join-Path $expectedInputRoot "wudai-$yearText.gpkg"
 }
@@ -76,10 +96,12 @@ if (-not $mapsRoot.Equals(
   )) {
   throw 'Output root must remain inside public/maps.'
 }
+Assert-NoReparsePointInPath -Path $mapsRoot
 
 $packagePath = (Resolve-Path -LiteralPath $packageCandidate).Path
 $sourceLedgerPathResolved = (Resolve-Path -LiteralPath $sourceLedgerCandidate).Path
 $outputDirectory = [System.IO.Path]::GetFullPath((Join-Path $mapsRoot $yearText))
+Assert-NoReparsePointInPath -Path $outputDirectory
 
 if (-not [System.IO.Path]::GetDirectoryName($outputDirectory).Equals(
     $mapsRoot,
@@ -289,6 +311,8 @@ function Assert-TemporaryAtlasDirectory {
   if ($leafName -notmatch "^\.$([regex]::Escape($yearText))-(stage|backup)-[a-f0-9]{32}$") {
     throw "Unexpected temporary atlas directory name: $leafName"
   }
+  Assert-NoReparsePointInPath -Path $mapsRoot
+  Assert-NoReparsePointInPath -Path $fullPath
 }
 
 function Remove-TemporaryAtlasDirectory {
@@ -296,6 +320,7 @@ function Remove-TemporaryAtlasDirectory {
 
   Assert-TemporaryAtlasDirectory -Path $Path
   if (Test-Path -LiteralPath $Path) {
+    Assert-NoReparsePointInPath -Path $Path
     Remove-Item -LiteralPath $Path -Recurse -Force
   }
 }
@@ -350,6 +375,7 @@ try {
   }
 
   if (Test-Path -LiteralPath $outputDirectory) {
+    Assert-NoReparsePointInPath -Path $outputDirectory
     Move-Item -LiteralPath $outputDirectory -Destination $backupDirectory
     $movedExistingOutput = $true
   }

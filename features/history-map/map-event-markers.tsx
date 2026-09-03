@@ -145,6 +145,14 @@ function hasValidCoordinates(location: HistoricalLocation) {
   );
 }
 
+function getAveragePoint(points: Array<[number, number]>) {
+  const [totalX, totalY] = points.reduce<[number, number]>(
+    ([x, y], point) => [x + point[0], y + point[1]],
+    [0, 0],
+  );
+  return [totalX / points.length, totalY / points.length] as [number, number];
+}
+
 export function buildMapEventMarkerGroups({
   year,
   events,
@@ -171,7 +179,12 @@ export function buildMapEventMarkerGroups({
     const aggregate =
       validLocations.length > MULTI_LOCATION_AGGREGATE_THRESHOLD;
     const renderedLocations = aggregate
-      ? validLocations.slice(0, 1)
+      ? [
+          {
+            location: validLocations[0].location,
+            point: getAveragePoint(validLocations.map(({ point }) => point)),
+          },
+        ]
       : validLocations;
 
     for (const { location, point } of renderedLocations) {

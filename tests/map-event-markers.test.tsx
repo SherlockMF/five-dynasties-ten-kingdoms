@@ -10,7 +10,7 @@ import {
 } from "@/features/history-map/map-event-markers";
 
 describe("MapEventMarkers", () => {
-  it("collapses a large multi-location event into one representative marker", () => {
+  it("collapses a large multi-location event at the projected centroid", () => {
     const event = events.find(
       (item) => item.id === "sixteen-prefectures-ceded",
     );
@@ -25,6 +25,19 @@ describe("MapEventMarkers", () => {
     expect(groups).toHaveLength(1);
     expect(groups[0].location.id).toBe(event.locationIds[0]);
     expect(groups[0].representedLocationCount).toBe(16);
+    const representedLocations = event.locationIds.map((locationId) => {
+      const location = locations.find((item) => item.id === locationId);
+      if (!location) throw new Error(`fixture location missing: ${locationId}`);
+      return location;
+    });
+    expect(groups[0].point[0]).toBeCloseTo(
+      representedLocations.reduce((sum, location) => sum + location.longitude, 0) /
+        representedLocations.length,
+    );
+    expect(groups[0].point[1]).toBeCloseTo(
+      representedLocations.reduce((sum, location) => sum + location.latitude, 0) /
+        representedLocations.length,
+    );
   });
 
   it("labels the representative marker with its covered place count", () => {
