@@ -1,6 +1,6 @@
 # 943 年历史疆域 GIS 编辑源
 
-`wudai-943.gpkg` 是 943 年政权边界的唯一人工编辑源；`public/maps/943/*.geojson` 是通过 `scripts/maps/export-943.ps1` 生成的发布产物，不应手工编辑。
+`wudai-943.gpkg` 是 943 年政权边界的唯一人工编辑源；`public/maps/943/*.geojson` 是通过通用脚本 `scripts/maps/export-snapshot.ps1` 生成的发布产物，不应手工编辑。`scripts/maps/export-943.ps1` 保留为固定参数的兼容入口。
 
 ## 口径与精度
 
@@ -58,7 +58,7 @@ GeoPackage 中的 `sourceRefs` 是 JSON 字符串数组，并由 SQLite 检查�
 1. 用 QGIS 4.0.2 打开 `wudai-943.qgz`，保持项目 CRS 为 `ESRI:102012`。
 2. 工程已开启全局 snapping、交点 snapping 与拓扑编辑。面图层捕捉顶点和线段，点图层捕捉顶点；容差统一为 5000 项目单位（本工程为米，即 5 km）。
 3. 检查几何有效性、自相交和同一核心控制区重叠。允许的边界争议只能位于 `disputed_areas`。
-4. 运行 `scripts/maps/export-943.ps1` 发布数据。脚本会先检查必填字段、年份与枚举、来源引用、几何有效性和核心控制区重叠；任一项失败就中止。脚本不使用 `-makevalid` 修改权威源，只把通过预检的数据导出到同卷临时目录，产物齐全后再以目录交换发布。
+4. 运行 `npm run maps:export:943` 发布数据。也可直接调用通用入口：`npm run maps:export -- -Year 943 -GeoPackagePath gis\943\wudai-943.gpkg -SourceLedgerPath gis\943\sources.json -OutputRoot public\maps`。脚本会先检查输入位于 `gis/943`、输出根目录不与编辑源重叠、必填字段、年份与枚举、来源引用、运行时 manifest、几何有效性和核心控制区重叠；任一项失败就中止。脚本不使用 `-makevalid` 修改权威源，只把通过预检的数据导出到输出根目录下的受限临时目录，产物齐全后再以目录交换发布。
 5. 运行 `npm run test:run -- tests/atlas-943-sources.test.ts tests/atlas-943-data.test.ts`。
 
 ## 本次自动重建记录

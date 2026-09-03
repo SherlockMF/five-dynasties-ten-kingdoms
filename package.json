@@ -13,6 +13,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:e2e": "playwright test",
+    "maps:export": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/maps/export-snapshot.ps1",
     "maps:export:943": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/maps/export-943.ps1"
   },
   "dependencies": {
