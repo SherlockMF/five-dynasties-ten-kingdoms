@@ -1,0 +1,59 @@
+{
+  "type": "FeatureCollection",
+  "name": "disputed-949",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "yanyun-southern-frontier-949",
+        "dynastyId": "later-han-liao",
+        "name": "燕云南缘过渡带",
+        "validFromYear": 949,
+        "validToYearExclusive": 950,
+        "boundaryKind": "disputed",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-87-later-han"],
+        "disputedNote": "依据 949 年《汉》图页所见州镇与军政前沿推定；过渡带用于表达控制强度与图幅综合误差，不是第二条国界。",
+        "labelLongitude": 114.0,
+        "labelLatitude": 38.8
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [107.1, 39.0], [109.2, 38.8], [111.0, 38.7], [113.0, 38.4],
+          [114.5, 38.0], [115.6, 37.7], [117.5, 37.7], [119.3, 37.0],
+          [119.5, 37.4], [117.5, 38.25], [115.6, 38.25], [114.5, 38.55],
+          [113.0, 38.95], [111.0, 39.25], [109.2, 39.35], [107.3, 39.5],
+          [107.1, 39.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "huai-frontier-949",
+        "dynastyId": "later-han-southern-tang",
+        "name": "淮河前沿过渡带",
+        "validFromYear": 949,
+        "validToYearExclusive": 950,
+        "boundaryKind": "disputed",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-87-later-han", "atlas-page-90-southern-tang"],
+        "disputedNote": "后汉图与 954 年南唐图的纪年、比例尺不同，淮河沿线州镇归属以推定过渡带表达，不作精确州界判断。",
+        "labelLongitude": 117.0,
+        "labelLatitude": 33.4
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [112.5, 31.8], [113.8, 32.6], [115.5, 33.25], [117.3, 33.25],
+          [119.0, 32.95], [120.5, 33.3], [120.6, 33.6], [119.0, 33.45],
+          [117.3, 33.75], [115.5, 33.75], [113.7, 33.0], [112.5, 32.2],
+          [112.5, 31.8]
+        ]]
+      }
+    }
+  ]
+}

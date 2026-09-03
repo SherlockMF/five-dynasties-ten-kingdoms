@@ -1,0 +1,74 @@
+[
+  {
+    "id": "atlas-page-87-later-han",
+    "title": "《中国历史地图集》第五册：汉（949 年）",
+    "reference": "local-only:atlas-page-87-later-han",
+    "role": "georeference",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于重建 949 年后汉控制范围、辽南缘及北方州镇关系；扫描图不进入发布产物。"
+  },
+  {
+    "id": "atlas-page-90-southern-tang",
+    "title": "《中国历史地图集》第五册：南唐（954 年）",
+    "reference": "local-only:atlas-page-90-southern-tang",
+    "role": "cross-check",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于推定 949 年南唐大范围与淮河前沿；不是 949 年同纪年边界。"
+  },
+  {
+    "id": "atlas-page-90-wuyue",
+    "title": "《中国历史地图集》第五册：吴越（954 年）",
+    "reference": "local-only:atlas-page-90-wuyue",
+    "role": "cross-check",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于推定 949 年吴越及福州方向的大范围；不是 949 年同纪年边界。"
+  },
+  {
+    "id": "atlas-page-93-chu",
+    "title": "《中国历史地图集》第五册：楚（943 年）",
+    "reference": "local-only:atlas-page-93-chu",
+    "role": "cross-check",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于推定 949 年仍在场的楚国轮廓及与荆南、南汉的邻接关系。"
+  },
+  {
+    "id": "atlas-page-91-later-shu",
+    "title": "《中国历史地图集》第五册：后蜀（954 年）",
+    "reference": "local-only:atlas-page-91-later-shu",
+    "role": "cross-check",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于推定 949 年后蜀大范围；不是 949 年同纪年边界。"
+  },
+  {
+    "id": "atlas-page-92-southern-han",
+    "title": "《中国历史地图集》第五册：南汉（954 年）",
+    "reference": "local-only:atlas-page-92-southern-han",
+    "role": "cross-check",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于推定 949 年南汉大范围；不是 949 年同纪年边界。"
+  },
+  {
+    "id": "atlas-page-93-jingnan",
+    "title": "《中国历史地图集》第五册：南平（943 年）",
+    "reference": "local-only:atlas-page-93-jingnan",
+    "role": "cross-check",
+    "license": "Reference only; redistribution not permitted",
+    "redistributable": false,
+    "note": "用于推定 949 年荆南核心州府与邻接关系；不是 949 年同纪年边界。"
+  },
+  {
+    "id": "natural-earth-land-10m",
+    "title": "Natural Earth 1:10m Land",
+    "reference": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-land/",
+    "role": "geography",
+    "license": "Public domain",
+    "redistributable": true,
+    "note": "仅用于约束海岸与整体地理范围，不用于推断历史政治边界。"
+  }
+]

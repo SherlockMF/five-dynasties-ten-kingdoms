@@ -17,6 +17,15 @@ const reconstructed943: Omit<MapYearRecord, "year" | "eventIds"> = {
     "943 年疆域依据历史地图与史料校勘重建；福建闽、殷分裂暂以合并轮廓表达，连续边界仍不代表现代测绘精度。",
 };
 
+const reconstructed949: Omit<MapYearRecord, "year" | "eventIds"> = {
+  snapshotId: "snapshot-949",
+  anchorYear: 949,
+  boundaryMode: "reconstructed",
+  confidence: "medium",
+  mapNote:
+    "949 年为后汉北方主线阶段重建；南方为邻年推定，依据 943/954 年区域图校勘，不代表同年同精度的全国边界。",
+};
+
 const reconstructed959: Omit<MapYearRecord, "year" | "eventIds"> = {
   snapshotId: "snapshot-959",
   anchorYear: 959,
@@ -56,6 +65,34 @@ export const MAP_SNAPSHOT_MANIFESTS = {
       "政权控制范围由历史地图配准、州府位置和自然地理关系综合重建。",
       "西北、北部边缘及政权交界处为近似或争议表达。",
       "福建闽、殷分裂在 P0 快照中暂以合并轮廓表达，不能据此推断两者精确分界。",
+    ],
+    confidence: "medium",
+  },
+  "snapshot-949": {
+    id: "snapshot-949",
+    anchorYear: 949,
+    version: "949.1",
+    bbox: [72, 18, 136, 55],
+    files: {
+      realms: "/maps/949/realms.geojson",
+      disputed: "/maps/949/disputed.geojson",
+      places: "/maps/949/places.geojson",
+      sources: "/maps/949/sources.json",
+    },
+    sourceRefs: [
+      "atlas-page-87-later-han",
+      "atlas-page-90-southern-tang",
+      "atlas-page-90-wuyue",
+      "atlas-page-93-chu",
+      "atlas-page-91-later-shu",
+      "atlas-page-92-southern-han",
+      "atlas-page-93-jingnan",
+      "natural-earth-land-10m",
+    ],
+    inferenceNotes: [
+      "后汉与辽南缘依据 949 年同纪年《汉》图页重新概括，并以共享节点分隔控制面。",
+      "南方政权依据最接近的 943/954 年区域图推定，均保留邻年证据与精度说明。",
+      "燕云南缘与淮河一线作为推定过渡带单列，不将军事前沿表现为现代式精确国界。",
     ],
     confidence: "medium",
   },
@@ -108,6 +145,8 @@ export const MAP_YEAR_RECORDS: readonly MapYearRecord[] = Array.from(
       year,
       ...(year === 943
         ? reconstructed943
+        : year === 949
+          ? reconstructed949
         : year === 959
           ? reconstructed959
           : legacyIllustrative),
