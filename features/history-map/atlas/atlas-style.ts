@@ -282,7 +282,8 @@ export function createAtlasStyle(): StyleSpecification {
         tileSize: 512,
         encoding: "terrarium",
         maxzoom: 12,
-        attribution: '<a href="https://mapterhorn.com">Mapterhorn</a>',
+        attribution:
+          '<a href="https://mapterhorn.com/attribution/">© Mapterhorn</a>',
       },
       realms943: {
         type: "geojson",

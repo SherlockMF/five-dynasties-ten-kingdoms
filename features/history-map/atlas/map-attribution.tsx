@@ -38,12 +38,12 @@ export function MapAttribution({ sources = [] }: MapAttributionProps) {
         </a>
         {" · 地形："}
         <a
-          href="https://mapterhorn.com"
+          href="https://mapterhorn.com/attribution/"
           target="_blank"
           rel="noreferrer"
           className="text-cinnabar underline decoration-gold/60 underline-offset-2"
         >
-          Mapterhorn
+          © Mapterhorn
         </a>
         {" · 历史参照："}
         <a
