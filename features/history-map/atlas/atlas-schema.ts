@@ -36,7 +36,11 @@ const regionPropertiesSchema = z.object({
   accuracyLevel: z.enum(["attested", "reconstructed", "approximate"]),
   verificationStatus: z.enum(["verified", "reviewed"]),
   sourceRefs: sourceRefsSchema,
-  disputedNote: z.string().min(1).optional(),
+  disputedNote: z
+    .string()
+    .min(1)
+    .nullish()
+    .transform((value) => value ?? undefined),
   labelLongitude: longitudeSchema,
   labelLatitude: latitudeSchema,
 });
