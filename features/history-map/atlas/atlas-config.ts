@@ -8,8 +8,7 @@ export const ATLAS_943_INITIAL_VIEW = {
   zoom: 3.55,
 };
 
-export const PROTOMAPS_ARCHIVE_URL =
-  "https://build.protomaps.com/20231023.pmtiles";
+export const PROTOMAPS_ARCHIVE_URL = "/maps/base/east-asia-z7.pmtiles";
 
 export const MAPTERHORN_TILES =
   "https://tiles.mapterhorn.com/{z}/{x}/{y}.webp";
