@@ -48,6 +48,24 @@ describe("MapEventMarkers", () => {
     expect(within(marker).getByText("16")).toBeVisible();
   });
 
+  it("keeps map controls above the interactive marker layer", () => {
+    const event = events.find(
+      (item) => item.id === "shi-jingtang-rebellion",
+    );
+    if (!event) throw new Error("fixture event missing");
+
+    render(
+      <MapEventMarkers
+        year={936}
+        events={[event]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByLabelText("936年地图事件")).toHaveClass("z-[1]");
+  });
+
   it("omits the leader when collision placement keeps a marker nearby", () => {
     const rebellion = events.find(
       (event) => event.id === "shi-jingtang-rebellion",

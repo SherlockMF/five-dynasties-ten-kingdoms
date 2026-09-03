@@ -400,7 +400,7 @@ export function MapEventMarkers({
         ref={layerRef}
         tabIndex={-1}
         aria-label={`${year}年地图事件`}
-        className="pointer-events-none absolute inset-0 z-10"
+        className="pointer-events-none absolute inset-0 z-[1]"
       >
       {positionedGroups.map(({
         location,
