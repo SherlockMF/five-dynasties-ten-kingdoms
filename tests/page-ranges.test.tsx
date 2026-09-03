@@ -40,7 +40,7 @@ describe("page repository ranges", () => {
     expect(repository.getAllDynasties).toHaveBeenCalledOnce();
     expect(repository.getAllLocations).toHaveBeenCalledOnce();
     expect(
-      screen.getByText(/943 年全国校勘，以及 949、959 年北方主线/),
+      screen.getByText(/934、943、949、959 年已提供阶段性重建疆域/),
     ).toBeVisible();
   });
 
