@@ -21,10 +21,18 @@
     {
       "type": "Feature",
       "properties": {
-        "id": "place-yingzhou-959", "locationId": "yingzhou", "name": "应州",
+        "id": "place-yingzhou-959", "locationId": "yingzhou", "name": "瀛州",
         "placeKind": "prefecture", "sourceRefs": ["atlas-page-88-northern-han", "atlas-page-88-later-zhou"]
       },
-      "geometry": { "type": "Point", "coordinates": [113.19, 39.56] }
+      "geometry": { "type": "Point", "coordinates": [116.1, 38.45] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-mozhou-959", "locationId": "mozhou", "name": "莫州",
+        "placeKind": "prefecture", "sourceRefs": ["atlas-page-88-northern-han", "atlas-page-88-later-zhou"]
+      },
+      "geometry": { "type": "Point", "coordinates": [116.02, 38.71] }
     },
     {
       "type": "Feature",

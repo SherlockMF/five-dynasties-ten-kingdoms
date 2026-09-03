@@ -263,6 +263,7 @@ describe("959 staged atlas publication", () => {
       "taiyuan",
       "kaifeng",
       "yingzhou",
+      "mozhou",
       "youzhou",
       "jinling",
       "hangzhou",
@@ -278,6 +279,21 @@ describe("959 staged atlas publication", () => {
       expect(feature.geometry.type).toBe("Point");
       expect(feature.properties.sourceRefs.length).toBeGreaterThan(0);
     }
+
+    const yingzhou = places.features.find(
+      ({ properties }) => properties.locationId === "yingzhou",
+    );
+    const mozhou = places.features.find(
+      ({ properties }) => properties.locationId === "mozhou",
+    );
+    expect(yingzhou).toMatchObject({
+      properties: { name: "瀛州" },
+      geometry: { coordinates: [116.1, 38.45] },
+    });
+    expect(mozhou).toMatchObject({
+      properties: { name: "莫州" },
+      geometry: { coordinates: [116.02, 38.71] },
+    });
   });
 
   it("uses only catalogued sources and keeps local scans non-redistributable", () => {
