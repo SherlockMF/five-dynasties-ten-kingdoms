@@ -236,6 +236,14 @@ export function MapLibreCanvas({
         },
       });
     };
+    let projectorFrame = 0;
+    const scheduleProjectorUpdate = () => {
+      if (projectorFrame) return;
+      projectorFrame = requestAnimationFrame(() => {
+        projectorFrame = 0;
+        publishProjector();
+      });
+    };
 
     const applySelectedFilter = () => {
       const filter: FilterSpecification = selectedDynastyIdRef.current
@@ -359,16 +367,21 @@ export function MapLibreCanvas({
     });
 
     map.on("style.load", handleStyleLoad);
-    map.on("moveend", publishProjector);
-    map.on("zoomend", publishProjector);
+    map.on("move", scheduleProjectorUpdate);
+    map.on("zoom", scheduleProjectorUpdate);
+    map.on("moveend", scheduleProjectorUpdate);
+    map.on("zoomend", scheduleProjectorUpdate);
     map.on("error", handleError);
 
     return () => {
       removedRef.current = true;
       loadedRef.current = false;
+      if (projectorFrame) cancelAnimationFrame(projectorFrame);
       map.off("style.load", handleStyleLoad);
-      map.off("moveend", publishProjector);
-      map.off("zoomend", publishProjector);
+      map.off("move", scheduleProjectorUpdate);
+      map.off("zoom", scheduleProjectorUpdate);
+      map.off("moveend", scheduleProjectorUpdate);
+      map.off("zoomend", scheduleProjectorUpdate);
       map.off("error", handleError);
       for (const handlers of layerHandlers) {
         map.off("click", handlers.fill, handlers.handleClick);

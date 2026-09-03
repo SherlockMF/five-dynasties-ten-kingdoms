@@ -1,6 +1,6 @@
 import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ATLAS_BOUNDS } from "@/features/history-map/atlas/atlas-config";
 import type { AtlasDataset } from "@/features/history-map/atlas/atlas-types";
@@ -130,8 +130,25 @@ function fire(event: string, layer?: string, payload?: unknown) {
   act(() => handler(payload));
 }
 
+let animationFrameCallback: FrameRequestCallback | undefined;
+
+function flushAnimationFrame() {
+  const callback = animationFrameCallback;
+  animationFrameCallback = undefined;
+  callback?.(performance.now());
+}
+
 describe("MapLibreCanvas", () => {
   beforeEach(() => {
+    animationFrameCallback = undefined;
+    vi.stubGlobal(
+      "requestAnimationFrame",
+      vi.fn((callback: FrameRequestCallback) => {
+        animationFrameCallback = callback;
+        return 1;
+      }),
+    );
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
     maplibre.handlers.clear();
     maplibre.canvas.style.cursor = "";
     vi.clearAllMocks();
@@ -141,6 +158,10 @@ describe("MapLibreCanvas", () => {
     maplibre.protocolConstructor.mockImplementation(function ProtocolMock() {
       return { tile: maplibre.protocolTile };
     });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   it("keeps one PMTiles protocol while managing map data, interaction, reset, and cleanup", async () => {
@@ -261,6 +282,7 @@ describe("MapLibreCanvas", () => {
     );
 
     fire("moveend");
+    act(() => flushAnimationFrame());
     expect(callbacks.onProjectorChange).toHaveBeenLastCalledWith(
       expect.objectContaining({ revision: 2, project: expect.any(Function) }),
     );
@@ -284,6 +306,41 @@ describe("MapLibreCanvas", () => {
     expect(maplibre.mapConstructor).toHaveBeenCalledTimes(2);
     second.unmount();
     expect(maplibre.instance.remove).toHaveBeenCalledTimes(2);
+  });
+
+  it("publishes at most one projector revision per animation frame while moving", () => {
+    const callbacks = createCallbacks();
+    render(<MapLibreCanvas atlas={atlas} year={943} {...callbacks} />);
+    fire("style.load");
+    callbacks.onProjectorChange.mockClear();
+
+    fire("move");
+    fire("move");
+    fire("zoom");
+    expect(callbacks.onProjectorChange).not.toHaveBeenCalled();
+    expect(requestAnimationFrame).toHaveBeenCalledTimes(1);
+
+    act(() => flushAnimationFrame());
+    expect(callbacks.onProjectorChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("cancels a pending projector frame and removes motion listeners on cleanup", () => {
+    const callbacks = createCallbacks();
+    const { unmount } = render(
+      <MapLibreCanvas atlas={atlas} year={943} {...callbacks} />,
+    );
+    fire("style.load");
+    fire("move");
+
+    unmount();
+
+    expect(cancelAnimationFrame).toHaveBeenCalledWith(1);
+    for (const event of ["move", "zoom", "moveend", "zoomend"]) {
+      expect(maplibre.instance.off).toHaveBeenCalledWith(
+        event,
+        expect.any(Function),
+      );
+    }
   });
 
   it("reports a fatal initialization error without throwing from render", () => {
