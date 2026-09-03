@@ -127,6 +127,15 @@ function createHistoricalLayers(): LayerSpecification[] {
       },
     },
     {
+      id: "atlas-disputed-fill",
+      type: "fill",
+      source: "disputed943",
+      paint: {
+        "fill-color": "#b79755",
+        "fill-opacity": 0.16,
+      },
+    },
+    {
       id: "atlas-realms-line",
       type: "line",
       source: "realms943",
@@ -134,15 +143,6 @@ function createHistoricalLayers(): LayerSpecification[] {
         "line-color": REALM_COLOR,
         "line-opacity": 0.94,
         "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.1, 7, 2.2],
-      },
-    },
-    {
-      id: "atlas-disputed-fill",
-      type: "fill",
-      source: "disputed943",
-      paint: {
-        "fill-color": "#b79755",
-        "fill-opacity": 0.16,
       },
     },
     {
@@ -154,6 +154,52 @@ function createHistoricalLayers(): LayerSpecification[] {
         "line-dasharray": [2, 1.6],
         "line-opacity": 0.9,
         "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.1, 7, 2],
+      },
+    },
+    {
+      id: "atlas-realms-hover",
+      type: "line",
+      source: "realms943",
+      filter: ["==", ["get", "id"], ""],
+      paint: {
+        "line-color": "#172824",
+        "line-opacity": 0.9,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.2, 7, 3.8],
+      },
+    },
+    {
+      id: "atlas-disputed-hover",
+      type: "line",
+      source: "disputed943",
+      filter: ["==", ["get", "id"], ""],
+      paint: {
+        "line-color": "#172824",
+        "line-dasharray": [2, 1.6],
+        "line-opacity": 0.9,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.2, 7, 3.8],
+      },
+    },
+    {
+      id: "atlas-realms-selected",
+      type: "line",
+      source: "realms943",
+      filter: ["==", ["get", "dynastyId"], ""],
+      paint: {
+        "line-color": "#9f4036",
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.8, 7, 4.6],
+      },
+    },
+    {
+      id: "atlas-disputed-selected",
+      type: "line",
+      source: "disputed943",
+      filter: ["==", ["get", "dynastyId"], ""],
+      paint: {
+        "line-color": "#9f4036",
+        "line-dasharray": [2, 1.6],
+        "line-opacity": 1,
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.8, 7, 4.6],
       },
     },
     {
@@ -186,7 +232,7 @@ function createHistoricalLayers(): LayerSpecification[] {
       source: "realms943",
       layout: {
         "text-field": ["get", "name"],
-        "text-font": ["Noto Serif Regular"],
+        "text-font": ["Noto Sans Regular"],
         "text-letter-spacing": 0.14,
         "text-size": ["interpolate", ["linear"], ["zoom"], 3, 13, 7, 20],
       },
