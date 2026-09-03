@@ -117,7 +117,23 @@ describe("generic atlas snapshot exporter", () => {
       resolve("gis/943"),
     ]);
 
-    expect(output).toContain("Output root must not overlap editable GIS inputs");
+    expect(output).toContain("Output root must remain inside public/maps");
+  });
+
+  it("rejects an output root outside repository public/maps", () => {
+    const temporaryDirectory = makeTemporaryDirectory();
+    const output = runExporter([
+      "-Year",
+      "943",
+      "-GeoPackagePath",
+      resolve("gis/943/wudai-943.gpkg"),
+      "-SourceLedgerPath",
+      resolve("gis/943/sources.json"),
+      "-OutputRoot",
+      temporaryDirectory,
+    ]);
+
+    expect(output).toContain("Output root must remain inside public/maps");
   });
 
   it("keeps the generic and 943 npm commands backward compatible", () => {

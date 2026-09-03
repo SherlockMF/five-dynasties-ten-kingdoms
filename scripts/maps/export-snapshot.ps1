@@ -60,6 +60,9 @@ if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
 $packageCandidate = Resolve-RepositoryPath -Path $GeoPackagePath
 $sourceLedgerCandidate = Resolve-RepositoryPath -Path $SourceLedgerPath
 $mapsRoot = Resolve-RepositoryPath -Path $OutputRoot
+$expectedOutputRoot = [System.IO.Path]::GetFullPath(
+  (Join-Path $repositoryRoot 'public\maps')
+)
 
 if (-not (Test-IsInsideDirectory -Path $packageCandidate -Directory $expectedInputRoot)) {
   throw "GeoPackage input must remain inside gis/$yearText."
@@ -67,10 +70,11 @@ if (-not (Test-IsInsideDirectory -Path $packageCandidate -Directory $expectedInp
 if (-not (Test-IsInsideDirectory -Path $sourceLedgerCandidate -Directory $expectedInputRoot)) {
   throw "Source ledger input must remain inside gis/$yearText."
 }
-if ($mapsRoot.Equals($expectedInputRoot, [System.StringComparison]::OrdinalIgnoreCase) -or
-    (Test-IsInsideDirectory -Path $mapsRoot -Directory $expectedInputRoot) -or
-    (Test-IsInsideDirectory -Path $expectedInputRoot -Directory $mapsRoot)) {
-  throw 'Output root must not overlap editable GIS inputs.'
+if (-not $mapsRoot.Equals(
+    $expectedOutputRoot,
+    [System.StringComparison]::OrdinalIgnoreCase
+  )) {
+  throw 'Output root must remain inside public/maps.'
 }
 
 $packagePath = (Resolve-Path -LiteralPath $packageCandidate).Path
