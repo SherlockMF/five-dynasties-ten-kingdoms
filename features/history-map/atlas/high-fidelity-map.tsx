@@ -76,14 +76,14 @@ export function HighFidelityMap({
 
   if (!atlas) {
     return (
-      <div className="flex min-h-[32rem] items-center justify-center p-6">
+      <div className="flex h-full min-h-[32rem] items-center justify-center p-6">
         <MapFallback state="loading" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-[32rem] flex-col bg-paper">
+    <div className="flex h-full min-h-[32rem] flex-col bg-paper">
       <div className="relative min-h-[29rem] flex-1 overflow-hidden">
         <MapLibreCanvas
           atlas={atlas}
