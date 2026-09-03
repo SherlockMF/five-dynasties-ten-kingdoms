@@ -116,8 +116,11 @@ describe("943 atlas publication", () => {
     expect(
       new Set(places.features.map(({ properties }) => properties.locationId)),
     ).toEqual(new Set(requiredPlaces));
-    places.features.forEach(({ geometry }) => {
+    places.features.forEach(({ geometry, properties }) => {
       expect(geometry.type).toBe("Point");
+      expect(["capital", "prefecture", "landmark"]).toContain(
+        properties.placeKind,
+      );
     });
   });
 
