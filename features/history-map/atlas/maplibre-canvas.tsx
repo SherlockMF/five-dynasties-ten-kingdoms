@@ -315,6 +315,7 @@ export function MapLibreCanvas({
 
   return (
     <div
+      role="region"
       className="atlas-map h-full min-h-[32rem] w-full"
       aria-label="943年高保真历史地图"
     >
