@@ -29,6 +29,19 @@ describe("map year records", () => {
     });
   });
 
+  it("resolves only 934 to the Later Tang staged snapshot", () => {
+    expect(resolveMapYear(934)).toMatchObject({
+      year: 934,
+      snapshotId: "snapshot-934",
+      anchorYear: 934,
+      boundaryMode: "reconstructed",
+      confidence: "medium",
+      eventIds: [],
+      mapNote: expect.stringContaining("同年"),
+    });
+    expect(resolveMapYear(934).mapNote).toContain("邻年推定");
+  });
+
   it("resolves only 959 to the staged reconstructed snapshot", () => {
     expect(resolveMapYear(959)).toMatchObject({
       year: 959,
@@ -55,7 +68,7 @@ describe("map year records", () => {
     expect(resolveMapYear(949).mapNote).toContain("南方为邻年推定");
   });
 
-  it.each([942, 944, 948, 950, 958, 960])("resolves %i to the legacy illustrative set", (year) => {
+  it.each([933, 935, 942, 944, 948, 950, 958, 960])("resolves %i to the legacy illustrative set", (year) => {
     expect(resolveMapYear(year)).toMatchObject({
       year,
       snapshotId: "legacy-illustrative",
@@ -101,6 +114,7 @@ describe("map snapshot manifests", () => {
   it("registers the reconstructed snapshots and legacy illustrative dataset", () => {
     expect(Object.keys(MAP_SNAPSHOT_MANIFESTS).sort()).toEqual([
       "legacy-illustrative",
+      "snapshot-934",
       "snapshot-943",
       "snapshot-949",
       "snapshot-959",
@@ -115,6 +129,22 @@ describe("map snapshot manifests", () => {
         places: "/maps/943/places.geojson",
         sources: "/maps/943/sources.json",
       },
+    });
+    expect(MAP_SNAPSHOT_MANIFESTS["snapshot-934"]).toMatchObject({
+      id: "snapshot-934",
+      anchorYear: 934,
+      confidence: "medium",
+      bbox: [72, 18, 136, 55],
+      files: {
+        realms: "/maps/934/realms.geojson",
+        disputed: "/maps/934/disputed.geojson",
+        places: "/maps/934/places.geojson",
+        sources: "/maps/934/sources.json",
+      },
+      inferenceNotes: expect.arrayContaining([
+        expect.stringContaining("同年"),
+        expect.stringContaining("邻年"),
+      ]),
     });
     expect(MAP_SNAPSHOT_MANIFESTS["legacy-illustrative"]).toMatchObject({
       id: "legacy-illustrative",
@@ -161,6 +191,13 @@ describe("map snapshot manifests", () => {
       readFileSync(resolve("public/maps/943/manifest.json"), "utf8"),
     );
     expect(published).toEqual(MAP_SNAPSHOT_MANIFESTS["snapshot-943"]);
+  });
+
+  it("keeps the published 934 manifest identical to the runtime registry", () => {
+    const published = JSON.parse(
+      readFileSync(resolve("public/maps/934/manifest.json"), "utf8"),
+    );
+    expect(published).toEqual(MAP_SNAPSHOT_MANIFESTS["snapshot-934"]);
   });
 
   it("keeps the published 959 manifest identical to the runtime registry", () => {

@@ -8,6 +8,15 @@ import type {
 const MAP_START_YEAR = 907;
 const MAP_END_YEAR = 979;
 
+const reconstructed934: Omit<MapYearRecord, "year" | "eventIds"> = {
+  snapshotId: "snapshot-934",
+  anchorYear: 934,
+  boundaryMode: "reconstructed",
+  confidence: "medium",
+  mapNote:
+    "934 年为后唐北方主线及吴、吴越、闽同年阶段重建；楚、后蜀、南汉与荆南为邻年推定，不代表同年同精度的全国边界。",
+};
+
 const reconstructed943: Omit<MapYearRecord, "year" | "eventIds"> = {
   snapshotId: "snapshot-943",
   anchorYear: 943,
@@ -44,6 +53,35 @@ const legacyIllustrative: Omit<MapYearRecord, "year" | "eventIds"> = {
 };
 
 export const MAP_SNAPSHOT_MANIFESTS = {
+  "snapshot-934": {
+    id: "snapshot-934",
+    anchorYear: 934,
+    version: "934.1",
+    bbox: [72, 18, 136, 55],
+    files: {
+      realms: "/maps/934/realms.geojson",
+      disputed: "/maps/934/disputed.geojson",
+      places: "/maps/934/places.geojson",
+      sources: "/maps/934/sources.json",
+    },
+    sourceRefs: [
+      "atlas-page-85-later-tang",
+      "atlas-page-89-wu",
+      "atlas-page-89-wuyue",
+      "atlas-page-89-min",
+      "atlas-page-93-chu",
+      "atlas-page-91-later-shu",
+      "atlas-page-92-southern-han",
+      "atlas-page-93-jingnan",
+      "natural-earth-land-10m",
+    ],
+    inferenceNotes: [
+      "后唐、辽南缘、吴、吴越与闽依据 934 年同年图页重新概括，并以共享节点分隔相邻控制面。",
+      "楚、后蜀、南汉与荆南依据最接近的 943/954 年区域图推定，均保留邻年证据与精度说明。",
+      "边界为网页尺度的阶段重建，不将州镇归属和军事前沿表现为现代式精确国界。",
+    ],
+    confidence: "medium",
+  },
   "snapshot-943": {
     id: "snapshot-943",
     anchorYear: 943,
@@ -143,13 +181,15 @@ export const MAP_YEAR_RECORDS: readonly MapYearRecord[] = Array.from(
     const year = MAP_START_YEAR + index;
     return {
       year,
-      ...(year === 943
+      ...(year === 934
+        ? reconstructed934
+        : year === 943
         ? reconstructed943
         : year === 949
           ? reconstructed949
-        : year === 959
-          ? reconstructed959
-          : legacyIllustrative),
+          : year === 959
+            ? reconstructed959
+            : legacyIllustrative),
       eventIds: [],
     };
   },
