@@ -1,0 +1,24 @@
+{
+    "year":  943,
+    "temporalBasis":  "year-end",
+    "bbox":  [
+                 72,
+                 18,
+                 136,
+                 55
+             ],
+    "version":  "943.1",
+    "files":  [
+                  "realms.geojson",
+                  "disputed.geojson",
+                  "places.geojson",
+                  "sources.json"
+              ],
+    "attribution":  [
+                        "OpenStreetMap contributors",
+                        "Protomaps",
+                        "Mapterhorn",
+                        "Natural Earth (public domain)"
+                    ],
+    "sourceLedger":  "sources.json"
+}
