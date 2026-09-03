@@ -146,7 +146,7 @@ describe("MapLibreCanvas", () => {
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
     expect(maplibre.mapConstructor).toHaveBeenCalledTimes(1);
 
-    fire("load");
+    fire("style.load");
     expect(maplibre.sources.realms943.setData).toHaveBeenCalledWith(
       atlas.realms,
     );

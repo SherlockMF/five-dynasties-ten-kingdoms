@@ -203,7 +203,9 @@ export function MapLibreCanvas({
       }
     };
 
-    const handleLoad = () => {
+    const handleStyleLoad = () => {
+      if (loadedRef.current) return;
+
       try {
         const realmsSource = getGeoJsonSource(map, "realms943");
         if (!realmsSource) {
@@ -265,7 +267,7 @@ export function MapLibreCanvas({
       return { fill, handleClick, handleLeave, handleMove };
     });
 
-    map.on("load", handleLoad);
+    map.on("style.load", handleStyleLoad);
     map.on("moveend", publishProjector);
     map.on("zoomend", publishProjector);
     map.on("error", handleError);
@@ -273,7 +275,7 @@ export function MapLibreCanvas({
     return () => {
       removedRef.current = true;
       loadedRef.current = false;
-      map.off("load", handleLoad);
+      map.off("style.load", handleStyleLoad);
       map.off("moveend", publishProjector);
       map.off("zoomend", publishProjector);
       map.off("error", handleError);
