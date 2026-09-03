@@ -32,6 +32,7 @@ export interface MapEventMarkerGroup {
   location: HistoricalLocation;
   events: HistoricalEvent[];
   point: [number, number];
+  representedLocationCount: number;
 }
 
 export interface PositionedMapEventMarkerGroup extends MapEventMarkerGroup {
@@ -41,7 +42,8 @@ export interface PositionedMapEventMarkerGroup extends MapEventMarkerGroup {
 
 const VIEW_BOX_WIDTH = 800;
 const VIEW_BOX_HEIGHT = 500;
-const MARKER_SIZE = 44;
+const MULTI_LOCATION_AGGREGATE_THRESHOLD = 4;
+const MARKER_SIZE = 32;
 const MARKER_GAP = 4;
 const defaultProjectLocation = (location: HistoricalLocation) =>
   [location.longitude, location.latitude] as [number, number];
@@ -132,6 +134,17 @@ function compareEvents(left: HistoricalEvent, right: HistoricalEvent) {
   );
 }
 
+function hasValidCoordinates(location: HistoricalLocation) {
+  return (
+    Number.isFinite(location.longitude) &&
+    Number.isFinite(location.latitude) &&
+    location.longitude >= -180 &&
+    location.longitude <= 180 &&
+    location.latitude >= -90 &&
+    location.latitude <= 90
+  );
+}
+
 export function buildMapEventMarkerGroups({
   year,
   events,
@@ -149,26 +162,33 @@ export function buildMapEventMarkerGroups({
     if (event.startYear > year || (event.endYear ?? event.startYear) < year) {
       continue;
     }
-    for (const locationId of [...event.locationIds].sort()) {
+    const validLocations = event.locationIds.flatMap((locationId) => {
       const location = locationsById.get(locationId);
-      if (
-        !location ||
-        !Number.isFinite(location.longitude) ||
-        !Number.isFinite(location.latitude) ||
-        location.longitude < -180 ||
-        location.longitude > 180 ||
-        location.latitude < -90 ||
-        location.latitude > 90
-      ) {
-        continue;
-      }
+      if (!location || !hasValidCoordinates(location)) return [];
       const point = projectLocation(location);
-      if (!point || !point.every(Number.isFinite)) continue;
-      const group = groups.get(locationId) ?? { location, events: [], point };
+      return point?.every(Number.isFinite) ? [{ location, point }] : [];
+    });
+    const aggregate =
+      validLocations.length > MULTI_LOCATION_AGGREGATE_THRESHOLD;
+    const renderedLocations = aggregate
+      ? validLocations.slice(0, 1)
+      : validLocations;
+
+    for (const { location, point } of renderedLocations) {
+      const group = groups.get(location.id) ?? {
+        location,
+        events: [],
+        point,
+        representedLocationCount: 1,
+      };
       if (!group.events.some((groupEvent) => groupEvent.id === event.id)) {
         group.events.push(event);
       }
-      groups.set(locationId, group);
+      group.representedLocationCount = Math.max(
+        group.representedLocationCount,
+        aggregate ? validLocations.length : 1,
+      );
+      groups.set(location.id, group);
     }
   }
 
@@ -388,6 +408,7 @@ export function MapEventMarkers({
         point,
         anchorPoint,
         markerPoint,
+        representedLocationCount,
       }) => {
         const [left, top] = anchorPoint;
         const markerLeft = markerPoint[0] - anchorPoint[0];
@@ -395,9 +416,13 @@ export function MapEventMarkers({
         const leaderLength = Math.hypot(markerLeft, markerTop);
         const leaderAngle = Math.atan2(markerTop, markerLeft) * (180 / Math.PI);
         const open = selectedLocationId === location.id;
+        const placeCountLabel =
+          representedLocationCount > 1
+            ? ` · ${representedLocationCount}处`
+            : "";
         const accessibleName = `${location.name}：${locationEvents
           .map((event) => getShortEventTitle(event.title, location.name))
-          .join("、")}`;
+          .join("、")}${placeCountLabel}`;
 
         return (
           <div
@@ -407,14 +432,16 @@ export function MapEventMarkers({
             data-map-y={point[1]}
             style={{ left, top }}
           >
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute left-0 top-0 h-px origin-left bg-paper/60"
-              style={{
-                width: leaderLength,
-                transform: `rotate(${leaderAngle}deg)`,
-              }}
-            />
+            {leaderLength > 18 ? (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute left-0 top-0 h-px origin-left bg-paper/55"
+                style={{
+                  width: leaderLength,
+                  transform: `rotate(${leaderAngle}deg)`,
+                }}
+              />
+            ) : null}
             <span
               aria-hidden="true"
               className="pointer-events-none absolute left-0 top-0 size-2 -translate-x-1/2 -translate-y-1/2 rotate-45 border border-paper bg-ink/75"
@@ -448,6 +475,14 @@ export function MapEventMarkers({
               >
                 <span className="size-2 border border-paper/80 bg-ink/20" />
               </span>
+              {representedLocationCount > 1 ? (
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-1.5 -top-1.5 min-w-4 rounded-full bg-ink px-1 text-[9px] leading-4 text-paper"
+                >
+                  {representedLocationCount}
+                </span>
+              ) : null}
             </button>
           </div>
         );

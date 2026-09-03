@@ -10,6 +10,63 @@ import {
 } from "@/features/history-map/map-event-markers";
 
 describe("MapEventMarkers", () => {
+  it("collapses a large multi-location event into one representative marker", () => {
+    const event = events.find(
+      (item) => item.id === "sixteen-prefectures-ceded",
+    );
+    if (!event) throw new Error("fixture event missing");
+
+    const groups = buildMapEventMarkerGroups({
+      year: 936,
+      events: [event],
+      locations,
+    });
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].location.id).toBe(event.locationIds[0]);
+    expect(groups[0].representedLocationCount).toBe(16);
+  });
+
+  it("labels the representative marker with its covered place count", () => {
+    const event = events.find(
+      (item) => item.id === "sixteen-prefectures-ceded",
+    );
+    if (!event) throw new Error("fixture event missing");
+
+    render(
+      <MapEventMarkers
+        year={936}
+        events={[event]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    const marker = screen.getByRole("button", {
+      name: "幽州：燕云十六州归辽（时称契丹） · 16处",
+    });
+    expect(within(marker).getByText("16")).toBeVisible();
+  });
+
+  it("omits the leader when collision placement keeps a marker nearby", () => {
+    const rebellion = events.find(
+      (event) => event.id === "shi-jingtang-rebellion",
+    );
+    if (!rebellion) throw new Error("fixture event missing");
+
+    render(
+      <MapEventMarkers
+        year={936}
+        events={[rebellion]}
+        locations={locations}
+        onSelect={vi.fn()}
+      />,
+    );
+
+    const marker = screen.getByRole("button", { name: "太原：石敬瑭起兵" });
+    expect(marker.parentElement?.querySelector(".h-px")).not.toBeInTheDocument();
+  });
+
   it("repositions events when a MapLibre projection revision changes", () => {
     const bounds = vi
       .spyOn(HTMLElement.prototype, "getBoundingClientRect")
@@ -91,16 +148,16 @@ describe("MapEventMarkers", () => {
         .sort(([left], [right]) => String(left).localeCompare(String(right))),
     );
     for (const group of positioned) {
-      expect(group.markerPoint[0]).toBeGreaterThanOrEqual(22);
-      expect(group.markerPoint[0]).toBeLessThanOrEqual(198);
-      expect(group.markerPoint[1]).toBeGreaterThanOrEqual(22);
-      expect(group.markerPoint[1]).toBeLessThanOrEqual(198);
+      expect(group.markerPoint[0]).toBeGreaterThanOrEqual(16);
+      expect(group.markerPoint[0]).toBeLessThanOrEqual(204);
+      expect(group.markerPoint[1]).toBeGreaterThanOrEqual(16);
+      expect(group.markerPoint[1]).toBeLessThanOrEqual(204);
     }
     for (let first = 0; first < positioned.length; first += 1) {
       for (let second = first + 1; second < positioned.length; second += 1) {
         const a = positioned[first].markerPoint;
         const b = positioned[second].markerPoint;
-        expect(Math.abs(a[0] - b[0]) >= 44 || Math.abs(a[1] - b[1]) >= 44).toBe(true);
+        expect(Math.abs(a[0] - b[0]) >= 32 || Math.abs(a[1] - b[1]) >= 32).toBe(true);
       }
     }
 
