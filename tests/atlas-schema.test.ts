@@ -5,9 +5,11 @@ import { loadAtlas943 } from "@/features/history-map/atlas/atlas-schema";
 function stubAtlasFetch({
   sourceRefs,
   disputedNote = null,
+  optionalFailure = false,
 }: {
   sourceRefs: string;
   disputedNote?: null;
+  optionalFailure?: boolean;
 }) {
   vi.stubGlobal(
     "fetch",
@@ -28,6 +30,19 @@ function stubAtlasFetch({
               note: "Georeference",
             },
           ],
+        };
+      }
+
+      if (optionalFailure && url.endsWith("disputed.geojson")) {
+        return { ok: false, status: 404 };
+      }
+
+      if (optionalFailure && url.endsWith("places.geojson")) {
+        return {
+          ok: true,
+          json: async () => {
+            throw new SyntaxError("Unexpected token");
+          },
         };
       }
 
@@ -95,5 +110,22 @@ describe("loadAtlas943", () => {
     const atlas = await loadAtlas943();
 
     expect(atlas.realms.features[0].properties.disputedNote).toBeUndefined();
+  });
+
+  it("keeps realms when optional disputed and place layers fail", async () => {
+    stubAtlasFetch({
+      sourceRefs: '["atlas-1935-936-946"]',
+      optionalFailure: true,
+    });
+
+    const atlas = await loadAtlas943();
+
+    expect(atlas.realms.features).toHaveLength(1);
+    expect(atlas.disputed.features).toEqual([]);
+    expect(atlas.places.features).toEqual([]);
+    expect(atlas.warnings).toEqual([
+      expect.stringContaining("disputed.geojson"),
+      expect.stringContaining("places.geojson"),
+    ]);
   });
 });

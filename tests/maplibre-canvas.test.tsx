@@ -12,6 +12,7 @@ const maplibre = vi.hoisted(() => {
   const handlers = new globalThis.Map<string, Handler>();
   const sources = {
     realms943: { setData: vi.fn() },
+    realmLabels943: { setData: vi.fn() },
     disputed943: { setData: vi.fn() },
     places943: { setData: vi.fn() },
   };
@@ -110,13 +111,14 @@ const atlas: AtlasDataset = {
       note: "Georeference",
     },
   ],
+  warnings: [],
 };
 
 function createCallbacks() {
   return {
     onFatalError: vi.fn(),
     onProjectorChange: vi.fn(),
-    onSelectDynasty: vi.fn(),
+    onSelectRegion: vi.fn(),
   };
 }
 
@@ -141,8 +143,10 @@ describe("MapLibreCanvas", () => {
 
   it("keeps one PMTiles protocol while managing map data, interaction, reset, and cleanup", async () => {
     const callbacks = createCallbacks();
+    const atlasWarning = "disputed.geojson 暂不可用；已使用空图层。";
+    const atlasWithWarning = { ...atlas, warnings: [atlasWarning] };
     const { rerender, unmount } = render(
-      <MapLibreCanvas atlas={atlas} {...callbacks} />,
+      <MapLibreCanvas atlas={atlasWithWarning} {...callbacks} />,
     );
 
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
@@ -154,11 +158,26 @@ describe("MapLibreCanvas", () => {
       maplibre.mapConstructor.mock.invocationCallOrder[0],
     );
     expect(maplibre.mapConstructor).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("status")).toHaveTextContent(atlasWarning);
 
     fire("style.load");
     expect(maplibre.sources.realms943.setData).toHaveBeenCalledWith(
       atlas.realms,
     );
+    expect(maplibre.sources.realmLabels943.setData).toHaveBeenCalledWith({
+      type: "FeatureCollection",
+      features: [
+        {
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [110.5, 34.5] },
+          properties: {
+            id: "later-jin-943",
+            dynastyId: "later-jin",
+            name: "后晋",
+          },
+        },
+      ],
+    });
     expect(maplibre.sources.disputed943.setData).toHaveBeenCalledWith(
       atlas.disputed,
     );
@@ -167,9 +186,21 @@ describe("MapLibreCanvas", () => {
     );
 
     fire("click", "atlas-realms-fill", {
-      features: [{ properties: { dynastyId: "later-jin" } }],
+      features: [
+        {
+          properties: {
+            id: "later-jin-943",
+            boundaryKind: "controlled",
+            dynastyId: "later-jin",
+          },
+        },
+      ],
     });
-    expect(callbacks.onSelectDynasty).toHaveBeenCalledWith("later-jin");
+    expect(callbacks.onSelectRegion).toHaveBeenCalledWith({
+      id: "later-jin-943",
+      boundaryKind: "controlled",
+      dynastyId: "later-jin",
+    });
 
     fire("mousemove", "atlas-realms-fill", {
       features: [{ properties: { id: "later-jin-943" } }],
@@ -182,7 +213,7 @@ describe("MapLibreCanvas", () => {
 
     rerender(
       <MapLibreCanvas
-        atlas={atlas}
+        atlas={atlasWithWarning}
         {...callbacks}
         selectedDynastyId="later-jin"
       />,
@@ -211,14 +242,14 @@ describe("MapLibreCanvas", () => {
       tile: {},
     });
     expect(callbacks.onFatalError).not.toHaveBeenCalled();
-    expect(screen.getByRole("status")).toHaveTextContent(
-      "部分地形底图暂未载入",
-    );
+    expect(screen.getByRole("status")).toHaveTextContent(atlasWarning);
 
     unmount();
     expect(maplibre.instance.remove).toHaveBeenCalledTimes(1);
 
-    const second = render(<MapLibreCanvas atlas={atlas} {...callbacks} />);
+    const second = render(
+      <MapLibreCanvas atlas={atlasWithWarning} {...callbacks} />,
+    );
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
     expect(maplibre.setWorkerUrl).toHaveBeenCalledTimes(1);
     expect(maplibre.mapConstructor).toHaveBeenCalledTimes(2);

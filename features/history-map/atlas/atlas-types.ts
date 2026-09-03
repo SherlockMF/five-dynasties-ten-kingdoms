@@ -57,6 +57,7 @@ export type AtlasDataset = {
   disputed: AtlasRegionFeatureCollection;
   places: AtlasPlaceFeatureCollection;
   sources: AtlasSourceRecord[];
+  warnings: string[];
 };
 
 export type AtlasProjector = {

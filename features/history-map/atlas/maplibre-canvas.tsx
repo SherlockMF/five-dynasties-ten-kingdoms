@@ -1,5 +1,6 @@
 "use client";
 
+import type { FeatureCollection, Point } from "geojson";
 import {
   addProtocol,
   Map as MapLibreMap,
@@ -18,15 +19,17 @@ import {
   ATLAS_943_INITIAL_VIEW,
 } from "@/features/history-map/atlas/atlas-config";
 import { createAtlasStyle } from "@/features/history-map/atlas/atlas-style";
+import type { AtlasRegionSelection } from "@/features/history-map/atlas/atlas-region-selection";
 import type {
   AtlasDataset,
   AtlasProjector,
+  AtlasRegionProperties,
 } from "@/features/history-map/atlas/atlas-types";
 
 export interface MapLibreCanvasProps {
   atlas: AtlasDataset;
   selectedDynastyId?: string;
-  onSelectDynasty: (dynastyId: string) => void;
+  onSelectRegion: (selection: AtlasRegionSelection) => void;
   onProjectorChange: (projector: AtlasProjector) => void;
   onFatalError: (error: Error) => void;
 }
@@ -76,10 +79,47 @@ function asError(value: unknown, fallback: string) {
 
 function getFeatureProperty(
   event: MapLayerMouseEvent,
-  property: "id" | "dynastyId",
+  property: "id" | "boundaryKind" | "dynastyId",
 ) {
   const value = event.features?.[0]?.properties?.[property];
   return typeof value === "string" && value ? value : undefined;
+}
+
+function getRegionSelection(
+  event: MapLayerMouseEvent,
+): AtlasRegionSelection | undefined {
+  const id = getFeatureProperty(event, "id");
+  const boundaryKind = getFeatureProperty(event, "boundaryKind");
+  const dynastyId = getFeatureProperty(event, "dynastyId");
+  if (!id || !boundaryKind || !dynastyId) return undefined;
+
+  return { id, boundaryKind, dynastyId } as AtlasRegionSelection;
+}
+
+function createRealmLabelCollection(
+  atlas: AtlasDataset,
+): FeatureCollection<
+  Point,
+  Pick<AtlasRegionProperties, "id" | "dynastyId" | "name">
+> {
+  return {
+    type: "FeatureCollection",
+    features: atlas.realms.features.map((feature) => ({
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [
+          feature.properties.labelLongitude,
+          feature.properties.labelLatitude,
+        ],
+      },
+      properties: {
+        id: feature.properties.id,
+        dynastyId: feature.properties.dynastyId,
+        name: feature.properties.name,
+      },
+    })),
+  };
 }
 
 function setFilterIfPresent(
@@ -101,7 +141,7 @@ function getGeoJsonSource(map: MapLibreMap, sourceId: string) {
 export function MapLibreCanvas({
   atlas,
   selectedDynastyId,
-  onSelectDynasty,
+  onSelectRegion,
   onProjectorChange,
   onFatalError,
 }: MapLibreCanvasProps) {
@@ -109,26 +149,28 @@ export function MapLibreCanvas({
   const mapRef = useRef<MapLibreMap | null>(null);
   const atlasRef = useRef(atlas);
   const selectedDynastyIdRef = useRef(selectedDynastyId);
-  const onSelectDynastyRef = useRef(onSelectDynasty);
+  const onSelectRegionRef = useRef(onSelectRegion);
   const onProjectorChangeRef = useRef(onProjectorChange);
   const onFatalErrorRef = useRef(onFatalError);
   const revisionRef = useRef(0);
   const loadedRef = useRef(false);
   const removedRef = useRef(false);
   const fatalReportedRef = useRef(false);
-  const [warning, setWarning] = useState<string>();
+  const [warning, setWarning] = useState<string | undefined>(
+    () => atlas.warnings[0],
+  );
 
   useEffect(() => {
     atlasRef.current = atlas;
     selectedDynastyIdRef.current = selectedDynastyId;
-    onSelectDynastyRef.current = onSelectDynasty;
+    onSelectRegionRef.current = onSelectRegion;
     onProjectorChangeRef.current = onProjectorChange;
     onFatalErrorRef.current = onFatalError;
   }, [
     atlas,
     onFatalError,
     onProjectorChange,
-    onSelectDynasty,
+    onSelectRegion,
     selectedDynastyId,
   ]);
 
@@ -199,8 +241,8 @@ export function MapLibreCanvas({
     };
 
     const injectOptionalSource = (
-      sourceId: "disputed943" | "places943",
-      data: AtlasDataset["disputed"] | AtlasDataset["places"],
+      sourceId: "realmLabels943" | "disputed943" | "places943",
+      data: Parameters<GeoJSONSource["setData"]>[0],
     ) => {
       try {
         const source = getGeoJsonSource(map, sourceId);
@@ -209,7 +251,10 @@ export function MapLibreCanvas({
         }
         source.setData(data);
       } catch {
-        setWarning("部分辅助地图资料暂未载入，核心疆域仍可使用。");
+        setWarning(
+          (current) =>
+            current ?? "部分辅助地图资料暂未载入，核心疆域仍可使用。",
+        );
       }
     };
 
@@ -229,6 +274,10 @@ export function MapLibreCanvas({
 
       injectOptionalSource("disputed943", atlasRef.current.disputed);
       injectOptionalSource("places943", atlasRef.current.places);
+      injectOptionalSource(
+        "realmLabels943",
+        createRealmLabelCollection(atlasRef.current),
+      );
 
       try {
         applySelectedFilter();
@@ -247,13 +296,16 @@ export function MapLibreCanvas({
         reportFatal(atlasError.error, "943 年地图样式载入失败");
         return;
       }
-      setWarning("部分地形底图暂未载入，疆域与历史信息仍可使用。");
+      setWarning(
+        (current) =>
+          current ?? "部分地形底图暂未载入，疆域与历史信息仍可使用。",
+      );
     };
 
     const layerHandlers = INTERACTIVE_LAYERS.map(({ fill, hover }) => {
       const handleClick = (event: MapLayerMouseEvent) => {
-        const dynastyId = getFeatureProperty(event, "dynastyId");
-        if (dynastyId) onSelectDynastyRef.current(dynastyId);
+        const selection = getRegionSelection(event);
+        if (selection) onSelectRegionRef.current(selection);
       };
       const handleMove = (event: MapLayerMouseEvent) => {
         map.getCanvas().style.cursor = "pointer";

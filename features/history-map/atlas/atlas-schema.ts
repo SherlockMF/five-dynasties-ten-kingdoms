@@ -161,13 +161,50 @@ function assertKnownSources(
   }
 }
 
+type OptionalPublishedFile<T> =
+  | { data: T; warning?: never }
+  | { data?: never; warning: string };
+
+async function loadOptionalPublishedFile<T>(
+  filename: string,
+  url: string,
+  schema: z.ZodType<T>,
+  signal?: AbortSignal,
+): Promise<OptionalPublishedFile<T>> {
+  try {
+    const value = await fetchJson(filename, url, signal);
+    return { data: parsePublishedFile(filename, schema, value) };
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    return { warning: `${errorMessage(error)}；已使用空图层。` };
+  }
+}
+
+function emptyRegionCollection(): AtlasRegionFeatureCollection {
+  return { type: "FeatureCollection", features: [] };
+}
+
+function emptyPlaceCollection(): AtlasPlaceFeatureCollection {
+  return { type: "FeatureCollection", features: [] };
+}
+
 export async function loadAtlas943(signal?: AbortSignal): Promise<AtlasDataset> {
-  const [realmsValue, disputedValue, placesValue, sourcesValue] =
+  const [realmsValue, sourcesValue, disputedResult, placesResult] =
     await Promise.all([
       fetchJson("realms.geojson", ATLAS_943_URLS.realms, signal),
-      fetchJson("disputed.geojson", ATLAS_943_URLS.disputed, signal),
-      fetchJson("places.geojson", ATLAS_943_URLS.places, signal),
       fetchJson("sources.json", ATLAS_943_URLS.sources, signal),
+      loadOptionalPublishedFile(
+        "disputed.geojson",
+        ATLAS_943_URLS.disputed,
+        regionCollectionSchema,
+        signal,
+      ),
+      loadOptionalPublishedFile(
+        "places.geojson",
+        ATLAS_943_URLS.places,
+        placeCollectionSchema,
+        signal,
+      ),
     ]);
 
   const realms = parsePublishedFile(
@@ -175,16 +212,6 @@ export async function loadAtlas943(signal?: AbortSignal): Promise<AtlasDataset> 
     regionCollectionSchema,
     realmsValue,
   ) as AtlasRegionFeatureCollection;
-  const disputed = parsePublishedFile(
-    "disputed.geojson",
-    regionCollectionSchema,
-    disputedValue,
-  ) as AtlasRegionFeatureCollection;
-  const places = parsePublishedFile(
-    "places.geojson",
-    placeCollectionSchema,
-    placesValue,
-  ) as AtlasPlaceFeatureCollection;
   const sources = parsePublishedFile(
     "sources.json",
     sourceRecordsSchema,
@@ -193,8 +220,35 @@ export async function loadAtlas943(signal?: AbortSignal): Promise<AtlasDataset> 
   const sourceIds = new Set(sources.map((source) => source.id));
 
   assertKnownSources("realms.geojson", sourceIds, realms);
-  assertKnownSources("disputed.geojson", sourceIds, disputed);
-  assertKnownSources("places.geojson", sourceIds, places);
 
-  return { realms, disputed, places, sources };
+  const warnings: string[] = [];
+  let disputed = disputedResult.data;
+  if (disputedResult.warning) warnings.push(disputedResult.warning);
+  if (disputed) {
+    try {
+      assertKnownSources("disputed.geojson", sourceIds, disputed);
+    } catch (error) {
+      warnings.push(`${errorMessage(error)}；已使用空图层。`);
+      disputed = undefined;
+    }
+  }
+
+  let places = placesResult.data;
+  if (placesResult.warning) warnings.push(placesResult.warning);
+  if (places) {
+    try {
+      assertKnownSources("places.geojson", sourceIds, places);
+    } catch (error) {
+      warnings.push(`${errorMessage(error)}；已使用空图层。`);
+      places = undefined;
+    }
+  }
+
+  return {
+    realms,
+    disputed: disputed ?? emptyRegionCollection(),
+    places: places ?? emptyPlaceCollection(),
+    sources,
+    warnings,
+  };
 }
