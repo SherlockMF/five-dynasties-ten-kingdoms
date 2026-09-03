@@ -4,6 +4,7 @@ import {
   addProtocol,
   Map as MapLibreMap,
   NavigationControl,
+  setWorkerUrl,
   type ErrorEvent,
   type FilterSpecification,
   type GeoJSONSource,
@@ -52,6 +53,14 @@ const EMPTY_ID_FILTER: FilterSpecification = [
 ];
 
 let pmtilesProtocol: Protocol | undefined;
+let maplibreWorkerConfigured = false;
+
+function ensureMapLibreWorker() {
+  if (maplibreWorkerConfigured) return;
+
+  setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
+  maplibreWorkerConfigured = true;
+}
 
 function ensurePmtilesProtocol() {
   if (pmtilesProtocol) return;
@@ -127,7 +136,6 @@ export function MapLibreCanvas({
     const container = containerRef.current;
     if (!container) return;
 
-    ensurePmtilesProtocol();
     removedRef.current = false;
 
     const reportFatal = (error: unknown, fallback: string) => {
@@ -138,6 +146,8 @@ export function MapLibreCanvas({
 
     let map: MapLibreMap;
     try {
+      ensureMapLibreWorker();
+      ensurePmtilesProtocol();
       map = new MapLibreMap({
         container,
         style: createAtlasStyle(),

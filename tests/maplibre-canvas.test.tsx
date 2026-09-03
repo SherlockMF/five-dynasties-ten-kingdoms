@@ -48,6 +48,7 @@ const maplibre = vi.hoisted(() => {
     navigationControl: vi.fn(),
     protocolConstructor: vi.fn(),
     protocolTile: vi.fn(),
+    setWorkerUrl: vi.fn(),
     sources,
   };
 });
@@ -56,6 +57,7 @@ vi.mock("maplibre-gl", () => ({
   addProtocol: maplibre.addProtocol,
   Map: maplibre.mapConstructor,
   NavigationControl: maplibre.navigationControl,
+  setWorkerUrl: maplibre.setWorkerUrl,
 }));
 
 vi.mock("pmtiles", () => ({
@@ -144,6 +146,13 @@ describe("MapLibreCanvas", () => {
     );
 
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
+    expect(maplibre.setWorkerUrl).toHaveBeenCalledWith(
+      "/maplibre/maplibre-gl-worker.mjs",
+    );
+    expect(maplibre.setWorkerUrl).toHaveBeenCalledTimes(1);
+    expect(maplibre.setWorkerUrl.mock.invocationCallOrder[0]).toBeLessThan(
+      maplibre.mapConstructor.mock.invocationCallOrder[0],
+    );
     expect(maplibre.mapConstructor).toHaveBeenCalledTimes(1);
 
     fire("style.load");
@@ -211,6 +220,7 @@ describe("MapLibreCanvas", () => {
 
     const second = render(<MapLibreCanvas atlas={atlas} {...callbacks} />);
     expect(maplibre.addProtocol).toHaveBeenCalledTimes(1);
+    expect(maplibre.setWorkerUrl).toHaveBeenCalledTimes(1);
     expect(maplibre.mapConstructor).toHaveBeenCalledTimes(2);
     second.unmount();
     expect(maplibre.instance.remove).toHaveBeenCalledTimes(2);
