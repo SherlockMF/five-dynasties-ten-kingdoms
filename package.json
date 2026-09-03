@@ -10,9 +10,11 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "maps:export:943": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/maps/export-943.ps1"
   },
   "dependencies": {
+    "@protomaps/basemaps": "^5.7.2",
     "@supabase/supabase-js": "^2.112.4",
     "@xyflow/react": "^12.11.5",
     "class-variance-authority": "^0.7.1",
@@ -20,7 +22,9 @@
     "d3-geo": "^3.1.1",
     "framer-motion": "^13.1.1",
     "lucide-react": "^1.37.0",
+    "maplibre-gl": "^6.7.0",
     "next": "^16.3.3",
+    "pmtiles": "^4.5.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "server-only": "^0.0.1",
