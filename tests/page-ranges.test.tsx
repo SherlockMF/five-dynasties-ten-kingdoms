@@ -33,12 +33,15 @@ describe("page repository ranges", () => {
   });
 
   it("keeps map data bounded to 907 through 979", async () => {
-    await MapPage();
+    render(await MapPage());
 
     expect(repository.getRegionsInRange).toHaveBeenCalledWith(907, 979);
     expect(repository.getEventsInRange).toHaveBeenCalledWith(907, 979);
     expect(repository.getAllDynasties).toHaveBeenCalledOnce();
     expect(repository.getAllLocations).toHaveBeenCalledOnce();
+    expect(
+      screen.getByText(/943 年全国校勘与 959 年北方主线/),
+    ).toBeVisible();
   });
 
   it("loads the full range for the home page", async () => {
