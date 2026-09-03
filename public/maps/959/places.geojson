@@ -1,0 +1,94 @@
+{
+  "type": "FeatureCollection",
+  "name": "places-959",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-kaifeng-959", "locationId": "kaifeng", "name": "开封",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-88-later-zhou"]
+      },
+      "geometry": { "type": "Point", "coordinates": [114.3076, 34.7973] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-taiyuan-959", "locationId": "taiyuan", "name": "太原",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-88-northern-han"]
+      },
+      "geometry": { "type": "Point", "coordinates": [112.55, 37.87] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-yingzhou-959", "locationId": "yingzhou", "name": "应州",
+        "placeKind": "prefecture", "sourceRefs": ["atlas-page-88-northern-han", "atlas-page-88-later-zhou"]
+      },
+      "geometry": { "type": "Point", "coordinates": [113.19, 39.56] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-youzhou-959", "locationId": "youzhou", "name": "幽州",
+        "placeKind": "prefecture", "sourceRefs": ["atlas-page-88-later-zhou"]
+      },
+      "geometry": { "type": "Point", "coordinates": [116.4074, 39.9042] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-jinling-959", "locationId": "jinling", "name": "金陵",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-90-southern-tang"]
+      },
+      "geometry": { "type": "Point", "coordinates": [118.7969, 32.0603] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-hangzhou-959", "locationId": "hangzhou", "name": "杭州",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-90-wuyue"]
+      },
+      "geometry": { "type": "Point", "coordinates": [120.1551, 30.2741] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-fuzhou-959", "locationId": "fuzhou", "name": "福州",
+        "placeKind": "prefecture", "sourceRefs": ["atlas-page-90-wuyue"]
+      },
+      "geometry": { "type": "Point", "coordinates": [119.2965, 26.0745] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-chengdu-959", "locationId": "chengdu", "name": "成都",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-91-later-shu"]
+      },
+      "geometry": { "type": "Point", "coordinates": [104.0665, 30.5723] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-guangzhou-959", "locationId": "guangzhou", "name": "广州",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-92-southern-han"]
+      },
+      "geometry": { "type": "Point", "coordinates": [113.2644, 23.1291] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-jiangling-959", "locationId": "jiangling", "name": "江陵",
+        "placeKind": "capital", "sourceRefs": ["atlas-page-93-jingnan"]
+      },
+      "geometry": { "type": "Point", "coordinates": [112.2407, 30.3352] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "place-langzhou-959", "locationId": "langzhou", "name": "朗州",
+        "placeKind": "prefecture", "sourceRefs": ["atlas-page-93-chu"]
+      },
+      "geometry": { "type": "Point", "coordinates": [111.69, 29.04] }
+    }
+  ]
+}

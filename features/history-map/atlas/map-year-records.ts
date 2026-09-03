@@ -17,6 +17,15 @@ const reconstructed943: Omit<MapYearRecord, "year" | "eventIds"> = {
     "943 年疆域依据历史地图与史料校勘重建；福建闽、殷分裂暂以合并轮廓表达，连续边界仍不代表现代测绘精度。",
 };
 
+const reconstructed959: Omit<MapYearRecord, "year" | "eventIds"> = {
+  snapshotId: "snapshot-959",
+  anchorYear: 959,
+  boundaryMode: "reconstructed",
+  confidence: "medium",
+  mapNote:
+    "959 年为北方主线阶段重建：后周、北汉与辽依据同年图集校勘；南方五国暂据 943/954 年局部图推定，不代表同等精度的全国边界。",
+};
+
 const legacyIllustrative: Omit<MapYearRecord, "year" | "eventIds"> = {
   snapshotId: "legacy-illustrative",
   anchorYear: null,
@@ -50,6 +59,35 @@ export const MAP_SNAPSHOT_MANIFESTS = {
     ],
     confidence: "medium",
   },
+  "snapshot-959": {
+    id: "snapshot-959",
+    anchorYear: 959,
+    version: "959.1",
+    bbox: [72, 18, 136, 55],
+    files: {
+      realms: "/maps/959/realms.geojson",
+      disputed: "/maps/959/disputed.geojson",
+      places: "/maps/959/places.geojson",
+      sources: "/maps/959/sources.json",
+    },
+    sourceRefs: [
+      "atlas-page-88-later-zhou",
+      "atlas-page-88-northern-han",
+      "atlas-page-90-southern-tang",
+      "atlas-page-90-wuyue",
+      "atlas-page-91-later-shu",
+      "atlas-page-92-southern-han",
+      "atlas-page-93-jingnan",
+      "atlas-page-93-chu",
+      "natural-earth-land-10m",
+    ],
+    inferenceNotes: [
+      "北方后周、北汉与辽的相邻关系依据 959 年同纪年图页重建；轮廓经过网页尺度综合，仍不等同州县界测绘。",
+      "南方南唐、吴越、后蜀、南汉主要依据 954 年区域图，荆南与武平关系参考 943 年区域图，均以推定边界表达。",
+      "武平军作为政权过渡与名义归属复杂的争议区单列，不并入后周或南唐控制区。",
+    ],
+    confidence: "medium",
+  },
   "legacy-illustrative": {
     id: "legacy-illustrative",
     anchorYear: null,
@@ -68,7 +106,11 @@ export const MAP_YEAR_RECORDS: readonly MapYearRecord[] = Array.from(
     const year = MAP_START_YEAR + index;
     return {
       year,
-      ...(year === 943 ? reconstructed943 : legacyIllustrative),
+      ...(year === 943
+        ? reconstructed943
+        : year === 959
+          ? reconstructed959
+          : legacyIllustrative),
       eventIds: [],
     };
   },

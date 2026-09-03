@@ -1,0 +1,222 @@
+{
+  "type": "FeatureCollection",
+  "name": "realms-959",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "later-zhou-959",
+        "dynastyId": "later-zhou",
+        "name": "后周",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "reconstructed",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-88-later-zhou", "atlas-page-88-northern-han"],
+        "disputedNote": "依据 959 年后周与北汉同纪年图页重建；网页尺度轮廓不代表州县界精度。",
+        "labelLongitude": 114.7,
+        "labelLatitude": 34.7
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [103.1, 35.6], [103.5, 37.4], [105.0, 38.8], [107.2, 39.2],
+          [109.2, 39.1], [110.25, 38.95], [110.4, 38.0], [110.9, 37.1],
+          [111.7, 36.4], [112.6, 36.2], [113.35, 36.7], [113.2, 37.6],
+          [113.7, 38.6], [113.4, 39.5], [114.6, 39.3], [116.0, 38.8],
+          [117.8, 37.8], [119.5, 36.8], [120.6, 35.3], [120.7, 34.2],
+          [120.5, 33.4], [120.2, 32.2], [119.0, 32.0], [117.5, 31.8],
+          [115.5, 31.2], [113.8, 31.0], [112.2, 31.0], [111.0, 31.5],
+          [110.5, 31.4], [109.4, 32.0], [108.5, 32.6], [107.5, 33.3],
+          [106.0, 33.7], [104.5, 34.4], [103.1, 35.6]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "liao-959",
+        "dynastyId": "liao",
+        "name": "辽",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "reconstructed",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-88-later-zhou", "atlas-page-88-northern-han"],
+        "disputedNote": "依据 959 年北方同纪年图页所见辽南缘及相邻关系重建；北部外围经过大比例尺概括。",
+        "labelLongitude": 117.5,
+        "labelLatitude": 43.0
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [103.5, 43.0], [105.0, 46.5], [111.0, 49.0], [119.0, 48.5],
+          [126.0, 46.0], [128.0, 42.0], [124.0, 40.5], [121.0, 40.2],
+          [119.5, 39.7], [117.8, 39.0], [116.0, 38.8], [114.6, 39.3],
+          [113.4, 39.5], [112.65, 39.45], [112.0, 39.95], [111.2, 40.1],
+          [110.55, 39.55], [110.25, 38.95], [109.2, 39.1], [107.2, 39.2],
+          [105.0, 40.3], [103.5, 43.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "northern-han-959",
+        "dynastyId": "northern-han",
+        "name": "北汉",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "reconstructed",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-88-northern-han", "atlas-page-88-later-zhou"],
+        "disputedNote": "依据 959 年北汉同纪年图页重建河东核心区，边缘州镇按网页尺度综合。",
+        "labelLongitude": 112.25,
+        "labelLatitude": 38.2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [110.25, 38.95], [110.55, 39.55], [111.2, 40.1], [112.0, 39.95],
+          [112.65, 39.45], [113.4, 39.5], [113.7, 38.6], [113.2, 37.6],
+          [113.35, 36.7], [112.6, 36.2], [111.7, 36.4], [110.9, 37.1],
+          [110.4, 38.0], [110.25, 38.95]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "southern-tang-959",
+        "dynastyId": "southern-tang",
+        "name": "南唐",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-90-southern-tang", "atlas-page-90-wuyue", "atlas-page-93-jingnan"],
+        "disputedNote": "依据 954 年南唐分图与 943 年荆南邻接关系推定 959 年大范围；淮南易手后的精确州界尚待同年资料校勘。",
+        "labelLongitude": 115.0,
+        "labelLatitude": 28.2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [113.8, 31.0], [115.5, 31.2], [117.5, 31.8], [119.0, 32.0],
+          [118.6, 30.8], [118.2, 29.8], [118.0, 28.5], [117.2, 27.2],
+          [116.0, 26.1], [114.5, 25.5], [113.0, 25.1], [111.5, 25.5],
+          [110.5, 26.5], [110.2, 27.8], [109.8, 29.2], [110.4, 30.5],
+          [110.8, 29.7], [111.6, 29.3], [111.9, 29.35], [112.4, 29.7],
+          [112.6, 30.5], [112.2, 31.0], [113.8, 31.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "wuyue-959",
+        "dynastyId": "wuyue",
+        "name": "吴越",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-90-wuyue", "atlas-page-90-southern-tang", "natural-earth-land-10m"],
+        "disputedNote": "依据 954 年吴越分图推定 959 年轮廓，沿海仅按自然地理概括，闽北州界尚未逐州复核。",
+        "labelLongitude": 120.0,
+        "labelLatitude": 28.8
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [119.0, 32.0], [120.2, 32.2], [121.4, 31.9], [121.8, 31.6],
+          [122.2, 30.2], [121.8, 28.7], [120.8, 27.5], [120.2, 25.8],
+          [119.0, 25.5], [117.4, 25.9], [116.0, 26.1], [117.2, 27.2],
+          [118.0, 28.5], [118.2, 29.8], [118.6, 30.8], [119.0, 32.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "later-shu-959",
+        "dynastyId": "later-shu",
+        "name": "后蜀",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-91-later-shu", "atlas-page-88-later-zhou"],
+        "disputedNote": "依据 954 年后蜀分图并参照 959 年后周邻接关系推定；秦岭、三峡与西南边缘尚未逐州复核。",
+        "labelLongitude": 104.4,
+        "labelLatitude": 31.2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.6, 32.0], [99.5, 34.4], [101.0, 35.0], [102.5, 35.0],
+          [103.1, 35.6], [104.5, 34.4], [106.0, 33.7], [107.5, 33.3],
+          [108.5, 32.6], [109.4, 32.0], [109.2, 30.5], [107.5, 29.0],
+          [104.8, 28.4], [101.5, 28.6], [99.2, 30.0], [98.6, 32.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "southern-han-959",
+        "dynastyId": "southern-han",
+        "name": "南汉",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-92-southern-han", "atlas-page-90-southern-tang", "natural-earth-land-10m"],
+        "disputedNote": "依据 954 年南汉分图推定 959 年轮廓；岭南族群地区、海岛与交趾方向仅表达大范围关系。",
+        "labelLongitude": 111.0,
+        "labelLatitude": 23.6
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [105.0, 24.0], [105.5, 25.5], [107.5, 26.5], [109.0, 26.7],
+          [110.5, 26.5], [111.5, 25.5], [113.0, 25.1], [114.5, 25.5],
+          [116.0, 26.1], [117.0, 24.2], [116.0, 22.5], [114.0, 21.0],
+          [111.0, 20.5], [108.0, 21.0], [106.0, 22.0], [105.0, 24.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "jingnan-959",
+        "dynastyId": "jingnan",
+        "name": "荆南",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "controlled",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-93-jingnan", "atlas-page-88-later-zhou", "atlas-page-90-southern-tang"],
+        "disputedNote": "依据 943 年南平分图及 959 年后周、954 年南唐邻接关系推定，核心州府之外不作精确边界主张。",
+        "labelLongitude": 111.6,
+        "labelLatitude": 30.3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [110.5, 31.4], [111.0, 31.5], [112.2, 31.0], [112.6, 30.5],
+          [112.4, 29.7], [111.9, 29.35], [111.6, 29.3], [110.8, 29.7],
+          [110.4, 30.5], [110.5, 31.4]
+        ]]
+      }
+    }
+  ]
+}

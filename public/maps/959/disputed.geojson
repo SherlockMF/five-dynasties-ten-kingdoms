@@ -1,0 +1,31 @@
+{
+  "type": "FeatureCollection",
+  "name": "disputed-959",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "wuping-transition-959",
+        "dynastyId": "wuping",
+        "name": "武平军控制与名义归属区",
+        "validFromYear": 959,
+        "validToYearExclusive": 960,
+        "boundaryKind": "disputed",
+        "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-93-chu", "atlas-page-93-jingnan", "atlas-page-90-southern-tang"],
+        "disputedNote": "楚亡后武平军在湖南形成过渡性军政控制，名义归属与实际范围并不等同；依据楚故地、荆南和南唐相邻关系作推定表达，不并入后周或南唐。",
+        "labelLongitude": 111.0,
+        "labelLatitude": 28.3
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [108.8, 29.3], [109.7, 30.0], [110.8, 29.7], [111.6, 29.3],
+          [112.4, 29.7], [113.0, 28.8], [112.5, 27.5], [111.4, 26.8],
+          [110.0, 27.1], [108.9, 28.0], [108.8, 29.3]
+        ]]
+      }
+    }
+  ]
+}
