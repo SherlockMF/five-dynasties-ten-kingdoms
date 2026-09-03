@@ -38,25 +38,28 @@ Point。站内可定位的都城与重要州府，至少包含开封、洛阳、
 id TEXT NOT NULL UNIQUE
 dynastyId TEXT NOT NULL
 name TEXT NOT NULL
-validFromYear INTEGER NOT NULL DEFAULT 943
-validToYearExclusive INTEGER NOT NULL DEFAULT 944
-boundaryKind TEXT NOT NULL CHECK IN ('controlled','influence','disputed')
+validFromYear INTEGER NOT NULL DEFAULT 943 CHECK = 943
+validToYearExclusive INTEGER NOT NULL DEFAULT 944 CHECK = 944
+boundaryKind TEXT NOT NULL            # realms: controlled|influence; disputed_areas: disputed
 accuracyLevel TEXT NOT NULL CHECK IN ('attested','reconstructed','approximate')
 verificationStatus TEXT NOT NULL CHECK IN ('verified','reviewed')
-sourceRefs TEXT NOT NULL
+sourceRefs TEXT NOT NULL CHECK valid non-empty JSON array
 disputedNote TEXT
-labelLongitude REAL
-labelLatitude REAL
+labelLongitude REAL NOT NULL CHECK BETWEEN 72 AND 136
+labelLatitude REAL NOT NULL CHECK BETWEEN 18 AND 55
 ```
 
-GeoPackage 中的 `sourceRefs` 是 JSON 字符串数组，其 ID 必须存在于 `sources.json`；GDAL 发布到 GeoJSON 时会把它转为原生 JSON 数组。标签坐标始终使用 WGS84 经纬度，不跟随图层 CRS 投影。
+GeoPackage 中的年份默认值和上述枚举均是 SQLite 实际约束，不是只写在文档中的约定。`disputed_areas.disputedNote` 还有非空检查；`places.year` 的默认值和限定值均为 943，`places.placeKind` 只允许 `capital|prefecture|landmark`。
+
+GeoPackage 中的 `sourceRefs` 是 JSON 字符串数组，并由 SQLite 检查为非空数组；导出前还会检查其 ID 是否存在于 `provenance`。GDAL 发布到 GeoJSON 时会把它转为原生 JSON 数组。标签坐标始终使用 WGS84 经纬度，不跟随图层 CRS 投影。
 
 ## 编辑与校验
 
 1. 用 QGIS 4.0.2 打开 `wudai-943.qgz`，保持项目 CRS 为 `ESRI:102012`。
-2. 几何图层启用 5 km snapping 与拓扑编辑。
+2. 工程已开启全局 snapping、交点 snapping 与拓扑编辑。面图层捕捉顶点和线段，点图层捕捉顶点；容差统一为 5000 项目单位（本工程为米，即 5 km）。
 3. 检查几何有效性、自相交和同一核心控制区重叠。允许的边界争议只能位于 `disputed_areas`。
-4. 运行 `scripts/maps/export-943.ps1` 发布数据，然后运行两个 943 数据测试。
+4. 运行 `scripts/maps/export-943.ps1` 发布数据。脚本会先检查必填字段、年份与枚举、来源引用、几何有效性和核心控制区重叠；任一项失败就中止。脚本不使用 `-makevalid` 修改权威源，只把通过预检的数据导出到同卷临时目录，产物齐全后再以目录交换发布。
+5. 运行 `npm run test:run -- tests/atlas-943-sources.test.ts tests/atlas-943-data.test.ts`。
 
 ## 本次自动重建记录
 
