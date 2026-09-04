@@ -12,12 +12,13 @@ import {
   type MapLayerMouseEvent,
 } from "maplibre-gl";
 import { Protocol } from "pmtiles";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import {
   ATLAS_BOUNDS,
   ATLAS_INITIAL_VIEW,
 } from "@/features/history-map/atlas/atlas-config";
+import { getAtlasDatasetBounds } from "@/features/history-map/atlas/atlas-bounds";
 import { createAtlasStyle } from "@/features/history-map/atlas/atlas-style";
 import type { AtlasRegionSelection } from "@/features/history-map/atlas/atlas-region-selection";
 import type {
@@ -149,6 +150,7 @@ export function MapLibreCanvas({
   onFatalError,
   onRenderSuccess,
 }: MapLibreCanvasProps) {
+  const atlasBounds = useMemo(() => getAtlasDatasetBounds(atlas), [atlas]);
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const atlasRef = useRef(atlas);
@@ -439,8 +441,14 @@ export function MapLibreCanvas({
 
   const resetExtent = () => {
     mapRef.current?.fitBounds(
-      ATLAS_BOUNDS as unknown as [[number, number], [number, number]],
-      { duration: 700, padding: 48 },
+      (atlasBounds ?? ATLAS_BOUNDS) as unknown as [
+        [number, number],
+        [number, number],
+      ],
+      {
+        duration: 700,
+        padding: { top: 40, right: 40, bottom: 56, left: 40 },
+      },
     );
   };
 

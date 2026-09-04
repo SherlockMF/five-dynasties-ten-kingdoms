@@ -2,7 +2,6 @@ import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ATLAS_BOUNDS } from "@/features/history-map/atlas/atlas-config";
 import type { AtlasDataset } from "@/features/history-map/atlas/atlas-types";
 import { MapLibreCanvas } from "@/features/history-map/atlas/maplibre-canvas";
 
@@ -277,8 +276,14 @@ describe("MapLibreCanvas", () => {
       screen.getByRole("button", { name: "复位地图范围" }),
     );
     expect(maplibre.instance.fitBounds).toHaveBeenCalledWith(
-      ATLAS_BOUNDS,
-      expect.objectContaining({ duration: expect.any(Number) }),
+      [
+        [110, 34],
+        [111, 35],
+      ],
+      expect.objectContaining({
+        duration: expect.any(Number),
+        padding: expect.objectContaining({ bottom: expect.any(Number) }),
+      }),
     );
 
     fire("moveend");
