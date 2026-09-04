@@ -1,0 +1,39 @@
+{
+  "type": "FeatureCollection",
+  "name": "disputed-954",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "wuping-transition-954", "dynastyId": "wuping", "name": "武平军控制与名义归属区",
+        "validFromYear": 954, "validToYearExclusive": 955,
+        "boundaryKind": "disputed", "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-93-chu", "atlas-page-93-jingnan", "atlas-page-90-southern-tang"],
+        "disputedNote": "楚亡后湖南军政控制与名义归属并不一致；依据楚故地、荆南和南唐邻接关系作推定表达。",
+        "labelLongitude": 109.4, "labelLatitude": 28.2
+      },
+      "geometry": { "type": "Polygon", "coordinates": [[
+        [107.7,28.4],[108.5,29.4],[109.8,29.2],[110.6,30.0],[111.1,29.8],
+        [110.2,27.5],[110.5,25.8],[108.8,26.8],[107.7,28.4]
+      ]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "huai-frontier-954", "dynastyId": "later-zhou-southern-tang", "name": "淮河前沿过渡带",
+        "validFromYear": 954, "validToYearExclusive": 955,
+        "boundaryKind": "disputed", "accuracyLevel": "approximate",
+        "verificationStatus": "reviewed",
+        "sourceRefs": ["atlas-page-90-southern-tang", "atlas-page-88-later-zhou"],
+        "disputedNote": "954 年处于后周南征前夜，淮河沿线控制强度与图幅综合误差以过渡带表达，不是第二条确定国界。",
+        "labelLongitude": 117.0, "labelLatitude": 33.4
+      },
+      "geometry": { "type": "Polygon", "coordinates": [[
+        [112.5,31.8],[113.8,32.6],[115.5,33.25],[117.3,33.25],[119.0,32.95],
+        [120.5,33.3],[120.6,33.7],[119.0,33.45],[117.3,33.75],[115.5,33.75],
+        [113.7,33.0],[112.5,32.2],[112.5,31.8]
+      ]] }
+    }
+  ]
+}

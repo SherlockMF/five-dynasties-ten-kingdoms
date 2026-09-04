@@ -1,0 +1,16 @@
+{
+  "type": "FeatureCollection",
+  "name": "places-954",
+  "features": [
+    { "type": "Feature", "properties": { "id": "place-kaifeng-954", "locationId": "kaifeng", "name": "开封", "placeKind": "capital", "sourceRefs": ["atlas-page-88-later-zhou"] }, "geometry": { "type": "Point", "coordinates": [114.31,34.8] } },
+    { "type": "Feature", "properties": { "id": "place-taiyuan-954", "locationId": "taiyuan", "name": "太原", "placeKind": "capital", "sourceRefs": ["atlas-page-88-northern-han"] }, "geometry": { "type": "Point", "coordinates": [112.55,37.87] } },
+    { "type": "Feature", "properties": { "id": "place-youzhou-954", "locationId": "youzhou", "name": "幽州", "placeKind": "prefecture", "sourceRefs": ["atlas-page-87-later-han", "atlas-page-88-later-zhou"] }, "geometry": { "type": "Point", "coordinates": [116.4,39.9] } },
+    { "type": "Feature", "properties": { "id": "place-jinling-954", "locationId": "jinling", "name": "金陵", "placeKind": "capital", "sourceRefs": ["atlas-page-90-southern-tang"] }, "geometry": { "type": "Point", "coordinates": [118.8,32.06] } },
+    { "type": "Feature", "properties": { "id": "place-shouzhou-954", "locationId": "shouzhou", "name": "寿州", "placeKind": "prefecture", "sourceRefs": ["atlas-page-90-southern-tang", "atlas-page-88-later-zhou"] }, "geometry": { "type": "Point", "coordinates": [116.78,32.58] } },
+    { "type": "Feature", "properties": { "id": "place-hangzhou-954", "locationId": "hangzhou", "name": "杭州", "placeKind": "capital", "sourceRefs": ["atlas-page-90-wuyue"] }, "geometry": { "type": "Point", "coordinates": [120.16,30.27] } },
+    { "type": "Feature", "properties": { "id": "place-fuzhou-954", "locationId": "fuzhou", "name": "福州", "placeKind": "prefecture", "sourceRefs": ["atlas-page-90-wuyue"] }, "geometry": { "type": "Point", "coordinates": [119.3,26.08] } },
+    { "type": "Feature", "properties": { "id": "place-chengdu-954", "locationId": "chengdu", "name": "成都", "placeKind": "capital", "sourceRefs": ["atlas-page-91-later-shu"] }, "geometry": { "type": "Point", "coordinates": [104.07,30.67] } },
+    { "type": "Feature", "properties": { "id": "place-guangzhou-954", "locationId": "guangzhou", "name": "广州", "placeKind": "capital", "sourceRefs": ["atlas-page-92-southern-han"] }, "geometry": { "type": "Point", "coordinates": [113.26,23.13] } },
+    { "type": "Feature", "properties": { "id": "place-jiangling-954", "locationId": "jiangling", "name": "江陵", "placeKind": "capital", "sourceRefs": ["atlas-page-93-jingnan"] }, "geometry": { "type": "Point", "coordinates": [112.19,30.35] } }
+  ]
+}
