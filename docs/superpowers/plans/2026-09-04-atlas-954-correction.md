@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - 扫描图仅作本地校勘，不复制到仓库或发布目录。
-- 仓库内不得记录 `D:\历史地图\...` 等绝对路径。
+- 仓库内不得记录任何本机扫描目录的绝对路径。
 - 北方与荆南的邻年推定不得显示为与 954 年同年校勘范围相同的精度。
 - 不新增运行时依赖或外部网络请求。
 - 年份切换保留相机；只有“复位全图”适配当前快照。
@@ -190,5 +190,4 @@ At the existing mobile project viewport, verify the legend wraps without obscuri
 
 - [ ] **Step 3: Review repository hygiene**
 
-Run `git diff --check`, search tracked files for `D:\历史地图`, and verify no scanned JPG entered the repository.
-
+Run `git diff --check`, search tracked files for local absolute scan paths, and verify no scanned JPG entered the repository.
