@@ -13,7 +13,10 @@ export type AtlasAccuracy =
 
 export type AtlasBoundaryKind = "controlled" | "influence" | "disputed";
 
-export type MapBoundaryMode = "reconstructed" | "illustrative";
+export type MapBoundaryMode =
+  | "reconstructed"
+  | "generalized"
+  | "illustrative";
 
 export type MapConfidence = "high" | "medium" | "low";
 

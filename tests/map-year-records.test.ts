@@ -73,11 +73,12 @@ describe("map year records", () => {
       year: 954,
       snapshotId: "snapshot-954",
       anchorYear: 954,
-      boundaryMode: "reconstructed",
+      boundaryMode: "generalized",
       confidence: "medium",
       eventIds: [],
-      mapNote: expect.stringContaining("南方主线阶段重建"),
+      mapNote: expect.stringContaining("阶段概括"),
     });
+    expect(resolveMapYear(954).mapNote).toContain("尚未完成 QGIS 配准描边");
     expect(resolveMapYear(954).mapNote).toContain("北方与荆南为邻年推定");
   });
 

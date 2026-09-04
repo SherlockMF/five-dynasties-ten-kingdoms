@@ -35,13 +35,13 @@ const reconstructed949: Omit<MapYearRecord, "year" | "eventIds"> = {
     "949 年为后汉北方主线阶段重建；南方为邻年推定，依据 943/954 年区域图校勘，不代表同年同精度的全国边界。",
 };
 
-const reconstructed954: Omit<MapYearRecord, "year" | "eventIds"> = {
+const generalized954: Omit<MapYearRecord, "year" | "eventIds"> = {
   snapshotId: "snapshot-954",
   anchorYear: 954,
-  boundaryMode: "reconstructed",
+  boundaryMode: "generalized",
   confidence: "medium",
   mapNote:
-    "954 年为南方主线阶段重建：南唐、吴越、后蜀与南汉依据同年图集校勘；北方与荆南为邻年推定，不代表同等精度的全国边界。",
+    "954 年当前为阶段概括：南方参考同年图集，但尚未完成 QGIS 配准描边；北方与荆南为邻年推定。",
 };
 
 const reconstructed959: Omit<MapYearRecord, "year" | "eventIds"> = {
@@ -167,7 +167,7 @@ export const MAP_SNAPSHOT_MANIFESTS = {
       "natural-earth-land-10m",
     ],
     inferenceNotes: [
-      "南唐、吴越、后蜀与南汉依据 954 年同纪年图页重建，边界按网页尺度概括。",
+      "南唐、吴越、后蜀与南汉参考 954 年同纪年图页人工概括，尚未完成 QGIS 配准描边。",
       "后周、北汉与辽依据 949、959 年北方快照及政权存续关系推定，荆南依据 943 年南平图推定。",
       "武平军及淮河前沿单列为争议层，不把军政控制变化表现为现代式精确国界。",
     ],
@@ -227,7 +227,7 @@ export const MAP_YEAR_RECORDS: readonly MapYearRecord[] = Array.from(
           : year === 949
             ? reconstructed949
             : year === 954
-              ? reconstructed954
+              ? generalized954
             : year === 959
               ? reconstructed959
             : legacyIllustrative),

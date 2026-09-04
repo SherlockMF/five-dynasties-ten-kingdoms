@@ -229,6 +229,16 @@ describe("HistoricalMap", () => {
     expect(await screen.findByText(/943 · 锚点 943 · 正式重建/)).toBeVisible();
   });
 
+  it("loads the generalized 954 snapshot without calling it a formal reconstruction", async () => {
+    useHistoryStore.getState().reset({ currentYear: 954 });
+
+    render(<HistoricalMap regions={regions} dynasties={dynasties} />);
+
+    expect(await screen.findByText(/954 · 锚点 954 · 阶段概括/)).toBeVisible();
+    expect(screen.queryByText(/954 .*正式重建/)).not.toBeInTheDocument();
+    expect(loadAtlasSnapshot).toHaveBeenCalled();
+  });
+
   it("does not let a completed snapshot request erase a renderer failure", async () => {
     const user = userEvent.setup();
     const pending = deferred<typeof atlasFixture>();

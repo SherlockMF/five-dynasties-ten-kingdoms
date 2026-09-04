@@ -14,10 +14,11 @@ const confidenceLabels: Record<MapConfidence, string> = {
 };
 
 export function MapStatus({ record }: MapStatusProps) {
-  const snapshotLabel =
-    record.boundaryMode === "reconstructed" && record.anchorYear !== null
+  const snapshotLabel = record.anchorYear === null
+    ? `${record.snapshotId} · 示意边界`
+    : record.boundaryMode === "reconstructed"
       ? `锚点 ${record.anchorYear} · 正式重建`
-      : `${record.snapshotId} · 示意边界`;
+      : `锚点 ${record.anchorYear} · 阶段概括`;
 
   return (
     <section

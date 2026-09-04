@@ -139,6 +139,11 @@ function visitCoordinates(
 }
 
 describe("954 staged atlas publication", () => {
+  it("declares the current publication as generalized rather than georeferenced", () => {
+    const manifest = readPublished<{ inferenceNotes: string[] }>("manifest.json");
+    expect(manifest.inferenceNotes.join(" ")).toContain("尚未完成 QGIS 配准描边");
+  });
+
   it("publishes exactly the eight dynasties active in 954", () => {
     const realms = readPublished<RegionCollection>("realms.geojson");
     const activeIds = dynasties

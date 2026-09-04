@@ -154,7 +154,7 @@ export function HistoricalMap({
       ? resolvedForYear.error
       : undefined);
   const usesOfficialSnapshot =
-    yearRecord.boundaryMode === "reconstructed" &&
+    yearRecord.boundaryMode !== "illustrative" &&
     resolvedForYear?.status === "official" &&
     !rendererFailure;
   const effectiveYearRecord = usesOfficialSnapshot
@@ -231,7 +231,7 @@ export function HistoricalMap({
   }, []);
 
   useEffect(() => {
-    if (yearRecord.boundaryMode !== "reconstructed") return;
+    if (yearRecord.boundaryMode === "illustrative") return;
     const controller = new AbortController();
     loadAtlasSnapshot(
       resolveMapSnapshot(yearRecord.snapshotId),
