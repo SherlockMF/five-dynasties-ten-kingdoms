@@ -35,6 +35,15 @@ const reconstructed949: Omit<MapYearRecord, "year" | "eventIds"> = {
     "949 年为后汉北方主线阶段重建；南方为邻年推定，依据 943/954 年区域图校勘，不代表同年同精度的全国边界。",
 };
 
+const reconstructed954: Omit<MapYearRecord, "year" | "eventIds"> = {
+  snapshotId: "snapshot-954",
+  anchorYear: 954,
+  boundaryMode: "reconstructed",
+  confidence: "medium",
+  mapNote:
+    "954 年为南方主线阶段重建：南唐、吴越、后蜀与南汉依据同年图集校勘；北方与荆南为邻年推定，不代表同等精度的全国边界。",
+};
+
 const reconstructed959: Omit<MapYearRecord, "year" | "eventIds"> = {
   snapshotId: "snapshot-959",
   anchorYear: 959,
@@ -134,6 +143,36 @@ export const MAP_SNAPSHOT_MANIFESTS = {
     ],
     confidence: "medium",
   },
+  "snapshot-954": {
+    id: "snapshot-954",
+    anchorYear: 954,
+    version: "954.1",
+    bbox: [72, 18, 136, 55],
+    files: {
+      realms: "/maps/954/realms.geojson",
+      disputed: "/maps/954/disputed.geojson",
+      places: "/maps/954/places.geojson",
+      sources: "/maps/954/sources.json",
+    },
+    sourceRefs: [
+      "atlas-page-90-southern-tang",
+      "atlas-page-90-wuyue",
+      "atlas-page-91-later-shu",
+      "atlas-page-92-southern-han",
+      "atlas-page-87-later-han",
+      "atlas-page-88-later-zhou",
+      "atlas-page-88-northern-han",
+      "atlas-page-93-jingnan",
+      "atlas-page-93-chu",
+      "natural-earth-land-10m",
+    ],
+    inferenceNotes: [
+      "南唐、吴越、后蜀与南汉依据 954 年同纪年图页重建，边界按网页尺度概括。",
+      "后周、北汉与辽依据 949、959 年北方快照及政权存续关系推定，荆南依据 943 年南平图推定。",
+      "武平军及淮河前沿单列为争议层，不把军政控制变化表现为现代式精确国界。",
+    ],
+    confidence: "medium",
+  },
   "snapshot-959": {
     id: "snapshot-959",
     anchorYear: 959,
@@ -185,10 +224,12 @@ export const MAP_YEAR_RECORDS: readonly MapYearRecord[] = Array.from(
         ? reconstructed934
         : year === 943
         ? reconstructed943
-        : year === 949
-          ? reconstructed949
-          : year === 959
-            ? reconstructed959
+          : year === 949
+            ? reconstructed949
+            : year === 954
+              ? reconstructed954
+            : year === 959
+              ? reconstructed959
             : legacyIllustrative),
       eventIds: [],
     };

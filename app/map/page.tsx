@@ -20,7 +20,7 @@ export default async function MapPage() {
     <PageShell
       eyebrow="Historical atlas"
       title="同一年，不止一个天下"
-      description="934、943、949、959 年已提供阶段性重建疆域；其余年份仍为简化示意。移动年份，比较政权更替与空间并存。"
+      description="934、943、949、954、959 年已提供阶段性重建疆域；其余年份仍为简化示意。移动年份，比较政权更替与空间并存。"
     >
       <HistoricalMap
         regions={regions}

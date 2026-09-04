@@ -68,7 +68,20 @@ describe("map year records", () => {
     expect(resolveMapYear(949).mapNote).toContain("南方为邻年推定");
   });
 
-  it.each([933, 935, 942, 944, 948, 950, 958, 960])("resolves %i to the legacy illustrative set", (year) => {
+  it("resolves only 954 to the same-year southern staged snapshot", () => {
+    expect(resolveMapYear(954)).toMatchObject({
+      year: 954,
+      snapshotId: "snapshot-954",
+      anchorYear: 954,
+      boundaryMode: "reconstructed",
+      confidence: "medium",
+      eventIds: [],
+      mapNote: expect.stringContaining("南方主线阶段重建"),
+    });
+    expect(resolveMapYear(954).mapNote).toContain("北方与荆南为邻年推定");
+  });
+
+  it.each([933, 935, 942, 944, 948, 950, 953, 955, 958, 960])("resolves %i to the legacy illustrative set", (year) => {
     expect(resolveMapYear(year)).toMatchObject({
       year,
       snapshotId: "legacy-illustrative",
@@ -117,6 +130,7 @@ describe("map snapshot manifests", () => {
       "snapshot-934",
       "snapshot-943",
       "snapshot-949",
+      "snapshot-954",
       "snapshot-959",
     ]);
     expect(MAP_SNAPSHOT_MANIFESTS["snapshot-943"]).toMatchObject({
@@ -184,6 +198,22 @@ describe("map snapshot manifests", () => {
         expect.stringContaining("南方"),
       ]),
     });
+    expect(MAP_SNAPSHOT_MANIFESTS["snapshot-954"]).toMatchObject({
+      id: "snapshot-954",
+      anchorYear: 954,
+      confidence: "medium",
+      bbox: [72, 18, 136, 55],
+      files: {
+        realms: "/maps/954/realms.geojson",
+        disputed: "/maps/954/disputed.geojson",
+        places: "/maps/954/places.geojson",
+        sources: "/maps/954/sources.json",
+      },
+      inferenceNotes: expect.arrayContaining([
+        expect.stringContaining("南唐"),
+        expect.stringContaining("北汉"),
+      ]),
+    });
   });
 
   it("keeps the published 943 manifest identical to the runtime registry", () => {
@@ -212,5 +242,12 @@ describe("map snapshot manifests", () => {
       readFileSync(resolve("public/maps/949/manifest.json"), "utf8"),
     );
     expect(published).toEqual(MAP_SNAPSHOT_MANIFESTS["snapshot-949"]);
+  });
+
+  it("keeps the published 954 manifest identical to the runtime registry", () => {
+    const published = JSON.parse(
+      readFileSync(resolve("public/maps/954/manifest.json"), "utf8"),
+    );
+    expect(published).toEqual(MAP_SNAPSHOT_MANIFESTS["snapshot-954"]);
   });
 });
