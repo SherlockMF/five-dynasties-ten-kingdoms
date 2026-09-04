@@ -41,7 +41,7 @@ const generalized954: Omit<MapYearRecord, "year" | "eventIds"> = {
   boundaryMode: "generalized",
   confidence: "medium",
   mapNote:
-    "954 年当前为阶段概括：南方参考同年图集，但尚未完成 QGIS 配准描边；北方与荆南为邻年推定。",
+    "954 年当前为阶段概括：南方四政权已完成经纬网配准；北方与荆南仍为邻年推定。",
 };
 
 const reconstructed959: Omit<MapYearRecord, "year" | "eventIds"> = {
@@ -146,7 +146,7 @@ export const MAP_SNAPSHOT_MANIFESTS = {
   "snapshot-954": {
     id: "snapshot-954",
     anchorYear: 954,
-    version: "954.1",
+    version: "954.2",
     bbox: [72, 18, 136, 55],
     files: {
       realms: "/maps/954/realms.geojson",
@@ -167,9 +167,9 @@ export const MAP_SNAPSHOT_MANIFESTS = {
       "natural-earth-land-10m",
     ],
     inferenceNotes: [
-      "南唐、吴越、后蜀与南汉参考 954 年同纪年图页人工概括，尚未完成 QGIS 配准描边。",
+      "南方四政权依据 954 年同纪年图页完成经纬网配准与紫色疆界提取；南唐—南汉接缝以比例尺更大的南汉图页为准。",
       "后周、北汉与辽依据 949、959 年北方快照及政权存续关系推定，荆南依据 943 年南平图推定。",
-      "武平军及淮河前沿单列为争议层，不把军政控制变化表现为现代式精确国界。",
+      "快照仍标为阶段概括：北方与荆南不是同年配准成果，武平军及淮河前沿另列为争议层。",
     ],
     confidence: "medium",
   },

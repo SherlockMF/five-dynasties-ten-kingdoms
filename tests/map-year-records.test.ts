@@ -78,8 +78,8 @@ describe("map year records", () => {
       eventIds: [],
       mapNote: expect.stringContaining("阶段概括"),
     });
-    expect(resolveMapYear(954).mapNote).toContain("尚未完成 QGIS 配准描边");
-    expect(resolveMapYear(954).mapNote).toContain("北方与荆南为邻年推定");
+    expect(resolveMapYear(954).mapNote).toContain("南方四政权已完成经纬网配准");
+    expect(resolveMapYear(954).mapNote).toContain("北方与荆南仍为邻年推定");
   });
 
   it.each([933, 935, 942, 944, 948, 950, 953, 955, 958, 960])("resolves %i to the legacy illustrative set", (year) => {
