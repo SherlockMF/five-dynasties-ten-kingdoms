@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "crs": "EPSG:4326",
+  "publicationClearanceDegrees": 0.01,
+  "overlapResolutions": [
+    {
+      "dominantDynastyId": "southern-han",
+      "clippedDynastyId": "southern-tang",
+      "clearanceDegrees": 0.01,
+      "reason": "南唐与南汉接缝以比例尺更大的 954 年南汉图页北缘为准。"
+    }
+  ],
+  "sources": [
+    {
+      "sourceId": "atlas-page-90-southern-tang",
+      "fileLabel": "05-90南唐.jpg",
+      "componentMode": "focus-wash",
+      "controlPoints": [
+        { "pixel": [151, 261], "coordinate": [114, 34] },
+        { "pixel": [1241, 261], "coordinate": [124, 34] },
+        { "pixel": [151, 1616], "coordinate": [114, 24] },
+        { "pixel": [1241, 1616], "coordinate": [124, 24] },
+        { "pixel": [588, 796], "coordinate": [118, 30] }
+      ],
+      "threshold": {
+        "redMin": 120,
+        "blueMin": 95,
+        "greenRedRatio": 0.82,
+        "greenBlueRatio": 0.9,
+        "closingIterations": 2,
+        "dilationIterations": 8
+      },
+      "focusWashThreshold": {
+        "redMin": 90,
+        "greenMin": 150,
+        "greenRedRatio": 0.95,
+        "greenBlueRatio": 1.05,
+        "closingIterations": 4
+      },
+      "polities": [
+        {
+          "id": "southern-tang-954",
+          "dynastyId": "southern-tang",
+          "name": "南唐",
+          "seedCoordinate": [118.2, 31.2],
+          "labelCoordinate": [116.0, 29.8],
+          "simplifyToleranceDegrees": 0.012,
+          "disputedNote": "依据 954 年南唐图经纬网配准提取；扫描缺口与州界交汇处经人工复核，仍不代表现代测绘精度。"
+        }
+      ]
+    },
+    {
+      "sourceId": "atlas-page-90-wuyue",
+      "fileLabel": "05-90吴越.jpg",
+      "componentMode": "focus-wash",
+      "controlPoints": [
+        { "pixel": [151, 261], "coordinate": [114, 34] },
+        { "pixel": [1241, 261], "coordinate": [124, 34] },
+        { "pixel": [151, 1616], "coordinate": [114, 24] },
+        { "pixel": [1241, 1616], "coordinate": [124, 24] },
+        { "pixel": [588, 796], "coordinate": [118, 30] }
+      ],
+      "threshold": {
+        "redMin": 120,
+        "blueMin": 95,
+        "greenRedRatio": 0.82,
+        "greenBlueRatio": 0.9,
+        "closingIterations": 2,
+        "dilationIterations": 8
+      },
+      "focusWashThreshold": {
+        "redMin": 90,
+        "greenMin": 150,
+        "greenRedRatio": 0.95,
+        "greenBlueRatio": 1.05,
+        "closingIterations": 4
+      },
+      "polities": [
+        {
+          "id": "wuyue-954",
+          "dynastyId": "wuyue",
+          "name": "吴越",
+          "seedCoordinate": [120.1, 29.5],
+          "labelCoordinate": [120.2, 29.0],
+          "simplifyToleranceDegrees": 0.012,
+          "disputedNote": "依据 954 年吴越图经纬网配准提取；闽北与沿海岛屿按网站尺度表达。"
+        }
+      ]
+    },
+    {
+      "sourceId": "atlas-page-91-later-shu",
+      "fileLabel": "05-91后蜀.jpg",
+      "controlPoints": [
+        { "pixel": [1089, 52], "coordinate": [102, 36] },
+        { "pixel": [1993, 52], "coordinate": [110, 36] },
+        { "pixel": [1089, 1139], "coordinate": [102, 28] },
+        { "pixel": [1993, 1139], "coordinate": [110, 28] },
+        { "pixel": [1545, 596], "coordinate": [106, 32] }
+      ],
+      "threshold": {
+        "redMin": 120,
+        "blueMin": 95,
+        "greenRedRatio": 0.82,
+        "greenBlueRatio": 0.9,
+        "closingIterations": 2,
+        "dilationIterations": 3
+      },
+      "polities": [
+        {
+          "id": "later-shu-954",
+          "dynastyId": "later-shu",
+          "name": "后蜀",
+          "seedCoordinate": [104.1, 30.7],
+          "labelCoordinate": [104.2, 31.3],
+          "simplifyToleranceDegrees": 0.035,
+          "disputedNote": "依据 954 年后蜀图右幅经纬网配准提取；西缘族群地区和秦岭前沿按图集表达。"
+        }
+      ]
+    },
+    {
+      "sourceId": "atlas-page-92-southern-han",
+      "fileLabel": "05-92南汉.jpg",
+      "controlPoints": [
+        { "pixel": [110, 132], "coordinate": [104, 26] },
+        { "pixel": [1842, 132], "coordinate": [120, 26] },
+        { "pixel": [110, 1233], "coordinate": [104, 18] },
+        { "pixel": [1842, 1233], "coordinate": [120, 18] },
+        { "pixel": [976, 679], "coordinate": [112, 22] }
+      ],
+      "threshold": {
+        "redMin": 120,
+        "blueMin": 95,
+        "greenRedRatio": 0.82,
+        "greenBlueRatio": 0.9,
+        "closingIterations": 2,
+        "dilationIterations": 3
+      },
+      "polities": [
+        {
+          "id": "southern-han-954",
+          "dynastyId": "southern-han",
+          "name": "南汉",
+          "seedCoordinate": [113.3, 23.1],
+          "labelCoordinate": [111.0, 23.4],
+          "simplifyToleranceDegrees": 0.04,
+          "disputedNote": "依据 954 年南汉图经纬网配准提取；交趾、海南岛和沿海附属岛屿不并入连续核心面。"
+        }
+      ]
+    }
+  ]
+}

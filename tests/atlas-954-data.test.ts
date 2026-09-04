@@ -60,15 +60,16 @@ function outerRing(feature: RegionFeature): Position[] {
 }
 
 function pointOnSegment(point: Position, start: Position, end: Position) {
+  const epsilon = 1e-6;
   const cross =
     (point[1] - start[1]) * (end[0] - start[0]) -
     (point[0] - start[0]) * (end[1] - start[1]);
-  if (Math.abs(cross) > 1e-9) return false;
+  if (Math.abs(cross) > epsilon) return false;
   return (
-    point[0] >= Math.min(start[0], end[0]) &&
-    point[0] <= Math.max(start[0], end[0]) &&
-    point[1] >= Math.min(start[1], end[1]) &&
-    point[1] <= Math.max(start[1], end[1])
+    point[0] >= Math.min(start[0], end[0]) - epsilon &&
+    point[0] <= Math.max(start[0], end[0]) + epsilon &&
+    point[1] >= Math.min(start[1], end[1]) - epsilon &&
+    point[1] <= Math.max(start[1], end[1]) + epsilon
   );
 }
 
@@ -139,9 +140,58 @@ function visitCoordinates(
 }
 
 describe("954 staged atlas publication", () => {
-  it("declares the current publication as generalized rather than georeferenced", () => {
+  it("records calibrated southern boundaries while keeping the mixed snapshot generalized", () => {
     const manifest = readPublished<{ inferenceNotes: string[] }>("manifest.json");
-    expect(manifest.inferenceNotes.join(" ")).toContain("尚未完成 QGIS 配准描边");
+    const notes = manifest.inferenceNotes.join(" ");
+    expect(notes).toContain("南方四政权");
+    expect(notes).toContain("经纬网配准");
+    expect(notes).toContain("北方");
+    expect(notes).not.toContain("尚未完成 QGIS 配准描边");
+  });
+
+  it("records portable graticule calibration for every 954 source image", () => {
+    const calibrationPath = resolve("gis/954/calibration.json");
+    const contents = readFileSync(calibrationPath, "utf8");
+    const calibration = JSON.parse(contents) as {
+      sources: Array<{
+        sourceId: string;
+        fileLabel: string;
+        controlPoints: Array<{ pixel: Position; coordinate: Position }>;
+      }>;
+    };
+
+    expect(contents).not.toMatch(/(?:^|["'\s])[A-Za-z]:[\\/]/m);
+    expect(calibration.sources).toHaveLength(4);
+    for (const source of calibration.sources) {
+      expect(source.sourceId).toMatch(/^atlas-page-(90|91|92)-/);
+      expect(source.fileLabel).toMatch(/\.jpg$/);
+      expect(source.controlPoints.length).toBeGreaterThanOrEqual(4);
+      expect(
+        new Set(source.controlPoints.map(({ coordinate }) => coordinate[0])).size,
+      ).toBeGreaterThanOrEqual(2);
+      expect(
+        new Set(source.controlPoints.map(({ coordinate }) => coordinate[1])).size,
+      ).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it("keeps a detailed GIS editing source for the four same-year southern realms", () => {
+    const source = JSON.parse(
+      readFileSync(resolve("gis/954/realms-source.geojson"), "utf8"),
+    ) as RegionCollection;
+    const southernIds = new Set([
+      "southern-tang",
+      "wuyue",
+      "later-shu",
+      "southern-han",
+    ]);
+
+    expect(source.features).toHaveLength(4);
+    for (const feature of source.features) {
+      expect(southernIds.has(feature.properties.dynastyId)).toBe(true);
+      expect(outerRing(feature)[0]).toEqual(outerRing(feature).at(-1));
+      expect(outerRing(feature).length).toBeGreaterThan(40);
+    }
   });
 
   it("publishes exactly the eight dynasties active in 954", () => {
