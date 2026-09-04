@@ -21,7 +21,7 @@ import { loadAtlasSnapshot } from "./atlas/atlas-schema";
 import { DisputedAreaPopover } from "./atlas/disputed-area-popover";
 import { createIllustrativeAtlasDataset } from "./atlas/illustrative-atlas";
 import { MapFallback } from "./atlas/map-fallback";
-import { MapLegend, type MapLegendKind } from "./atlas/map-legend";
+import type { MapLegendKind } from "./atlas/map-legend";
 import { MapStatus } from "./atlas/map-status";
 import {
   asIllustrativeMapYear,
@@ -272,9 +272,9 @@ export function HistoricalMap({
   }, [illustrativeAtlas, selectDynasty, selectedId, year]);
 
   return (
-    <section aria-label="五代十国互动历史地图" className="overflow-hidden rounded-[1.25rem] border border-ink/15 bg-ink shadow-[0_24px_70px_rgba(23,40,36,.14)]">
+    <section aria-label="五代十国互动历史地图" className="overflow-hidden rounded-[1.25rem] border border-ink/15 bg-paper shadow-[0_24px_70px_rgba(23,40,36,.14)]">
       {mode === "full" ? <MapControls /> : null}
-      <div className="grid min-w-0 lg:grid-cols-[minmax(0,1fr)_19rem]">
+      <div className="grid min-w-0 bg-paper lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="relative min-h-[26rem] overflow-hidden bg-paper">
           <MapStatus record={effectiveYearRecord} />
           <div className="relative min-h-[32rem]">
@@ -284,14 +284,12 @@ export function HistoricalMap({
               events={events}
               locations={locations}
               selectedDynastyId={selectedId}
+              availableLegendKinds={availableLegendKinds(atlas)}
               onSelectRegion={handleSelectRegion}
               onSelectEvent={selectEvent}
               onFatalError={handleAtlasFatal}
               onRenderSuccess={handleRenderSuccess}
             />
-            <div className="absolute bottom-16 right-4 z-10 max-w-[calc(100%-2rem)]">
-              <MapLegend availableKinds={availableLegendKinds(atlas)} />
-            </div>
           </div>
           {atlasFailure ? (
             <div className="absolute inset-x-4 bottom-4 z-20">
@@ -303,11 +301,11 @@ export function HistoricalMap({
             <DisputedAreaPopover feature={selectedDisputedFeature} sources={atlas.sources} dynasties={disputedDynasties} onSelectDynasty={handleSelect} onClose={() => setSelectedDisputedRegionId(undefined)} />
           ) : null}
         </div>
-        <aside className="flex flex-col border-t border-white/10 bg-paper p-4 lg:max-h-[min(52rem,calc(100dvh-9rem))] lg:min-h-0 lg:border-l lg:border-t-0">
+        <aside className="flex min-h-0 flex-col border-t border-ink/10 bg-paper p-4 lg:border-l lg:border-t-0">
           <p className="mb-3 shrink-0 text-[10px] tracking-[0.16em] text-muted uppercase">当前政权 · {visibleDynasties.length}</p>
           <div
             data-testid="map-dynasty-scroll"
-            className="atlas-scrollbar min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
+            className="atlas-scrollbar min-h-0 lg:max-h-[min(52rem,calc(100dvh-9rem))] lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
           >
             <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={handleSelect} />
             {atlas.disputed.features.length ? (

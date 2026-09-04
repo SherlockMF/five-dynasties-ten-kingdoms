@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { useEffect } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -82,6 +82,7 @@ describe("HistoricalAtlasMap", () => {
     const { rerender } = render(
       <HistoricalAtlasMap
         {...props}
+        availableLegendKinds={["core"]}
         yearRecord={resolveMapYear(942)}
         atlas={illustrative}
       />,
@@ -93,11 +94,28 @@ describe("HistoricalAtlasMap", () => {
     rerender(
       <HistoricalAtlasMap
         {...props}
+        availableLegendKinds={["core"]}
         yearRecord={resolveMapYear(943)}
         atlas={reconstructed}
       />,
     );
     expect(screen.getByText("snapshot-943")).toBeVisible();
     expect(mocks.canvasMounts).toBe(1);
+  });
+
+  it("keeps the legend inside the map viewport", () => {
+    render(
+      <HistoricalAtlasMap
+        {...props}
+        availableLegendKinds={["core", "inferred"]}
+        yearRecord={resolveMapYear(943)}
+        atlas={dataset("snapshot-943")}
+      />,
+    );
+
+    const viewport = screen.getByTestId("atlas-map-viewport");
+    expect(
+      within(viewport).getByRole("group", { name: "历史疆域图例" }),
+    ).toBeVisible();
   });
 });

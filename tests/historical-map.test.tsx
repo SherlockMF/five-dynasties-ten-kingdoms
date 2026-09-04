@@ -171,7 +171,15 @@ describe("HistoricalMap", () => {
     render(<HistoricalMap regions={regions} dynasties={dynasties} />);
 
     const rail = screen.getByTestId("map-dynasty-scroll");
-    expect(rail).toHaveClass("lg:overflow-y-auto", "atlas-scrollbar");
+    expect(rail).toHaveClass(
+      "lg:overflow-y-auto",
+      "lg:max-h-[min(52rem,calc(100dvh-9rem))]",
+      "atlas-scrollbar",
+    );
+    expect(rail.parentElement).toHaveClass("bg-paper");
+    expect(
+      screen.getByRole("region", { name: "五代十国互动历史地图" }),
+    ).toHaveClass("bg-paper");
     expect(within(rail).getByLabelText("当前政权列表")).toBeVisible();
   });
 

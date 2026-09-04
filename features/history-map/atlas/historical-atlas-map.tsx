@@ -12,6 +12,7 @@ import type {
   MapYearRecord,
 } from "./atlas-types";
 import { MapAttribution } from "./map-attribution";
+import { MapLegend, type MapLegendKind } from "./map-legend";
 import { MapLibreCanvas } from "./maplibre-canvas";
 import { resolveMapSnapshot } from "./map-year-records";
 
@@ -21,6 +22,7 @@ export interface HistoricalAtlasMapProps {
   events: HistoricalEvent[];
   locations: HistoricalLocation[];
   selectedDynastyId?: string;
+  availableLegendKinds: readonly MapLegendKind[];
   onSelectRegion: (selection: AtlasRegionSelection) => void;
   onSelectEvent: (eventId?: string) => void;
   onFatalError: (error: Error) => void;
@@ -33,6 +35,7 @@ export function HistoricalAtlasMap({
   events,
   locations,
   selectedDynastyId,
+  availableLegendKinds,
   onSelectRegion,
   onSelectEvent,
   onFatalError,
@@ -42,7 +45,10 @@ export function HistoricalAtlasMap({
 
   return (
     <div className="flex h-full min-h-[32rem] flex-col bg-paper">
-      <div className="relative min-h-[29rem] flex-1 overflow-hidden">
+      <div
+        data-testid="atlas-map-viewport"
+        className="relative min-h-[29rem] flex-1 overflow-hidden"
+      >
         <MapLibreCanvas
           atlas={atlas}
           year={yearRecord.year}
@@ -64,6 +70,9 @@ export function HistoricalAtlasMap({
             }
           />
         ) : null}
+        <div className="absolute bottom-16 left-4 z-10 max-w-[calc(100%-2rem)]">
+          <MapLegend availableKinds={availableLegendKinds} />
+        </div>
       </div>
       <MapAttribution
         record={yearRecord}
