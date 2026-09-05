@@ -65,26 +65,14 @@ export class MockLlmProvider implements LlmProvider {
     input.signal?.throwIfAborted();
     const evidence = (input.retrievedEvidence ?? []).filter(isUsableEvidence);
 
-    if (!evidence.length && !input.allowGeneralKnowledge) {
+    if (!evidence.length) {
       return {
         answer:
-          "当前知识库中没有找到足够可靠的信息。你可以选择基于通用历史知识继续，但该内容不会标记为知识库来源。",
+          "当前知识库中没有找到足够可靠的信息。请补充事件名、人物名或年份；当前问史只检索站内资料，不能生成通用知识回答。",
         provenance: "none",
         relatedPeople: [],
         relatedEvents: [],
         relatedYears: [],
-        sources: [],
-      };
-    }
-
-    if (!evidence.length) {
-      return {
-        answer:
-          "以下是基于通用历史知识的概括，不来自当前知识库：五代十国是唐末地方军事力量长期扩张后形成的多政权并存时期。",
-        provenance: "general-knowledge",
-        relatedPeople: [],
-        relatedEvents: [],
-        relatedYears: [907, 960],
         sources: [],
       };
     }

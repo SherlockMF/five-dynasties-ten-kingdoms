@@ -162,10 +162,10 @@ describe("Timeline track filters", () => {
 
   it("stops late-Tang bypass at the 907 stage boundary", async () => {
     const user = userEvent.setup();
-    const feud = seedEvents.find(
+    const original = seedEvents.find(
       (event) => event.id === "zhu-wen-li-keyong-feud",
     );
-    expect(feud).toMatchObject({ startYear: 884, endYear: 908 });
+    const feud = original ? { ...original, endYear: 908 } : undefined;
     render(<Timeline events={feud ? [feud] : []} />);
 
     await user.click(screen.getByRole("button", { name: "五代主线" }));
@@ -186,6 +186,7 @@ describe("Timeline track filters", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "当前未选择时间线轨道",
     );
+    expect(screen.queryByRole("button", { name: "选择907年，有历史事件" })).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "选择884年，有历史事件" }),
     ).toBeInTheDocument();

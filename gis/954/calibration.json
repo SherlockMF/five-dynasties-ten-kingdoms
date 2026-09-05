@@ -1,12 +1,12 @@
 {
   "version": 1,
   "crs": "EPSG:4326",
-  "publicationClearanceDegrees": 0.01,
+  "publicationClearanceDegrees": 0,
   "overlapResolutions": [
     {
       "dominantDynastyId": "southern-han",
       "clippedDynastyId": "southern-tang",
-      "clearanceDegrees": 0.01,
+      "clearanceDegrees": 0,
       "reason": "南唐与南汉接缝以比例尺更大的 954 年南汉图页北缘为准。"
     }
   ],

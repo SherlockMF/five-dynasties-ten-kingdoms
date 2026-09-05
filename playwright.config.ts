@@ -14,9 +14,11 @@ export default defineConfig({
     { name: "mobile", use: { ...devices["Pixel 7"] } },
   ],
   webServer: {
-    command: "npm run dev -- --hostname 127.0.0.1 --port 3100",
+    command: process.env.CI || process.env.PLAYWRIGHT_PRODUCTION === "1"
+      ? "npm run start -- --hostname 127.0.0.1 --port 3100"
+      : "npm run dev -- --hostname 127.0.0.1 --port 3100",
     url: "http://127.0.0.1:3100",
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI && process.env.PLAYWRIGHT_PRODUCTION !== "1",
     timeout: 120_000,
   },
 });

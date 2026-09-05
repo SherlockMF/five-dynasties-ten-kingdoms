@@ -29,8 +29,8 @@ export function YearSlider() {
 
   return (
     <label className="grid min-w-0 flex-1 gap-2">
-      <span className="flex items-center justify-between text-[10px] tracking-[0.12em] text-muted uppercase">
-        <span>选择年份</span><strong className="font-serif text-lg tracking-normal text-ink">{mapYear}</strong>
+      <span className="flex items-center justify-between text-[10px] tracking-[0.12em] text-paper/70 uppercase">
+        <span>选择年份 · 年末态</span><strong className="font-serif text-lg tracking-normal text-paper">{mapYear}</strong>
       </span>
       <input
         aria-label="地图年份"
@@ -39,7 +39,7 @@ export function YearSlider() {
         max={MAX_YEAR}
         value={mapYear}
         onChange={(event) => setCurrentYear(Number(event.target.value))}
-        className="h-1 w-full cursor-pointer appearance-none rounded-full bg-ink/15 accent-cinnabar"
+        className="map-year-slider h-11 w-full cursor-pointer accent-cinnabar"
       />
       {showMapStartNotice ? (
         <span role="status" aria-live="polite" className="text-xs text-paper/70">

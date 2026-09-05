@@ -1,11 +1,47 @@
 import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
+import EventPage from "@/app/explore/[id]/page";
 
 import { EventDetail } from "@/features/events/event-detail";
 import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import { LocalHistoryRepository } from "@/lib/repositories/local-history-repository";
 
 describe("EventDetail", () => {
+  it.each([
+    { year: "902", expected: 902 },
+    { year: "875", expected: 875 },
+    { year: "979", expected: 979 },
+    { year: undefined, expected: 901 },
+    { year: "invalid", expected: 901 },
+    { year: "980", expected: 901 },
+    { year: ["902", "903"], expected: 901 },
+  ])("validates the return year from the page query: $year", async ({ year, expected }) => {
+    render(await EventPage({ params: Promise.resolve({ id: "zhu-wen-controls-court" }), searchParams: Promise.resolve({ year }) }));
+    expect(screen.getByRole("link", { name: `返回时间线 · ${expected} 年` })).toHaveAttribute("href", `/timeline?year=${expected}#timeline`);
+  });
+  it("returns to the browsing year, including the middle of a multi-year event", async () => {
+    const event = await new LocalHistoryRepository().getEvent("zhu-wen-controls-court");
+    if (!event) throw new Error("fixture event missing");
+    render(<EventDetail event={event} relations={[]} relatedEvents={[]} returnYear={902} />);
+    expect(screen.getByRole("link", { name: "返回时间线 · 902 年" })).toHaveAttribute("href", "/timeline?year=902#timeline");
+  });
+  it("shows the full duration and preserves traditional date labels", async () => {
+    const repository = new LocalHistoryRepository();
+    const event = await repository.getEvent("zhu-wen-controls-court");
+    if (!event) throw new Error("fixture event missing");
+    render(<EventDetail event={{ ...event, dateLabel: "天复元年至三年" }} relations={[]} relatedEvents={[]} />);
+    expect(screen.getByText("901—903")).toBeVisible();
+    expect(screen.getByText("天复元年至三年（传统纪年）")).toBeVisible();
+  });
+  it("keeps background links outside direct causal sections", async () => {
+    const repository = new LocalHistoryRepository();
+    const event = await repository.getEvent("wuyue-founded");
+    if (!event) throw new Error("fixture event missing");
+    render(<EventDetail event={event} relations={await repository.getEventRelations(event.id)} relatedEvents={await repository.getEventsInRange(TIMELINE_MIN_YEAR, MAX_YEAR)} />);
+    const section = screen.getByRole("heading", { name: "相关背景与后续发展" }).closest("section")!;
+    expect(within(section).getByRole("link", { name: /吴越纳土归宋/ })).toBeVisible();
+    expect(within(screen.getByRole("heading", { name: "直接后果" }).closest("section")!).queryByRole("link")).not.toBeInTheDocument();
+  });
   it("renders causes and consequences as navigable links", async () => {
     const repository = new LocalHistoryRepository();
     const event = await repository.getEvent("founding-later-jin");
@@ -28,9 +64,9 @@ describe("EventDetail", () => {
       "href",
       expect.stringContaining("/explore/shi-jingtang-rebellion"),
     );
-    expect(screen.getByRole("link", { name: /燕云十六州归辽/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /燕云十六州图籍献交/ })).toHaveAttribute(
       "href",
-      expect.stringContaining("/explore/sixteen-prefectures-ceded"),
+      expect.stringContaining("/explore/sixteen-prefectures-registers"),
     );
   });
 

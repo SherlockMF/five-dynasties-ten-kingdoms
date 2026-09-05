@@ -1,0 +1,70 @@
+{
+  "batch": "batch-01",
+  "created": "2026-09-05",
+  "generator": "built-in image_gen",
+  "style": "工笔淡彩、绢本设色半身肖像；暖纸白背景；3:4竖幅",
+  "status": "first-batch-samples",
+  "notice": "据后世历史画像改绘或艺术想象，均非历史人物真容复原；年龄为代表时期的制作设定。仅提供样图素材，尚未接入网页。",
+  "items": [
+    {
+      "id": "zhu-wen",
+      "name": "朱温",
+      "representativeAge": 55,
+      "mode": "historical-portrait-adaptation",
+      "asset": "public/portraits/batch-01/zhu-wen.png",
+      "reference": "docs/research/portraits/batch-01/references/zhu-wen.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zhu_Wen_(Liang_Taizu).jpg",
+      "sourceNote": "清人绘后梁太祖像；《中国历代名人画像谱》1，2003，第52页。Commons标注PD-Art / Public Domain Mark。",
+      "styleReference": null,
+      "prompt": "为五代十国历史网站制作朱温画像，依据输入的清代朱温画像改绘。保留参考中的宽阔额头、眉眼、鼻形、上翘髭须与下颌长须、发冠形状和红袍绿领，保持人物辨识特征。采用前面确定的工笔淡彩、绢本设色半身肖像，纸白背景，墨绿、朱砂、少量金色，面部清楚，简洁无文字。单人竖幅3:4，完整保留头冠，胸部以上的肖像构图，四周留适量空间，便于人物详情展示与头像裁切。形象表现为约55岁、沉着威严。此为据后世历史画像的艺术改绘，不是真容复原。"
+    },
+    {
+      "id": "chai-rong",
+      "name": "柴荣",
+      "representativeAge": 35,
+      "mode": "historical-portrait-adaptation",
+      "asset": "public/portraits/batch-01/chai-rong.png",
+      "reference": "docs/research/portraits/batch-01/references/chai-rong.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chai_Rong_(Zhou_Shizong).jpg",
+      "sourceNote": "清人绘后周世宗像；《中国历代名人画像谱》1，2003，第57页。Commons标注PD-Art / Public Domain Mark。",
+      "styleReference": "public/portraits/batch-01/zhu-wen.png",
+      "prompt": "为五代十国历史网站制作柴荣画像，依据第一张输入的清代柴荣画像改绘；第二张朱温成品仅参考工笔淡彩的笔触、纸白背景、配色饱和度和构图尺度，不参考其脸和衣服。保留柴荣参考中的圆厚脸形、眉眼、鼻形、垂髭长须、黑色幞头及深色圆领袍，保持人物辨识特征。表现约35岁、沉稳果决的后周皇帝。工笔淡彩、绢本设色半身肖像，面部清楚，背景简洁无文字。单人竖幅3:4，完整保留头冠，胸部以上构图，四周留适量空间，便于人物详情展示与头像裁切。此为据后世历史画像的艺术改绘，不是真容复原。"
+    },
+    {
+      "id": "feng-dao",
+      "name": "冯道",
+      "representativeAge": 65,
+      "mode": "historical-portrait-adaptation",
+      "asset": "public/portraits/batch-01/feng-dao.png",
+      "reference": "docs/research/portraits/batch-01/references/feng-dao.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Feng_Dao,_WuShuangPu_(1694,_1996).jpg",
+      "sourceNote": "金古良《无双谱》（1694），1996年河北美术出版社版扫描。Commons标注PD-old-70-expired。页面Description误写Chen Dong，与文件名、caption和原图题字不一致；已直接查看图中文字“长乐老冯道”确认主体。由侧身木刻改绘，正面五官与色彩补绘较多。",
+      "styleReference": "public/portraits/batch-01/zhu-wen.png",
+      "prompt": "为五代十国历史网站制作冯道画像，依据第一张输入的《无双谱》“长乐老冯道”木刻像改绘；第二张朱温成品仅参考工笔淡彩的笔触、纸白背景、配色饱和度和构图尺度，不参考其脸和衣服。沿用冯道木刻参考的年长文臣形象、额头和鼻部轮廓、髭须、头巾与宽袖衣袍，改为便于辨识的胸部以上半身肖像，面部适度转向观者，保留原人物特征。表现约65岁、经历多朝政务后的沉静谨慎；面部细节和衣袍颜色是艺术补绘，衣袍采用克制的灰绿与少量金色纹饰。工笔淡彩、绢本设色，面部清楚，背景简洁无文字，不保留原图文字和书页边框。单人竖幅3:4，完整保留头巾，四周留适量空间，便于人物详情展示与头像裁切。此为据后世历史画像的艺术改绘，不是真容复原。"
+    },
+    {
+      "id": "li-yu",
+      "name": "李煜",
+      "representativeAge": 35,
+      "mode": "historical-portrait-adaptation",
+      "asset": "public/portraits/batch-01/li-yu.png",
+      "reference": "docs/research/portraits/batch-01/references/li-yu.jpg",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Li_Yu_scth.jpg",
+      "sourceNote": "王圻《三才图会》（1609），vol.23，李后主像。Commons标注PD-old-100-expired。保留木刻形象，颜色为艺术补绘。",
+      "styleReference": "public/portraits/batch-01/zhu-wen.png",
+      "prompt": "为五代十国历史网站制作南唐后主李煜画像，依据第一张输入的《三才图会》李后主木刻像改绘；第二张朱温成品仅参考工笔淡彩笔触、纸白背景、配色饱和度和构图尺度，不参考其脸和衣服。保留李煜原图的脸部轮廓、细眉细长眼、鼻形、较短髭须与尖须、软巾冠帽和衣领形制，必须保持原参考人物的辨识特征。表现约35岁的南唐国主与词人，神情内敛沉思。木刻中未给出的衣袍色彩用低饱和灰青色艺术补绘。工笔淡彩、绢本设色半身肖像，面部清楚，背景简洁无文字，不保留原书页题字和边框。单人竖幅3:4，完整保留头巾，胸部以上构图，四周留适量空间，便于人物详情展示与头像裁切。此为据后世历史画像的艺术改绘，不是真容复原。"
+    },
+    {
+      "id": "shulu-ping",
+      "name": "述律平",
+      "representativeAge": 50,
+      "mode": "artistic-imagination",
+      "asset": "public/portraits/batch-01/shulu-ping.png",
+      "reference": null,
+      "sourceUrl": "https://zh.wikipedia.org/wiki/述律平",
+      "sourceNote": "本次检索未找到出处明确的本人古代肖像。生平与生年依据项目data/seed/people/liao-song.ts及传记资料；约50岁为制作设定。性格表现为艺术解释，面部、帽形、纹饰和颜色为艺术推想。服饰一般资料：https://www.blzq.gov.cn/zjzq/lswh/202202/t20220224_1915666.html （转载中国考古）。",
+      "styleReference": "public/portraits/batch-01/zhu-wen.png",
+      "prompt": "为五代十国历史网站制作述律平画像。此次没有找到出处明确的本人古代肖像，根据已知生平作艺术想象：生于879年，参与辽太祖建国与军政，太祖去世后主持权力过渡、支持耶律德光继位。表现约50岁的辽初皇太后，成熟、沉着、果决，神情有主见。参考辽代服饰资料作克制的艺术设定：契丹贵族女性的窄袖长袍、圆领或交领，头戴低矮帽巾，少量金饰；面部、具体帽形、色彩和纹样均为艺术推想，不宣称服饰精确复原。输入的朱温画像仅作为工笔淡彩笔触、纸白背景、配色饱和度和构图尺度参考，不使用其男性面部、胡须和服装。采用与这批一致的工笔淡彩、绢本设色半身肖像，衣袍以墨绿、少量朱砂与金色呈现，面部清楚。单人竖幅3:4，完整头饰，胸部以上构图，四周留适量空间，便于人物详情展示与头像裁切，背景简洁无文字。"
+    }
+  ]
+}

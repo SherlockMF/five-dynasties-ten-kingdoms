@@ -1,0 +1,17 @@
+{
+  "id": "li-keyong",
+  "name": "李克用",
+  "representativeAge": 45,
+  "prompt": "输入第一张为该人物的历史肖像或文物肖像参考，第二张为朱温风格样图。依据第一张的人物脸型、眉眼鼻形、髭须和头饰轮廓重新绘制，保留辨识特征；把旧画平面造型转为自然立体的原创插画，重新处理神态、光影、衣纹与构图。第二张仅参考画法、配色、纸感与构图，不使用朱温的五官和服装替代本人。人物为李克用，身份：晋王、河东节度使、沙陀军首领。生平依据：唐末河东强藩，因参与镇压黄巢崛起，并与朱温形成长期敌对。。本画代表年龄设为约45岁，神态沉着、有个人辨识度；年龄为艺术设定。服饰取唐末五代宋初语汇，身份相宜，避免清代服饰与夸张影视造型。采用已经批准的朱温样图所示统一原创国风手绘插画风格：自然写实的人体比例，面部有立体光影和年龄感，细腻水彩笔触与纸绢质感，低饱和朱砂、墨绿及少量金色，简洁暖纸白背景。竖幅3:4，单人半身胸像，身体略侧而脸朝向观者，完整头饰，面部清晰且适合缩小作头像，无文字。",
+  "reference": "docs/research/portraits/series/references/li-keyong.jpg",
+  "source": {
+    "title": "传世李克用像（Wikimedia Commons 收录）",
+    "url": "https://commons.wikimedia.org/wiki/File:Li_Keyong.jpg"
+  },
+  "note": "依据传世肖像重新创作；画中约45岁，年龄、光影与部分细节为艺术处理。",
+  "generator": "built-in image_gen",
+  "original": "C:\\Users\\84754\\.codex\\generated_images\\01a06f65-6bab-79d3-a262-6e254b6abcc5\\exec-12a369b0-b65f-43fc-83fd-f3deb22bd8a4.png",
+  "asset": "public/portraits/series/li-keyong.webp",
+  "width": 1086,
+  "height": 1449
+}

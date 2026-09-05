@@ -1,4 +1,4 @@
-import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
+import { MAP_MIN_YEAR, MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import type {
   HistoryDataSet,
   PersonRoleCategory,
@@ -23,9 +23,9 @@ const REQUIRED_SUCCESSION_EDGES = [
 
 const COLLECTION_LIMITS = {
   dynasties: [17, 17],
-  events: [60, 80],
+  events: [60, Number.POSITIVE_INFINITY],
   people: [40, 60],
-  locations: [25, 35],
+  locations: [25, Number.POSITIVE_INFINITY],
   personRelations: [45, Number.POSITIVE_INFINITY],
   eventRelations: [25, Number.POSITIVE_INFINITY],
 } as const;
@@ -436,6 +436,8 @@ function validateEventCoverage(data: HistoryDataSet, errors: string[]) {
     startYear += 10
   ) {
     const endYear = Math.min(startYear + 9, MAX_YEAR);
+    // 前史只收录已核对的事件，不能为填满十年窗口而延长单次事件。
+    if (startYear > TIMELINE_MIN_YEAR && endYear < MAP_MIN_YEAR) continue;
     if (
       !data.events.some(
         (event) =>

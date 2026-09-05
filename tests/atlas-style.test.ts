@@ -3,6 +3,14 @@ import { describe, expect, it } from "vitest";
 import { createAtlasStyle } from "@/features/history-map/atlas/atlas-style";
 
 describe("createAtlasStyle", () => {
+  it("uses curated lakes and political lines for selection rather than lake rings", () => {
+    const style = createAtlasStyle();
+    expect(style.sources.naturalWater).toMatchObject({data:"/maps/continuous/natural-water.geojson"});
+    expect(style.layers.find((layer) => layer.id === "water")).toMatchObject({filter:["==",["get","kind"],"ocean"]});
+    for (const id of ["atlas-realms-hover","atlas-realms-selected"]) {
+      expect(style.layers.find((layer) => layer.id === id)).toMatchObject({source:"realmOutlines"});
+    }
+  });
   it("contains terrain context but no modern cartography", () => {
     const style = createAtlasStyle();
     expect(style.sources.protomaps).toMatchObject({

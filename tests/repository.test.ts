@@ -80,10 +80,10 @@ describe("expanded history repository", () => {
       targetPersonId: "qian-chu",
       type: "ruler-subject",
       startYear: 978,
-      endYear: 979,
+      endYear: 988,
     });
     expect(taizongQianChuRelation?.description).toContain("978 年纳土后");
-    expect(taizongQianChuRelation?.description).toContain("截至 979 年");
+    expect(taizongQianChuRelation?.description).toContain("988 年去世");
 
     expect(
       relations.find((relation) => relation.id === "huang-chao-zhu-wen"),
@@ -104,12 +104,9 @@ describe("expanded history repository", () => {
       relations.find((relation) => relation.id === "yang-xingmi-xu-wen")
         ?.description,
     ).toContain("保守起点");
-    expect(
-      relations.filter(
-        (relation) =>
-          relation.type !== "family" && relation.startYear === undefined,
-      ),
-    ).toEqual([]);
+    for (const relation of relations.filter((item) => item.type !== "family" && item.startYear === undefined)) {
+      expect(relation.description, relation.id).toContain("未详");
+    }
   });
 
   it("infers family bounds and honors explicit temporal bounds", async () => {

@@ -90,6 +90,7 @@ export type Dynasty = SourcedEntity & {
 export type Person = SourcedEntity & {
   id: string;
   name: string;
+  aliases?: string[];
   birthYear?: number;
   deathYear?: number;
   dynastyIds: string[];
@@ -106,6 +107,9 @@ export type HistoricalEvent = SourcedEntity & {
   readonly tracks: readonly NarrativeTrack[];
   startYear: number;
   endYear?: number;
+  /** Source-attested order within the starting year, independent of narrative links. */
+  orderInYear?: number;
+  dateLabel?: string;
   summary: string;
   background: string;
   process: string;

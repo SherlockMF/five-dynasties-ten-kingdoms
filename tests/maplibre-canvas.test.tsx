@@ -417,4 +417,12 @@ describe("MapLibreCanvas", () => {
     });
     expect(callbacks.onFatalError).toHaveBeenCalledTimes(2);
   });
+  it("fits the initial mobile camera to the dataset rather than cropping the desktop view", () => {
+    const width = vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(390);
+    render(<MapLibreCanvas atlas={atlas} year={943} {...createCallbacks()} />);
+    fire("style.load");
+    expect(maplibre.instance.fitBounds).toHaveBeenCalledWith(expect.any(Array), expect.objectContaining({ duration: 0, padding: { top: 40, right: 20, bottom: 120, left: 20 } }));
+    width.mockRestore();
+  });
+
 });

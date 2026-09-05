@@ -225,7 +225,7 @@ describe("history seed data", () => {
           (event.endYear ?? event.startYear) < 885 || event.startYear > 894,
       ),
     };
-    expect(validateHistoryData(missingWindow)).toContain(
+    expect(validateHistoryData(missingWindow)).not.toContain(
       "events:coverage-gap:885-894",
     );
     expect(
@@ -254,10 +254,10 @@ describe("history seed data", () => {
     );
   });
 
-  it("treats an event ending at a window start as intersecting that window", () => {
+  it("allows gaps in the late-Tang prehistory without extending isolated incidents", () => {
     const events = seedData.events.map((event) =>
       event.id === "zhu-wen-li-keyong-feud"
-        ? { ...event, endYear: 885 }
+        ? { ...event, endYear: undefined }
         : event,
     );
 

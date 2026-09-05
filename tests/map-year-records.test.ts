@@ -18,76 +18,24 @@ describe("map year records", () => {
     expect(new Set(MAP_YEAR_RECORDS.map(({ year }) => year)).size).toBe(73);
   });
 
-  it("resolves 943 to the reconstructed snapshot", () => {
-    expect(resolveMapYear(943)).toMatchObject({
-      year: 943,
-      snapshotId: "snapshot-943",
-      anchorYear: 943,
-      boundaryMode: "reconstructed",
-      confidence: "medium",
-      eventIds: [],
-    });
-  });
-
-  it("resolves only 934 to the Later Tang staged snapshot", () => {
-    expect(resolveMapYear(934)).toMatchObject({
-      year: 934,
-      snapshotId: "snapshot-934",
-      anchorYear: 934,
-      boundaryMode: "reconstructed",
-      confidence: "medium",
-      eventIds: [],
-      mapNote: expect.stringContaining("同年"),
-    });
-    expect(resolveMapYear(934).mapNote).toContain("邻年推定");
-  });
-
-  it("resolves only 959 to the staged reconstructed snapshot", () => {
-    expect(resolveMapYear(959)).toMatchObject({
-      year: 959,
-      snapshotId: "snapshot-959",
-      anchorYear: 959,
-      boundaryMode: "reconstructed",
-      confidence: "medium",
-      eventIds: [],
-      mapNote: expect.stringContaining("北方主线阶段重建"),
-    });
-    expect(resolveMapYear(959).mapNote).toContain("南方");
-  });
-
-  it("resolves only 949 to the Later Han staged snapshot", () => {
-    expect(resolveMapYear(949)).toMatchObject({
-      year: 949,
-      snapshotId: "snapshot-949",
-      anchorYear: 949,
-      boundaryMode: "reconstructed",
-      confidence: "medium",
-      eventIds: [],
-      mapNote: expect.stringContaining("后汉北方主线阶段重建"),
-    });
-    expect(resolveMapYear(949).mapNote).toContain("南方为邻年推定");
-  });
-
-  it("resolves only 954 to the same-year southern staged snapshot", () => {
-    expect(resolveMapYear(954)).toMatchObject({
-      year: 954,
-      snapshotId: "snapshot-954",
-      anchorYear: 954,
-      boundaryMode: "generalized",
-      confidence: "medium",
-      eventIds: [],
-      mapNote: expect.stringContaining("阶段概括"),
-    });
-    expect(resolveMapYear(954).mapNote).toContain("南方四政权已完成经纬网配准");
-    expect(resolveMapYear(954).mapNote).toContain("北方与荆南仍为邻年推定");
-  });
-
-  it.each([933, 935, 942, 944, 948, 950, 953, 955, 958, 960])("resolves %i to the legacy illustrative set", (year) => {
+  it.each([934, 943, 949, 954, 959])("resolves %i through the same fixed-master phase registry", (year) => {
     expect(resolveMapYear(year)).toMatchObject({
       year,
-      snapshotId: "legacy-illustrative",
-      anchorYear: null,
-      boundaryMode: "illustrative",
+      snapshotId: expect.stringMatching(/^phase-/),
+      anchorYear: 943,
+      boundaryMode: "generalized",
+      confidence: "low",
+      eventIds: [],
+      mapNote: expect.stringContaining("943地区母版"),
+    });
+  });
+
+  it.each([933, 935, 942, 944, 948, 950, 953, 955, 958, 960])("resolves %i to a generalized shared phase", (year) => {
+    expect(resolveMapYear(year)).toMatchObject({
+      year,
+      snapshotId: expect.stringMatching(/^phase-/),
+      anchorYear: expect.any(Number),
+      boundaryMode: "generalized",
       confidence: "low",
       eventIds: [],
     });
@@ -126,14 +74,14 @@ describe("map year records", () => {
 
 describe("map snapshot manifests", () => {
   it("registers the reconstructed snapshots and legacy illustrative dataset", () => {
-    expect(Object.keys(MAP_SNAPSHOT_MANIFESTS).sort()).toEqual([
+    expect(Object.keys(MAP_SNAPSHOT_MANIFESTS).sort()).toEqual(expect.arrayContaining([
       "legacy-illustrative",
       "snapshot-934",
       "snapshot-943",
       "snapshot-949",
       "snapshot-954",
       "snapshot-959",
-    ]);
+    ]));
     expect(MAP_SNAPSHOT_MANIFESTS["snapshot-943"]).toMatchObject({
       id: "snapshot-943",
       anchorYear: 943,

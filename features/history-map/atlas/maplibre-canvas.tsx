@@ -141,6 +141,14 @@ function getGeoJsonSource(map: MapLibreMap, sourceId: string) {
   return source as GeoJSONSource;
 }
 
+function createBoundaryCollection(atlas: AtlasDataset): NonNullable<AtlasDataset["boundaries"]> {
+  if (atlas.boundaries) return atlas.boundaries;
+  return { type: "FeatureCollection", features: atlas.realms.features.map(({ geometry, properties }) => ({
+    type: "Feature", properties,
+    geometry: { type: "MultiLineString", coordinates: geometry.type === "Polygon" ? geometry.coordinates : geometry.coordinates.flat() },
+  })) };
+}
+
 export function MapLibreCanvas({
   atlas,
   year,
@@ -154,6 +162,7 @@ export function MapLibreCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const atlasRef = useRef(atlas);
+  const injectedAtlasRef = useRef<AtlasDataset | undefined>(undefined);
   const yearRef = useRef(year);
   const selectedDynastyIdRef = useRef(selectedDynastyId);
   const onSelectRegionRef = useRef(onSelectRegion);
@@ -206,11 +215,10 @@ export function MapLibreCanvas({
         style: createAtlasStyle(),
         center: [...ATLAS_INITIAL_VIEW.center],
         zoom: ATLAS_INITIAL_VIEW.zoom,
-        maxBounds: ATLAS_BOUNDS as unknown as [
-          [number, number],
-          [number, number],
-        ],
-        minZoom: 2.4,
+        // Camera padding must be allowed beyond the data extent; otherwise
+        // fitBounds clamps at 18° and clips Hainan/the southern margin.
+        maxBounds: [[25, -20], [180, 80]],
+        minZoom: 1.6,
         maxZoom: 9,
         pitch: 0,
         renderWorldCopies: false,
@@ -260,7 +268,7 @@ export function MapLibreCanvas({
     };
 
     const injectOptionalSource = (
-      sourceId: "realmLabels" | "disputed" | "places",
+      sourceId: "realmLabels" | "disputed" | "places" | "boundaries" | "realmOutlines",
       data: Parameters<GeoJSONSource["setData"]>[0],
     ) => {
       try {
@@ -286,6 +294,7 @@ export function MapLibreCanvas({
           throw new Error("Missing GeoJSON source: realms");
         }
         realmsSource.setData(atlasRef.current.realms);
+        injectedAtlasRef.current = atlasRef.current;
       } catch (error) {
         reportFatal(error, "当前年份核心疆域无法载入");
         return;
@@ -293,6 +302,8 @@ export function MapLibreCanvas({
 
       injectOptionalSource("disputed", atlasRef.current.disputed);
       injectOptionalSource("places", atlasRef.current.places);
+      injectOptionalSource("boundaries", createBoundaryCollection(atlasRef.current));
+      injectOptionalSource("realmOutlines", atlasRef.current.outlines ?? createBoundaryCollection({...atlasRef.current, boundaries: undefined}));
       injectOptionalSource(
         "realmLabels",
         createRealmLabelCollection(atlasRef.current),
@@ -306,6 +317,13 @@ export function MapLibreCanvas({
       }
 
       loadedRef.current = true;
+      if (container.clientWidth > 0 && container.clientWidth < 600) {
+        const bounds = getAtlasDatasetBounds(atlasRef.current) ?? ATLAS_BOUNDS;
+        map.fitBounds(bounds as [[number, number], [number, number]], {
+          duration: 0,
+          padding: { top: 40, right: 20, bottom: 120, left: 20 },
+        });
+      }
       publishProjector();
       onRenderSuccessRef.current(yearRef.current);
     };
@@ -399,6 +417,10 @@ export function MapLibreCanvas({
     const map = mapRef.current;
     if (!map || !loadedRef.current) return;
     fatalReportedRef.current = false;
+    if (injectedAtlasRef.current === atlas) {
+      onRenderSuccessRef.current(year);
+      return;
+    }
 
     try {
       const realms = getGeoJsonSource(map, "realms");
@@ -406,9 +428,12 @@ export function MapLibreCanvas({
       realms.setData(atlas.realms);
       getGeoJsonSource(map, "disputed")?.setData(atlas.disputed);
       getGeoJsonSource(map, "places")?.setData(atlas.places);
+      getGeoJsonSource(map, "boundaries")?.setData(createBoundaryCollection(atlas));
+      getGeoJsonSource(map, "realmOutlines")?.setData(atlas.outlines ?? createBoundaryCollection({...atlas, boundaries: undefined}));
       getGeoJsonSource(map, "realmLabels")?.setData(
         createRealmLabelCollection(atlas),
       );
+      injectedAtlasRef.current = atlas;
       onRenderSuccessRef.current(year);
     } catch (error) {
       if (!fatalReportedRef.current) {
@@ -440,6 +465,7 @@ export function MapLibreCanvas({
   }, [selectedDynastyId]);
 
   const resetExtent = () => {
+    const compact = (containerRef.current?.clientWidth ?? 1000) < 600;
     mapRef.current?.fitBounds(
       (atlasBounds ?? ATLAS_BOUNDS) as unknown as [
         [number, number],
@@ -447,7 +473,7 @@ export function MapLibreCanvas({
       ],
       {
         duration: 700,
-        padding: { top: 40, right: 40, bottom: 56, left: 40 },
+        padding: { top: 40, right: compact ? 20 : 40, bottom: compact ? 160 : 56, left: compact ? 20 : 40 },
       },
     );
   };
@@ -455,7 +481,7 @@ export function MapLibreCanvas({
   return (
     <div
       role="region"
-      className="atlas-map h-full min-h-[32rem] w-full"
+      className="atlas-map h-full w-full"
       aria-label={`${year}年互动历史地图`}
     >
       <div ref={containerRef} className="absolute inset-0" />

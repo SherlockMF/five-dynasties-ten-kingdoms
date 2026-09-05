@@ -1,12 +1,26 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { loadAtlasSnapshot } from "@/features/history-map/atlas/atlas-schema";
+import { getCachedAtlasSnapshot, loadCachedAtlasSnapshot, loadAtlasSnapshot } from "@/features/history-map/atlas/atlas-schema";
 import { MAP_SNAPSHOT_MANIFESTS } from "@/features/history-map/atlas/map-year-records";
 
 const manifest = {
   ...MAP_SNAPSHOT_MANIFESTS["snapshot-943"],
   sourceRefs: ["atlas-1935-936-946"],
 };
+
+it("exposes prepared geometry synchronously and deduplicates playback requests", async () => {
+  stubAtlasFetch({ sourceRefs: '["atlas-1935-936-946"]' });
+  const prepared = { ...manifest, version: "playback-cache-test" };
+  expect(getCachedAtlasSnapshot(prepared)).toBeUndefined();
+  const pending = loadCachedAtlasSnapshot(prepared);
+  expect(loadCachedAtlasSnapshot(prepared)).toBe(pending);
+  const atlas = await pending;
+  expect(getCachedAtlasSnapshot(prepared)).toBe(atlas);
+  const count = vi.mocked(fetch).mock.calls.length;
+  await loadCachedAtlasSnapshot(prepared);
+  expect(vi.mocked(fetch).mock.calls.length).toBe(count);
+  vi.unstubAllGlobals();
+});
 
 function stubAtlasFetch({
   sourceRefs,

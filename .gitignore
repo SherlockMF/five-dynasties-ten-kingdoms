@@ -7,8 +7,12 @@ node_modules/
 coverage/
 playwright-report/
 test-results/
+.playwright-cli/
+output/
 *.tsbuildinfo
 __pycache__/
+/gis/continuous/land-source.geojson
+/gis/continuous/lakes-source.geojson
 *.py[cod]
 /public/maplibre/maplibre-gl-worker.mjs
 /public/maplibre/maplibre-gl-shared.mjs

@@ -40,7 +40,7 @@ describe("page repository ranges", () => {
     expect(repository.getAllDynasties).toHaveBeenCalledOnce();
     expect(repository.getAllLocations).toHaveBeenCalledOnce();
     expect(
-      screen.getByText(/934、943、949、954、959 年已提供阶段性重建疆域/),
+      screen.getByText(/查看907—979年的年末格局/),
     ).toBeVisible();
   });
 
@@ -52,7 +52,7 @@ describe("page repository ranges", () => {
   });
 
   it("loads the full related-event range for event details", async () => {
-    await EventPage({ params: Promise.resolve({ id: "founding-later-jin" }) });
+    await EventPage({ params: Promise.resolve({ id: "founding-later-jin" }), searchParams: Promise.resolve({}) });
 
     expect(repository.getEventsInRange).toHaveBeenCalledWith(875, 979);
   });

@@ -111,7 +111,12 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         !routesMatch(desired, observed)
       ) {
         pendingInternalRoute.current = desired;
-        router.replace(routeHref(desired), { scroll: false });
+        if (observed.pathname === "/map" && state.currentYear !== previous.currentYear) {
+          // Map years are client-side state; no RSC navigation per playback tick.
+          window.history.replaceState(null, "", routeHref(desired));
+        } else {
+          router.replace(routeHref(desired), { scroll: false });
+        }
       }
     });
   }, [router]);

@@ -43,7 +43,7 @@ export interface PositionedMapEventMarkerGroup extends MapEventMarkerGroup {
 const VIEW_BOX_WIDTH = 800;
 const VIEW_BOX_HEIGHT = 500;
 const MULTI_LOCATION_AGGREGATE_THRESHOLD = 4;
-const MARKER_SIZE = 32;
+const MARKER_SIZE = 44;
 const MARKER_GAP = 4;
 const defaultProjectLocation = (location: HistoricalLocation) =>
   [location.longitude, location.latitude] as [number, number];
@@ -484,9 +484,9 @@ export function MapEventMarkers({
               <span
                 data-marker-glyph="seal"
                 aria-hidden="true"
-                className="relative flex size-7 rotate-45 items-center justify-center rounded-[2px] border border-paper/90 bg-cinnabar shadow-[0_4px_12px_rgba(23,40,36,.38),inset_0_0_0_2px_rgba(243,240,231,.24)] transition-transform group-hover:scale-110 group-focus-visible:scale-110"
+                className="relative flex size-3 rotate-45 items-center justify-center rounded-[1px] border border-paper/90 bg-cinnabar shadow-sm transition-transform group-hover:scale-125 group-focus-visible:scale-125"
               >
-                <span className="size-2 border border-paper/80 bg-ink/20" />
+                <span className="size-1 bg-paper/60" />
               </span>
               {representedLocationCount > 1 ? (
                 <span

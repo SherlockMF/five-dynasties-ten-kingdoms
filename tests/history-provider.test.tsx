@@ -42,6 +42,15 @@ describe("HistoryProvider URL synchronization", () => {
 
   afterEach(cleanup);
 
+  it("updates map playback years without a server navigation", () => {
+    const replaceState = vi.spyOn(window.history, "replaceState");
+    renderProvider();
+    act(() => useHistoryStore.getState().setCurrentYear(937));
+    expect(navigation.replace).not.toHaveBeenCalled();
+    expect(replaceState).toHaveBeenLastCalledWith(null, "", "/map?year=937");
+    replaceState.mockRestore();
+  });
+
   it("keeps a rapid open then close closed when the old open URL commits late", () => {
     const { commit } = renderProvider();
 

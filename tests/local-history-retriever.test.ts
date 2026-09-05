@@ -16,7 +16,7 @@ describe("LocalHistoryRetriever", () => {
       "sixteen-prefectures-ceded",
     );
     expect(result.excerptsForServerPrompt.join(" ")).toContain("¹²");
-    expect(result.excerptsForServerPrompt[0]).toContain("异说提示：无");
+    expect(result.excerptsForServerPrompt[0]).toContain("938");
     expect(result.excerptsForServerPrompt.join(" ")).not.toContain(
       "华北完全无险可守",
     );

@@ -1,0 +1,13 @@
+{
+  "id": "zhu-wen",
+  "name": "朱温",
+  "version": "original-style-v2",
+  "created": "2026-09-05",
+  "asset": "public/portraits/batch-01/zhu-wen-v2.png",
+  "reference": "docs/research/portraits/batch-01/references/zhu-wen.jpg",
+  "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zhu_Wen_(Liang_Taizu).jpg",
+  "mode": "historical-portrait-based-original-illustration",
+  "notice": "依据清代后世画像重新创作，非真容复原；本次仅制作朱温风格样图。",
+  "generator": "built-in image_gen",
+  "prompt": "在输入的朱温历史画像基础上进行改动，制作五代十国人物系列的统一原创画像风格样图。历史画像用于参考宽阔额头、眉眼与鼻形、髭须和长须、冠帽轮廓及红袍绿领这些人物辨识特征。重新绘制面部结构、神态、光影和衣纹，采用自然的写实人体比例和有立体感的国风手绘插画，保留细腻笔触与纸绢质感。朱温约55岁，沉着威严、目光坚定，脸部有年龄感。半身胸像，身体略侧、脸朝向观者，完整头冠，面部清晰且适合缩小为头像。统一竖幅3:4，简洁暖纸白背景，低饱和朱砂、墨绿与少量金色。这是一幅在历史画像基础上重新创作的人物插画，整体笔法、造型和光影应体现新的原创绘画表达。无文字。"
+}

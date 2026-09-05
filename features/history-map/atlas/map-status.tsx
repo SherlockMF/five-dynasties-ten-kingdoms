@@ -18,7 +18,7 @@ export function MapStatus({ record }: MapStatusProps) {
     ? `${record.snapshotId} · 示意边界`
     : record.boundaryMode === "reconstructed"
       ? `锚点 ${record.anchorYear} · 正式重建`
-      : `锚点 ${record.anchorYear} · 阶段概括`;
+      : `母版 ${record.anchorYear} · 概括疆域`;
 
   return (
     <section
@@ -34,7 +34,7 @@ export function MapStatus({ record }: MapStatusProps) {
           可信度：{confidenceLabels[record.confidence]}
         </p>
       </div>
-      <p className="mt-1 text-xs leading-5 text-muted">{record.mapNote}</p>
+      <p className="mt-1 hidden text-xs leading-5 text-muted sm:block">{record.mapNote}</p>
     </section>
   );
 }

@@ -1,5 +1,8 @@
+"use client";
+
 import { BookOpenText, Clock3, Home, Map, Users } from "lucide-react";
 import Link from "next/link";
+import { useHistoryStore } from "@/features/history-state/history-store";
 
 const items = [
   { href: "/", label: "首页", icon: Home },
@@ -10,6 +13,7 @@ const items = [
 ];
 
 export function MobileNav() {
+  const currentYear = useHistoryStore((state) => state.currentYear);
   return (
     <nav
       aria-label="移动端主要导航"
@@ -18,7 +22,7 @@ export function MobileNav() {
       {items.map(({ href, label, icon: Icon }) => (
         <Link
           key={href}
-          href={href}
+          href={`${href}?year=${currentYear}${href === "/timeline" ? "#timeline" : ""}`}
           className="flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] tracking-[0.1em] text-paper/65 transition-colors hover:bg-white/10 hover:text-paper focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
         >
           <Icon aria-hidden="true" className="size-4" strokeWidth={1.6} />

@@ -1,4 +1,5 @@
 import type { HistoricalEvent } from "@/types/history";
+import continuousRegistry from "@/data/maps/continuous-registry.json";
 
 import type {
   MapSnapshotManifest,
@@ -8,50 +9,6 @@ import type {
 const MAP_START_YEAR = 907;
 const MAP_END_YEAR = 979;
 
-const reconstructed934: Omit<MapYearRecord, "year" | "eventIds"> = {
-  snapshotId: "snapshot-934",
-  anchorYear: 934,
-  boundaryMode: "reconstructed",
-  confidence: "medium",
-  mapNote:
-    "934 年为后唐北方主线及吴、吴越、闽同年阶段重建；楚、后蜀、南汉与荆南为邻年推定，不代表同年同精度的全国边界。",
-};
-
-const reconstructed943: Omit<MapYearRecord, "year" | "eventIds"> = {
-  snapshotId: "snapshot-943",
-  anchorYear: 943,
-  boundaryMode: "reconstructed",
-  confidence: "medium",
-  mapNote:
-    "943 年疆域依据历史地图与史料校勘重建；福建闽、殷分裂暂以合并轮廓表达，连续边界仍不代表现代测绘精度。",
-};
-
-const reconstructed949: Omit<MapYearRecord, "year" | "eventIds"> = {
-  snapshotId: "snapshot-949",
-  anchorYear: 949,
-  boundaryMode: "reconstructed",
-  confidence: "medium",
-  mapNote:
-    "949 年为后汉北方主线阶段重建；南方为邻年推定，依据 943/954 年区域图校勘，不代表同年同精度的全国边界。",
-};
-
-const generalized954: Omit<MapYearRecord, "year" | "eventIds"> = {
-  snapshotId: "snapshot-954",
-  anchorYear: 954,
-  boundaryMode: "generalized",
-  confidence: "medium",
-  mapNote:
-    "954 年当前为阶段概括：南方四政权已完成经纬网配准；北方与荆南仍为邻年推定。",
-};
-
-const reconstructed959: Omit<MapYearRecord, "year" | "eventIds"> = {
-  snapshotId: "snapshot-959",
-  anchorYear: 959,
-  boundaryMode: "reconstructed",
-  confidence: "medium",
-  mapNote:
-    "959 年为北方主线阶段重建：后周、北汉与辽依据同年图集校勘；南方五国暂据 943/954 年局部图推定，不代表同等精度的全国边界。",
-};
 
 const legacyIllustrative: Omit<MapYearRecord, "year" | "eventIds"> = {
   snapshotId: "legacy-illustrative",
@@ -61,7 +18,7 @@ const legacyIllustrative: Omit<MapYearRecord, "year" | "eventIds"> = {
   mapNote: "当前边界为旧版简化示意；年度事件按本年更新。",
 };
 
-export const MAP_SNAPSHOT_MANIFESTS = {
+export const MAP_SNAPSHOT_MANIFESTS: Record<string, MapSnapshotManifest> = {
   "snapshot-934": {
     id: "snapshot-934",
     anchorYear: 934,
@@ -212,27 +169,16 @@ export const MAP_SNAPSHOT_MANIFESTS = {
     inferenceNotes: ["沿用旧版简化 Polygon，仅用于表达各政权的大体相对位置。"],
     confidence: "low",
   },
-} as const satisfies Record<string, MapSnapshotManifest>;
+  ...(continuousRegistry.manifests as unknown as Record<string, MapSnapshotManifest>),
+};
 
 export const MAP_YEAR_RECORDS: readonly MapYearRecord[] = Array.from(
   { length: MAP_END_YEAR - MAP_START_YEAR + 1 },
   (_, index) => {
     const year = MAP_START_YEAR + index;
-    return {
-      year,
-      ...(year === 934
-        ? reconstructed934
-        : year === 943
-        ? reconstructed943
-          : year === 949
-            ? reconstructed949
-            : year === 954
-              ? generalized954
-            : year === 959
-              ? reconstructed959
-            : legacyIllustrative),
-      eventIds: [],
-    };
+    const record = continuousRegistry.years.find((entry) => entry.year === year);
+    if (!record) throw new Error(`Missing fixed-master record: ${year}`);
+    return { ...(record as MapYearRecord), eventIds: [] };
   },
 );
 

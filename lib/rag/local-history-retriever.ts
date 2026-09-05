@@ -321,6 +321,15 @@ function evidenceFor(
   };
 }
 
+function contextualField(query: string): BodyField | undefined {
+  const text = query.replace(/^(?:请问|请|那么|那)/, "").replace(/[呢吗]$/, "");
+  if (/^(?:(?:他|她|他们|这件事|此事|这个选择|当时)(?:当时)?)?(?:为什么|为何|原因是什么)(?:(?:要)?(?:这么|这样|那样)(?:做|选择|决定))?$/.test(text)) return "background";
+  if (/^(?:这件事|此事|这个选择)?(?:有(?:什么|哪些))?(?:影响|后果)(?:是什么|如何)?$/.test(text)) return "impact";
+  if (/^(?:这件事|此事|后来)?(?:结果|结局)(?:是什么|如何)?$/.test(text)) return "result";
+  if (/^(?:这件事|此事)?(?:是怎么发生的|经过是什么|过程如何|详细经过)$/.test(text)) return "process";
+  return undefined;
+}
+
 export class LocalHistoryRetriever implements KnowledgeRetriever {
   async retrieve(
     rawQuery: string,
@@ -343,6 +352,17 @@ export class LocalHistoryRetriever implements KnowledgeRetriever {
     }
 
     const terms = queryTerms(query, queryYears, boundedQuery);
+    const field = contextualField(query);
+    // Only resolve a complete deictic question, never arbitrary text sharing a pronoun.
+    const routeEventId = context.currentPage?.match(/^\/explore\/([a-z0-9-]+)\/?$/)?.[1];
+    const contextEvent = field && seedData.events.find((event) => event.id === (routeEventId ?? context.selectedEvent));
+    if (contextEvent) {
+      return {
+        chunks: [{ id: contextEvent.id, sourceId: `history-event:${contextEvent.id}`, people: [...contextEvent.personIds], dynasties: [...contextEvent.dynastyIds], events: [contextEvent.id], yearStart: contextEvent.startYear, yearEnd: contextEvent.endYear ?? contextEvent.startYear }],
+        excerptsForServerPrompt: [excerptFor(contextEvent, field)],
+        evidence: [evidenceFor(contextEvent, "context", [], field)],
+      };
+    }
     const rankedMatches = seedData.events
       .map((event) => {
         signal?.throwIfAborted();

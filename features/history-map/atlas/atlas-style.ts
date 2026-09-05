@@ -1,4 +1,5 @@
 import { layers, LIGHT } from "@protomaps/basemaps";
+import mapPolities from "@/data/maps/map-polities.json";
 import type {
   ExpressionSpecification,
   LayerSpecification,
@@ -55,6 +56,7 @@ const REALM_COLOR: ExpressionSpecification = [
   "#7b5960",
   "northern-song",
   "#af3f35",
+  ...mapPolities.flatMap(({ id, color }) => [id, color]),
   "#9f4036",
 ];
 
@@ -93,6 +95,7 @@ function createPhysicalBasemapLayers(): LayerSpecification[] {
       if (layer.id === "water" && layer.type === "fill") {
         return {
           ...layer,
+          filter: ["==", ["get", "kind"], "ocean"],
           paint: { "fill-color": "#bdcfce" },
         };
       }
@@ -128,16 +131,23 @@ function createHistoricalLayers(): LayerSpecification[] {
       },
     },
     {
+      id: "atlas-natural-water",
+      type: "fill",
+      source: "naturalWater",
+      paint: { "fill-color": "#bdcfce" },
+    },
+    {
       id: "atlas-realms-fill",
       type: "fill",
       source: "realms",
       paint: {
         "fill-color": REALM_COLOR,
+        "fill-antialias": false,
         "fill-opacity": [
           "match",
           ["get", "boundaryKind"],
-          "influence",
-          0.18,
+            "influence",
+            0.16,
           0.34,
         ],
       },
@@ -154,10 +164,10 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-line",
       type: "line",
-      source: "realms",
+      source: "boundaries",
       filter: ["!", ["in", ["get", "accuracyLevel"], ["literal", ["approximate", "illustrative"]]]],
       paint: {
-        "line-color": REALM_COLOR,
+        "line-color": "#697269",
         "line-opacity": 0.94,
         "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.1, 7, 2.2],
       },
@@ -165,14 +175,14 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-inferred-line",
       type: "line",
-      source: "realms",
+      source: "boundaries",
       filter: [
         "in",
         ["get", "accuracyLevel"],
         ["literal", ["approximate", "illustrative"]],
       ],
       paint: {
-        "line-color": REALM_COLOR,
+        "line-color": "#697269",
         "line-dasharray": [2.4, 1.8],
         "line-opacity": 0.9,
         "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.1, 7, 2.2],
@@ -192,12 +202,13 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-hover",
       type: "line",
-      source: "realms",
+      source: "realmOutlines",
+      layout: { "line-join": "round", "line-cap": "round" },
       filter: ["==", ["get", "id"], ""],
       paint: {
         "line-color": "#172824",
         "line-opacity": 0.9,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.2, 7, 3.8],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.3, 7, 2],
       },
     },
     {
@@ -215,12 +226,13 @@ function createHistoricalLayers(): LayerSpecification[] {
     {
       id: "atlas-realms-selected",
       type: "line",
-      source: "realms",
+      source: "realmOutlines",
+      layout: { "line-join": "round", "line-cap": "round" },
       filter: ["==", ["get", "dynastyId"], ""],
       paint: {
         "line-color": "#9f4036",
         "line-opacity": 1,
-        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 2.8, 7, 4.6],
+        "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.6, 7, 2.4],
       },
     },
     {
@@ -326,6 +338,12 @@ export function createAtlasStyle(): StyleSpecification {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
       },
+      realmOutlines: { type: "geojson", data: EMPTY_FEATURE_COLLECTION },
+      naturalWater: { type: "geojson", data: "/maps/continuous/natural-water.geojson" },
+      boundaries: {
+        type: "geojson",
+        data: EMPTY_FEATURE_COLLECTION,
+      },
       disputed: {
         type: "geojson",
         data: EMPTY_FEATURE_COLLECTION,
@@ -335,6 +353,11 @@ export function createAtlasStyle(): StyleSpecification {
         data: EMPTY_FEATURE_COLLECTION,
       },
     },
-    layers: [...createPhysicalBasemapLayers(), ...createHistoricalLayers()],
+    layers: [
+      ...createPhysicalBasemapLayers(),
+      ...createHistoricalLayers().flatMap((layer) => layer.id === "atlas-prefectures"
+        ? [...createPhysicalBasemapLayers().filter((physical) => physical.type === "fill" && "source-layer" in physical && physical["source-layer"] === "water").map((water) => ({ ...water, id: `atlas-coast-mask-${water.id}` })), layer]
+        : [layer]),
+    ],
   };
 }

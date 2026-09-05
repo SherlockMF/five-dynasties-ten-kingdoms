@@ -1,49 +1,25 @@
 import { describe, expect, it } from "vitest";
-
 import { events } from "@/data/seed";
 import { orderEvents } from "@/data/seed/events/order-events";
 
 describe("historical event ordering", () => {
-  it("orders every same-year causal source before its target", () => {
-    const indexById = new Map(events.map((event, index) => [event.id, index]));
-    const eventById = new Map(events.map((event) => [event.id, event]));
-
-    for (const event of events) {
-      for (const causeId of event.causeEventIds) {
-        if (eventById.get(causeId)?.startYear === event.startYear) {
-          expect(indexById.get(causeId), `${causeId}->${event.id}`).toBeLessThan(indexById.get(event.id)!);
-        }
-      }
-      for (const consequenceId of event.consequenceEventIds) {
-        if (eventById.get(consequenceId)?.startYear === event.startYear) {
-          expect(indexById.get(event.id), `${event.id}->${consequenceId}`).toBeLessThan(indexById.get(consequenceId)!);
-        }
-      }
-    }
-
-    for (const [sourceId, targetId] of [
-      ["liao-aids-later-jin", "founding-later-jin"],
-      ["liao-aids-later-jin", "sixteen-prefectures-ceded"],
-      ["liao-enters-kaifeng", "yelu-deguang-dies"],
-      ["liao-enters-kaifeng", "later-han-founded"],
-      ["liao-aids-northern-han-gaoping", "battle-gaoping"],
-      ["liao-aids-northern-han-gaoping", "chai-rong-reforms"],
-      ["battle-shiling-pass", "northern-han-falls"],
-    ]) {
-      expect(indexById.get(sourceId), `${sourceId}->${targetId}`).toBeLessThan(indexById.get(targetId)!);
-    }
+  it("orders by year and source-attested order within a year", () => {
+    const base = events[0]!;
+    const input = [
+      { ...base, id: "later", startYear: 936, orderInYear: 2 },
+      { ...base, id: "next-year", startYear: 937, orderInYear: 1 },
+      { ...base, id: "earlier", startYear: 936, orderInYear: 1 },
+    ];
+    expect(orderEvents(input).map((event) => event.id)).toEqual(["earlier", "later", "next-year"]);
+    expect(input[0]?.id).toBe("later");
   });
 
-  it("fails fast when same-year causal declarations form a cycle", () => {
+  it("keeps unspecified same-year entries stable without inferring chronology from links", () => {
     const base = events[0]!;
-    const cyclic = [
-      { ...base, id: "cycle-a", startYear: 900, causeEventIds: ["cycle-b"], consequenceEventIds: ["cycle-b"] },
-      { ...base, id: "cycle-b", startYear: 900, causeEventIds: ["cycle-a"], consequenceEventIds: ["cycle-a"] },
+    const input = [
+      { ...base, id: "a", causeEventIds: ["b"] },
+      { ...base, id: "b", causeEventIds: ["a"] },
     ];
-
-    expect(() => orderEvents(cyclic)).toThrow(/same-year event cycle/i);
-    expect(() => orderEvents([
-      { ...base, id: "self-cycle", startYear: 900, causeEventIds: ["self-cycle"], consequenceEventIds: [] },
-    ])).toThrow(/same-year event cycle/i);
+    expect(orderEvents(input).map((event) => event.id)).toEqual(["a", "b"]);
   });
 });

@@ -1,0 +1,222 @@
+[
+  {
+    "id": "jin",
+    "name": "晋",
+    "startYear": 907,
+    "endYear": 923,
+    "color": "#466c63",
+    "description": "河东李氏晋政权"
+  },
+  {
+    "id": "qi",
+    "name": "岐",
+    "startYear": 907,
+    "endYear": 924,
+    "color": "#9d7953",
+    "description": "李茂贞凤翔政权"
+  },
+  {
+    "id": "hebei-circuits",
+    "name": "河北军镇",
+    "startYear": 907,
+    "endYear": 921,
+    "color": "#85856f",
+    "description": "成德、义武等军镇，合称不等同单一国家"
+  },
+  {
+    "id": "yan-local",
+    "name": "幽州刘氏",
+    "startYear": 907,
+    "endYear": 911,
+    "color": "#7c827d",
+    "description": "刘氏幽州割据"
+  },
+  {
+    "id": "yan",
+    "name": "燕",
+    "startYear": 911,
+    "endYear": 913,
+    "color": "#737970",
+    "description": "刘守光燕政权"
+  },
+  {
+    "id": "khitan",
+    "name": "契丹诸部",
+    "startYear": 907,
+    "endYear": 916,
+    "color": "#495a62",
+    "description": "建国前契丹控制范围的阶段概括"
+  },
+  {
+    "id": "balhae",
+    "name": "渤海国",
+    "startYear": 907,
+    "endYear": 926,
+    "color": "#68847c",
+    "description": "渤海国并非海域。907—925年末仍存在，926年被契丹灭亡，改置东丹；本图926年起归入契丹控制概括面。这里只显示本地图覆盖范围内部分，东北轮廓为概括。"
+  },
+  {
+    "id": "yin",
+    "name": "殷",
+    "startYear": 943,
+    "endYear": 945,
+    "color": "#9a7961",
+    "description": "王延政建州政权，943—944与闽并立"
+  },
+  {
+    "id": "fuzhou-local",
+    "name": "福州李氏",
+    "startYear": 945,
+    "endYear": 947,
+    "color": "#8a7f4f",
+    "description": "李仁达地方控制"
+  },
+  {
+    "id": "quanzhou-local",
+    "name": "泉漳地方势力",
+    "startYear": 945,
+    "endYear": 949,
+    "color": "#96794f",
+    "description": "闽亡后的泉漳地方控制"
+  },
+  {
+    "id": "qingyuan",
+    "name": "清源军／平海军",
+    "startYear": 949,
+    "endYear": 978,
+    "color": "#96794f",
+    "description": "留氏、陈氏泉漳军镇，964改平海军；名义臣属不等于直接控制"
+  },
+  {
+    "id": "wuping",
+    "name": "武平等湖南势力",
+    "startYear": 952,
+    "endYear": 963,
+    "color": "#98705b",
+    "description": "楚亡后湖南地方控制的合称"
+  },
+  {
+    "id": "jingnan-local",
+    "name": "荆南高氏军镇",
+    "startYear": 907,
+    "endYear": 924,
+    "color": "#8a8069",
+    "description": "封南平王之前的高氏荆南控制"
+  },
+  {
+    "id": "lingnan-local",
+    "name": "岭南刘氏军镇",
+    "startYear": 907,
+    "endYear": 917,
+    "color": "#6b8b66",
+    "description": "南汉建国前的刘氏控制"
+  },
+  {
+    "id": "tibetan-regions",
+    "name": "吐蕃诸部",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#a29272",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "dali",
+    "name": "洱海—大理地区",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#708d69",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "khotan",
+    "name": "于阗",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#b6a06a",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "xizhou",
+    "name": "西州回鹘",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#a89b6a",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "ganzhou",
+    "name": "甘州回鹘",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#a58d5e",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "guiyi",
+    "name": "归义军",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#a29378",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "karluk",
+    "name": "葛逻禄等部",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#aa967e",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "kyrgyz",
+    "name": "黠戛斯、嗢娘改等部",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#849c7f",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "tatar",
+    "name": "鞑靼诸部",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#b09d73",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "jurchen-regions",
+    "name": "室韦、靺鞨与女真诸部",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#8eaa8c",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "goryeo",
+    "name": "高丽一带",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#b3a886",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  },
+  {
+    "id": "annan-regimes",
+    "name": "交趾诸政权",
+    "startYear": 907,
+    "endYear": 979,
+    "color": "#a5978b",
+    "description": "943 总图的固定地域背景；907—979 是本网站展示区间，不是该政权的建国、灭亡年代。此处概括所在地区及诸政权，不主张所有年份由同一政权统一控制。",
+    "contextOnly": true
+  }
+]

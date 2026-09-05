@@ -161,7 +161,7 @@ describe("MockLlmProvider", () => {
     expect(answer.answer).not.toContain("高平");
   });
 
-  it("uses general knowledge only when explicitly allowed and retrieval is empty", async () => {
+  it("keeps unsupported general-knowledge requests explicitly unanswered", async () => {
     const answer = await new MockLlmProvider().generateAnswer({
       message: "1936",
       context,
@@ -169,7 +169,7 @@ describe("MockLlmProvider", () => {
       retrievedExcerpts: [],
     });
 
-    expect(answer.provenance).toBe("general-knowledge");
+    expect(answer.provenance).toBe("none");
     expect(answer.sources).toEqual([]);
   });
 });

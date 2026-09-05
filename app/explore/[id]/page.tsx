@@ -11,10 +11,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: event?.title ?? "事件未找到", description: event?.summary };
 }
 
-export default async function EventPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EventPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ year?: string | string[]; path?: string | string[] }> }) {
   const { id } = await params;
   const repository = getHistoryRepository();
   const [event, relations, relatedEvents] = await Promise.all([repository.getEvent(id), repository.getEventRelations(id), repository.getEventsInRange(TIMELINE_MIN_YEAR, MAX_YEAR)]);
   if (!event) notFound();
-  return <EventDetail event={event} relations={relations} relatedEvents={relatedEvents} />;
+  const query = await searchParams;
+  const year = typeof query.year === "string" ? Number(query.year) : NaN;
+  const returnYear = Number.isInteger(year) && year >= TIMELINE_MIN_YEAR && year <= MAX_YEAR ? year : event.startYear;
+  return <EventDetail event={event} relations={relations} relatedEvents={relatedEvents} returnYear={returnYear} pathId={typeof query.path === "string" ? query.path : undefined} />;
 }

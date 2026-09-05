@@ -101,7 +101,7 @@ export const northernPeople: Person[] = [
     sourceRefs: ["《旧五代史》卷八十九《晋书·桑维翰传》", "《资治通鉴》卷二百八十至卷二百八十六"], verificationStatus: "reviewed", ...mixed([4, 5]),
   },
   {
-    id: "jing-yanguang", name: "景延广", birthYear: 892, deathYear: 947, dynastyIds: ["later-jin"], roles: ["后晋将领", "枢密使"], roleCategories: ["general"],
+    id: "jing-yanguang", name: "景延广", birthYear: 892, deathYear: 947, dynastyIds: ["later-jin"], roles: ["后晋将领", "侍卫亲军都指挥使"], roleCategories: ["general"],
     summary: "拥立石重贵并推动对辽强硬外交的后晋重臣。",
     biography: "景延广在石敬瑭死后参与拥立石重贵，主张对契丹不再称臣。他的强硬言行成为战争升级因素之一，后失势出镇，辽军南下时被俘并死去。",
     sourceRefs: ["《旧五代史》卷八十八《晋书·景延广传》", "《资治通鉴》卷二百八十三至卷二百八十六"], verificationStatus: "reviewed", ...mixed([4, 5]),
@@ -137,10 +137,11 @@ export const northernPeople: Person[] = [
     sourceRefs: ["《新五代史》卷十二《周本纪第十二》", "《资治通鉴》卷二百九十一至卷二百九十四"], verificationStatus: "reviewed", ...mixed([6]),
   },
   {
-    id: "wang-pu", name: "王朴", birthYear: 922, deathYear: 959, dynastyIds: ["later-zhou"], roles: ["后周宰相", "战略规划者"], roleCategories: ["official"],
+    id: "wang-pu", name: "王朴", birthYear: 906, deathYear: 959, dynastyIds: ["later-zhou"], roles: ["后周枢密使", "战略规划者"], roleCategories: ["official"],
     summary: "向柴荣提出先南后北统一规划并参与制度建设的后周重臣。",
-    biography: "王朴以制策受到柴荣重用，所上《平边策》分析各割据政权形势。他参与礼乐、历法与军政事务，959 年在北征前后去世。",
-    sourceRefs: ["《旧五代史》卷一百二十八《周书·王朴传》", "《资治通鉴》卷二百九十二至卷二百九十四"], verificationStatus: "reviewed", ...mixed([6]),
+    biography: "王朴以制策受到柴荣重用，所上《平边策》分析各割据政权形势。他任枢密使，参与礼乐、历法与军政事务，959 年三月去世，未及参与随后北征。",
+    disputedNote: "生年由享年推算：《新五代史》卷三十一记 959 年卒、年五十四，对应 906 年；《旧五代史》卷一百二十八记年四十五，对应 915 年。本条采用《新五代史》口径，生年并非两史一致的确切记载。",
+    sourceRefs: ["《新五代史》卷三十一《周臣传第十九·王朴》", "《旧五代史》卷一百二十八《周书·王朴传》", "《资治通鉴》卷二百九十二至卷二百九十四"], verificationStatus: "reviewed", ...mixed([6]),
   },
   {
     id: "fan-zhi", name: "范质", birthYear: 911, deathYear: 964, dynastyIds: ["later-zhou", "northern-song"], roles: ["后周宰相", "北宋宰相"], roleCategories: ["official"],

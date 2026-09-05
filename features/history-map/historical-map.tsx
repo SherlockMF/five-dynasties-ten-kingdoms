@@ -17,20 +17,21 @@ import type {
   AtlasDataset,
   AtlasRegionFeatureCollection,
 } from "./atlas/atlas-types";
-import { loadAtlasSnapshot } from "./atlas/atlas-schema";
+import { getCachedAtlasSnapshot, loadCachedAtlasSnapshot } from "./atlas/atlas-schema";
+import { isMapContext, withMapPolities } from "./atlas/map-polities";
 import { DisputedAreaPopover } from "./atlas/disputed-area-popover";
-import { createIllustrativeAtlasDataset } from "./atlas/illustrative-atlas";
 import { MapFallback } from "./atlas/map-fallback";
 import type { MapLegendKind } from "./atlas/map-legend";
 import { MapStatus } from "./atlas/map-status";
 import {
-  asIllustrativeMapYear,
   resolveMapSnapshot,
   resolveMapYear,
 } from "./atlas/map-year-records";
 import { DynastyListView } from "./dynasty-list-view";
 import { DynastyPopover } from "./dynasty-popover";
 import { MapControls } from "./map-controls";
+import { AnnualChanges } from "./annual-changes";
+import { InactiveDynastyNotice } from "./inactive-dynasty-notice";
 
 const HistoricalAtlasMap = dynamic(
   () =>
@@ -87,8 +88,9 @@ function compositeDynastyIdIncludes(candidate: string, dynastyId: string) {
   );
 }
 
-function availableLegendKinds(atlas: AtlasDataset): MapLegendKind[] {
-  const kinds = new Set<MapLegendKind>();
+function availableLegendKinds(atlas: AtlasDataset, selected?: string): MapLegendKind[] {
+  const kinds = new Set<MapLegendKind>(["water"]);
+  if (selected) kinds.add("selected");
   for (const feature of atlas.realms.features) {
     kinds.add(
       feature.properties.boundaryKind === "controlled" ? "core" : "fringe",
@@ -113,17 +115,21 @@ interface HistoricalMapProps {
 }
 
 type SnapshotResolution =
-  | { year: number; status: "official"; dataset: AtlasDataset }
-  | { year: number; status: "fallback"; dataset: AtlasDataset; error: string };
+  | { snapshotId: string; status: "official"; dataset: AtlasDataset }
+  | { snapshotId: string; status: "unavailable"; dataset: AtlasDataset; error: string };
 
 type RendererFailure = { year: number; error: string };
 
 const EMPTY_EVENTS: HistoricalEvent[] = [];
 const EMPTY_LOCATIONS: HistoricalLocation[] = [];
+const EMPTY_ATLAS: AtlasDataset = {
+  realms: { type: "FeatureCollection", features: [] },
+  disputed: { type: "FeatureCollection", features: [] },
+  places: { type: "FeatureCollection", features: [] }, sources: [], warnings: [],
+};
 
 export function HistoricalMap({
-  regions,
-  dynasties,
+  dynasties: siteDynasties,
   events = EMPTY_EVENTS,
   locations = EMPTY_LOCATIONS,
   mode = "full",
@@ -134,51 +140,54 @@ export function HistoricalMap({
   const selectDynasty = useHistoryStore((state) => state.selectDynasty);
   const selectEvent = useHistoryStore((state) => state.selectEvent);
   const yearRecord = useMemo(() => resolveMapYear(year, events), [events, year]);
-  const illustrativeAtlas = useMemo(
-    () => createIllustrativeAtlasDataset(year, regions, dynasties),
-    [dynasties, regions, year],
-  );
+  const dynasties = useMemo(() => withMapPolities(siteDynasties), [siteDynasties]);
   const [resolution, setResolution] = useState<SnapshotResolution>();
+  const [showReference, setShowReference] = useState(false);
+  const [referenceAtlas, setReferenceAtlas] = useState<AtlasDataset>();
+  const [referenceError, setReferenceError] = useState<string>();
   const [rendererFailure, setRendererFailure] =
     useState<RendererFailure>();
   const [selectedDisputedRegionId, setSelectedDisputedRegionId] =
     useState<string>();
   const previousYearRef = useRef(year);
-  const resolvedForYear = resolution?.year === year ? resolution : undefined;
-  const atlas = rendererFailure
-    ? illustrativeAtlas
-    : (resolvedForYear?.dataset ?? illustrativeAtlas);
+  const mapViewportRef = useRef<HTMLDivElement>(null);
+  const cachedAtlas = getCachedAtlasSnapshot(resolveMapSnapshot(yearRecord.snapshotId));
+  const resolvedForYear = cachedAtlas
+    ? { snapshotId: yearRecord.snapshotId, status: "official" as const, dataset: cachedAtlas }
+    : resolution?.snapshotId === yearRecord.snapshotId ? resolution : undefined;
+  const annualAtlas = resolvedForYear?.dataset ?? EMPTY_ATLAS;
+  const atlas = useMemo<AtlasDataset>(() => {
+    if (!showReference || !referenceAtlas) return annualAtlas;
+    return {
+      ...annualAtlas,
+      realms: { type: "FeatureCollection", features: [...annualAtlas.realms.features, ...referenceAtlas.realms.features] },
+      boundaries: { type: "FeatureCollection", features: [...(annualAtlas.boundaries?.features ?? []), ...(referenceAtlas.boundaries?.features ?? [])] },
+      outlines: { type: "FeatureCollection", features: [...(annualAtlas.outlines?.features ?? []), ...(referenceAtlas.outlines?.features ?? [])] },
+      sources: [...new Map([...annualAtlas.sources, ...referenceAtlas.sources].map((source) => [source.id, source])).values()],
+    };
+  }, [annualAtlas, referenceAtlas, showReference]);
   const atlasFailure =
     rendererFailure?.error ??
-    (resolvedForYear?.status === "fallback"
+    (resolvedForYear?.status === "unavailable"
       ? resolvedForYear.error
       : undefined);
-  const usesOfficialSnapshot =
-    yearRecord.boundaryMode !== "illustrative" &&
-    resolvedForYear?.status === "official" &&
-    !rendererFailure;
-  const effectiveYearRecord = usesOfficialSnapshot
-    ? yearRecord
-    : asIllustrativeMapYear(yearRecord, atlasFailure);
+  const effectiveYearRecord = yearRecord;
   const visibleRegions = useMemo(
     () =>
-      usesOfficialSnapshot
-        ? atlasToHistoricalRegions(atlas)
-        : regions.filter(
-            (region) =>
-              region.validFromYear <= year && year < region.validToYearExclusive,
-          ),
-    [atlas, regions, usesOfficialSnapshot, year],
+      atlasToHistoricalRegions(atlas),
+    [atlas],
   );
   const visibleDynasties = useMemo(() => {
     const byId = new Map(dynasties.map((dynasty) => [dynasty.id, dynasty]));
-    const ids = new Set(visibleRegions.map((region) => region.dynastyId));
-    return [...ids].flatMap((id) => {
+    const names = new Map(atlas.realms.features.map((feature) => [feature.properties.dynastyId, feature.properties.name]));
+    return [...names].flatMap(([id, name]) => {
       const dynasty = byId.get(id);
-      return dynasty ? [dynasty] : [];
+      return dynasty ? [{...dynasty, name}] : [];
     });
-  }, [dynasties, visibleRegions]);
-  const selected = dynasties.find((dynasty) => dynasty.id === selectedId);
+  }, [dynasties, atlas]);
+  const selected = visibleDynasties.find((dynasty) => dynasty.id === selectedId);
+  const inactiveSelection = resolvedForYear?.status === "official" && !selected
+    ? dynasties.find((dynasty) => dynasty.id === selectedId && !isMapContext(dynasty.id)) : undefined;
   const selectedDisputedFeature = atlas.disputed.features.find(
     (feature) => feature.properties.id === selectedDisputedRegionId,
   );
@@ -231,83 +240,105 @@ export function HistoricalMap({
   }, []);
 
   useEffect(() => {
-    if (yearRecord.boundaryMode === "illustrative") return;
-    const controller = new AbortController();
-    loadAtlasSnapshot(
-      resolveMapSnapshot(yearRecord.snapshotId),
-      controller.signal,
-    ).then(
+    if (!showReference) return;
+    let active = true;
+    loadCachedAtlasSnapshot(resolveMapSnapshot("reference-943")).then(
+      (dataset) => { if (active) { setReferenceAtlas(dataset); setReferenceError(undefined); } },
+      (error: unknown) => { if (active) setReferenceError(error instanceof Error ? error.message : "参考层加载失败"); },
+    );
+    return () => { active = false; };
+  }, [showReference]);
+
+  useEffect(() => {
+    let active = true;
+    const snapshotId = yearRecord.snapshotId;
+    loadCachedAtlasSnapshot(resolveMapSnapshot(snapshotId)).then(
       (dataset) => {
-        if (controller.signal.aborted) return;
-        setResolution({ year, status: "official", dataset });
+        if (!active) return;
+        setResolution({ snapshotId, status: "official", dataset });
       },
       (error: unknown) => {
-        if (controller.signal.aborted) return;
+        if (!active) return;
         setResolution({
-          year,
-          status: "fallback",
-          dataset: illustrativeAtlas,
+          snapshotId,
+          status: "unavailable",
+          dataset: EMPTY_ATLAS,
           error:
             error instanceof Error
               ? error.message
-              : `${year} 年正式快照载入失败`,
+              : `${snapshotId} 快照载入失败`,
         });
       },
     );
-    return () => controller.abort();
-  }, [illustrativeAtlas, year, yearRecord]);
+    return () => { active = false; };
+  }, [yearRecord.snapshotId]);
 
   useEffect(() => {
-    if (previousYearRef.current === year) return;
-    previousYearRef.current = year;
-    setSelectedDisputedRegionId(undefined);
+    if (previousYearRef.current !== year) {
+      previousYearRef.current = year;
+      setSelectedDisputedRegionId(undefined);
+    }
     if (
-      selectedId &&
-      !illustrativeAtlas.realms.features.some(
+      resolvedForYear?.status === "official" && selectedId &&
+      (!dynasties.some((dynasty) => dynasty.id === selectedId) || isMapContext(selectedId)) &&
+      !atlas.realms.features.some(
         (feature) => feature.properties.dynastyId === selectedId,
       )
     ) {
       selectDynasty(undefined);
     }
-  }, [illustrativeAtlas, selectDynasty, selectedId, year]);
+  }, [atlas, dynasties, resolvedForYear?.status, selectDynasty, selectedId, year]);
 
   return (
-    <section aria-label="五代十国互动历史地图" className="overflow-hidden rounded-[1.25rem] border border-ink/15 bg-paper shadow-[0_24px_70px_rgba(23,40,36,.14)]">
+    <section aria-label="五代十国互动历史地图" className="relative rounded-[1.25rem] border border-ink/15 bg-paper shadow-[0_24px_70px_rgba(23,40,36,.14)]">
       {mode === "full" ? <MapControls /> : null}
+      {inactiveSelection ? <InactiveDynastyNotice dynasty={inactiveSelection} year={year} onClose={() => selectDynasty(undefined)} /> : null}
       <div className="grid min-w-0 bg-paper lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="relative min-h-[26rem] overflow-hidden bg-paper">
           <MapStatus record={effectiveYearRecord} />
-          <div className="relative min-h-[32rem]">
+          <div className="border-b border-ink/10 px-4 py-2 text-xs text-muted">
+            <label className="inline-flex cursor-pointer items-center gap-2">
+              <input type="checkbox" checked={showReference} onChange={(event) => setShowReference(event.target.checked)} className="accent-cinnabar" />
+              显示 943 年周边地域参考（非当年疆域）
+            </label>
+            {showReference ? <p className="mt-1" role="status">{referenceError ? `参考层未载入：${referenceError}` : !referenceAtlas ? "正在载入参考层…" : "浅色地域只反映 943 总图，不表示当前年份的控制范围或政权存续。"}</p> : null}
+          </div>
+          {!resolvedForYear ? <p role="status" className="px-4 py-2 text-xs text-muted">正在载入本阶段疆域，地理底图可继续操作…</p> : null}
+          <div ref={mapViewportRef} className="relative min-h-[26rem] scroll-mt-44 sm:min-h-[32rem]">
             <HistoricalAtlasMap
               yearRecord={effectiveYearRecord}
               atlas={atlas}
               events={events}
               locations={locations}
               selectedDynastyId={selectedId}
-              availableLegendKinds={availableLegendKinds(atlas)}
+              availableLegendKinds={availableLegendKinds(atlas, selected?.id)}
               onSelectRegion={handleSelectRegion}
               onSelectEvent={selectEvent}
               onFatalError={handleAtlasFatal}
               onRenderSuccess={handleRenderSuccess}
-            />
+            >
+              {selected ? <DynastyPopover dynasty={selected} year={year} events={selectedEvents} regions={selectedRegions} atlasSources={atlas.sources} onClose={() => selectDynasty(undefined)} /> : null}
+              {selectedDisputedFeature ? (
+                <DisputedAreaPopover feature={selectedDisputedFeature} sources={atlas.sources} dynasties={disputedDynasties} onSelectDynasty={handleSelect} onClose={() => setSelectedDisputedRegionId(undefined)} />
+              ) : null}
+            </HistoricalAtlasMap>
           </div>
           {atlasFailure ? (
             <div className="absolute inset-x-4 bottom-4 z-20">
-              <MapFallback state="unavailable" detail={`${atlasFailure}；已降级为本年示意边界。`} />
+              <MapFallback state="unavailable" detail={`${atlasFailure}；疆域暂不可用，未回退到旧版示意。可切换阶段或刷新重试。`} />
             </div>
-          ) : null}
-          {selected ? <DynastyPopover dynasty={selected} year={year} events={selectedEvents} regions={selectedRegions} atlasSources={atlas.sources} onClose={() => selectDynasty(undefined)} /> : null}
-          {selectedDisputedFeature ? (
-            <DisputedAreaPopover feature={selectedDisputedFeature} sources={atlas.sources} dynasties={disputedDynasties} onSelectDynasty={handleSelect} onClose={() => setSelectedDisputedRegionId(undefined)} />
           ) : null}
         </div>
         <aside className="flex min-h-0 flex-col border-t border-ink/10 bg-paper p-4 lg:border-l lg:border-t-0">
-          <p className="mb-3 shrink-0 text-[10px] tracking-[0.16em] text-muted uppercase">当前政权 · {visibleDynasties.length}</p>
+          <p className="mb-3 shrink-0 text-[10px] tracking-[0.16em] text-muted uppercase">年末政权 · {annualAtlas.realms.features.length}{showReference && referenceAtlas ? ` · 943参考地域 ${referenceAtlas.realms.features.length}` : ""}</p>
           <div
             data-testid="map-dynasty-scroll"
             className="atlas-scrollbar min-h-0 lg:max-h-[min(52rem,calc(100dvh-9rem))] lg:overflow-y-auto lg:overscroll-contain lg:pr-2"
           >
-            <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={handleSelect} />
+            <DynastyListView dynasties={visibleDynasties} regions={visibleRegions} year={year} onSelect={(id) => {
+              handleSelect(id);
+              if (window.innerWidth < 1024) mapViewportRef.current?.scrollIntoView({ block: "start", behavior: "instant" });
+            }} />
             {atlas.disputed.features.length ? (
               <section className="mt-5 border-t border-ink/10 pt-4" aria-label="争议区列表">
                 <p className="mb-3 text-[10px] tracking-[0.16em] text-muted uppercase">争议区 · {atlas.disputed.features.length}</p>
@@ -323,6 +354,7 @@ export function HistoricalMap({
           </div>
         </aside>
       </div>
+      {mode === "full" ? <AnnualChanges year={year} events={events} dynasties={siteDynasties} collapsible /> : null}
     </section>
   );
 }

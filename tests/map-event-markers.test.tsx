@@ -56,7 +56,7 @@ describe("MapEventMarkers", () => {
     );
 
     const marker = screen.getByRole("button", {
-      name: "幽州：燕云十六州归辽（时称契丹） · 16处",
+      name: "幽州：石敬瑭许割燕云十六州 · 16处",
     });
     expect(within(marker).getByText("16")).toBeVisible();
   });
@@ -179,16 +179,16 @@ describe("MapEventMarkers", () => {
         .sort(([left], [right]) => String(left).localeCompare(String(right))),
     );
     for (const group of positioned) {
-      expect(group.markerPoint[0]).toBeGreaterThanOrEqual(16);
-      expect(group.markerPoint[0]).toBeLessThanOrEqual(204);
-      expect(group.markerPoint[1]).toBeGreaterThanOrEqual(16);
-      expect(group.markerPoint[1]).toBeLessThanOrEqual(204);
+      expect(group.markerPoint[0]).toBeGreaterThanOrEqual(22);
+      expect(group.markerPoint[0]).toBeLessThanOrEqual(198);
+      expect(group.markerPoint[1]).toBeGreaterThanOrEqual(22);
+      expect(group.markerPoint[1]).toBeLessThanOrEqual(198);
     }
     for (let first = 0; first < positioned.length; first += 1) {
       for (let second = first + 1; second < positioned.length; second += 1) {
         const a = positioned[first].markerPoint;
         const b = positioned[second].markerPoint;
-        expect(Math.abs(a[0] - b[0]) >= 32 || Math.abs(a[1] - b[1]) >= 32).toBe(true);
+        expect(Math.abs(a[0] - b[0]) >= 44 || Math.abs(a[1] - b[1]) >= 44).toBe(true);
       }
     }
 
@@ -221,6 +221,7 @@ describe("MapEventMarkers", () => {
     expect(marker).toBeVisible();
     expect(marker).toHaveClass("size-11");
     expect(marker.querySelector("[data-marker-glyph='seal']")).toBeVisible();
+    expect(marker.querySelector("[data-marker-glyph='seal']")).toHaveClass("size-3");
     expect(marker.querySelector("svg")).not.toBeInTheDocument();
   });
 

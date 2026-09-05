@@ -7,26 +7,28 @@ import TimelineLoading from "@/app/timeline/loading";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { SiteHeader } from "@/components/layout/site-header";
 import { TimelinePeriodLabel } from "@/features/timeline/timeline-period-label";
+import { useHistoryStore } from "@/features/history-state/history-store";
 
 describe("SiteHeader", () => {
   it("renders the primary exploration navigation", () => {
+    useHistoryStore.getState().reset({ currentYear: 905 });
     render(<SiteHeader />);
 
     expect(screen.getByRole("link", { name: "时间" })).toHaveAttribute(
       "href",
-      "/timeline",
+      "/timeline?year=905#timeline",
     );
     expect(screen.getByRole("link", { name: "地图" })).toHaveAttribute(
       "href",
-      "/map",
+      "/map?year=905",
     );
     expect(screen.getByRole("link", { name: "人物" })).toHaveAttribute(
       "href",
-      "/people",
+      "/people?year=905",
     );
     expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
       "href",
-      "/notes",
+      "/notes?year=905",
     );
     expect(
       screen
@@ -44,7 +46,9 @@ describe("SiteHeader", () => {
 
 describe("MobileNav", () => {
   it("keeps five destinations and labels the supporting material entry", () => {
+    useHistoryStore.getState().reset({ currentYear: 902 });
     render(<MobileNav />);
+    expect(screen.getByRole("link", { name: "时间" })).toHaveAttribute("href", "/timeline?year=902#timeline");
 
     const navigation = screen.getByRole("navigation", {
       name: "移动端主要导航",
@@ -52,7 +56,7 @@ describe("MobileNav", () => {
     expect(navigation.querySelectorAll("a")).toHaveLength(5);
     expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
       "href",
-      "/notes",
+      "/notes?year=902",
     );
   });
 });

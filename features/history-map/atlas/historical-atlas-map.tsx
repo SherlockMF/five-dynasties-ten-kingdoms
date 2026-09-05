@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import type { HistoricalEvent, HistoricalLocation } from "@/types/history";
 
@@ -17,6 +17,7 @@ import { MapLibreCanvas } from "./maplibre-canvas";
 import { resolveMapSnapshot } from "./map-year-records";
 
 export interface HistoricalAtlasMapProps {
+  children?: ReactNode;
   yearRecord: MapYearRecord;
   atlas: AtlasDataset;
   events: HistoricalEvent[];
@@ -30,6 +31,7 @@ export interface HistoricalAtlasMapProps {
 }
 
 export function HistoricalAtlasMap({
+  children,
   yearRecord,
   atlas,
   events,
@@ -44,10 +46,10 @@ export function HistoricalAtlasMap({
   const [projector, setProjector] = useState<AtlasProjector>();
 
   return (
-    <div className="flex h-full min-h-[32rem] flex-col bg-paper">
+    <div className="flex h-full min-h-[26rem] flex-col bg-paper sm:min-h-[32rem]">
       <div
         data-testid="atlas-map-viewport"
-        className="relative min-h-[29rem] flex-1 overflow-hidden"
+        className="relative min-h-[26rem] flex-1 overflow-hidden sm:min-h-[32rem]"
       >
         <MapLibreCanvas
           atlas={atlas}
@@ -73,6 +75,7 @@ export function HistoricalAtlasMap({
         <div className="absolute bottom-16 left-4 z-10 max-w-[calc(100%-2rem)]">
           <MapLegend availableKinds={availableLegendKinds} />
         </div>
+        {children}
       </div>
       <MapAttribution
         record={yearRecord}

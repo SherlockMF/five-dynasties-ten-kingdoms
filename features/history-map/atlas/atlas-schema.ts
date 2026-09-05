@@ -123,6 +123,18 @@ const sourceRecordsSchema = z.array(
   }),
 );
 
+const boundaryCollectionSchema = z.object({
+  type: z.literal("FeatureCollection"),
+  features: z.array(z.object({
+    type: z.literal("Feature"),
+    geometry: z.discriminatedUnion("type", [
+      z.object({ type: z.literal("LineString"), coordinates: z.array(positionSchema).min(2) }),
+      z.object({ type: z.literal("MultiLineString"), coordinates: z.array(z.array(positionSchema).min(2)) }),
+    ]),
+    properties: z.object({ id: z.string(), dynastyId: z.string().optional(), accuracyLevel: z.enum(["attested", "reconstructed", "approximate", "illustrative"]), sourceRefs: sourceRefsSchema }),
+  })),
+});
+
 function isAbortError(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }
@@ -172,7 +184,7 @@ function parsePublishedFile<T>(
 function assertKnownSources(
   filename: string,
   sourceIds: Set<string>,
-  collection: AtlasRegionFeatureCollection | AtlasPlaceFeatureCollection,
+  collection: AtlasRegionFeatureCollection | AtlasPlaceFeatureCollection | NonNullable<AtlasDataset["boundaries"]>,
 ): void {
   for (const feature of collection.features) {
     for (const sourceRef of feature.properties.sourceRefs) {
@@ -227,6 +239,26 @@ function attachSnapshotId(
   };
 }
 
+function assertCoversSnapshotPeriod(
+  filename: string,
+  collection: AtlasRegionFeatureCollection,
+  manifest: MapSnapshotManifest,
+): void {
+  const { validFromYear: from, validToYearExclusive: end } = manifest;
+  if (from === undefined && end === undefined) {
+    assertCoversAnchorYear(filename, collection, manifest.anchorYear);
+    return;
+  }
+  if (from === undefined || end === undefined || !Number.isInteger(from) ||
+      !Number.isInteger(end) || from < 907 || end > 980 || end <= from) {
+    throw new Error(`${filename}: invalid snapshot validity interval`);
+  }
+  // A fixed geographic reference may predate or postdate this ownership phase.
+  // Every feature must cover the entire declared phase, not the reference year.
+  assertCoversAnchorYear(filename, collection, from);
+  assertCoversAnchorYear(filename, collection, end - 1);
+}
+
 function assertCoversAnchorYear(
   filename: string,
   collection: AtlasRegionFeatureCollection,
@@ -252,7 +284,7 @@ export async function loadAtlasSnapshot(
     throw new Error(`${manifest.id}: missing required snapshot files`);
   }
 
-  const [realmsValue, sourcesValue, disputedResult, placesResult] =
+  const [realmsValue, sourcesValue, disputedResult, placesResult, boundariesValue, outlinesValue] =
     await Promise.all([
       fetchJson("realms.geojson", realmsUrl, signal),
       fetchJson("sources.json", sourcesUrl, signal),
@@ -274,6 +306,8 @@ export async function loadAtlasSnapshot(
             signal,
           )
         : Promise.resolve({ data: emptyPlaceCollection() }),
+      manifest.files.boundaries ? fetchJson("boundaries.geojson", manifest.files.boundaries, signal) : undefined,
+      manifest.files.outlines ? fetchJson("outlines.geojson", manifest.files.outlines, signal) : undefined,
     ]);
 
   const realms = attachSnapshotId(
@@ -300,9 +334,13 @@ export async function loadAtlasSnapshot(
   }
 
   assertKnownSources("realms.geojson", sourceIds, realms);
-  assertCoversAnchorYear("realms.geojson", realms, manifest.anchorYear);
+  assertCoversSnapshotPeriod("realms.geojson", realms, manifest);
 
   const warnings: string[] = [];
+  const boundaries = boundariesValue ? parsePublishedFile("boundaries.geojson", boundaryCollectionSchema, boundariesValue) : undefined;
+  if (boundaries) assertKnownSources("boundaries.geojson", sourceIds, boundaries);
+  const outlines = outlinesValue ? parsePublishedFile("outlines.geojson", boundaryCollectionSchema, outlinesValue) : undefined;
+  if (outlines) assertKnownSources("outlines.geojson", sourceIds, outlines);
   if ("warning" in disputedResult && disputedResult.warning) {
     warnings.push(disputedResult.warning);
   }
@@ -314,10 +352,10 @@ export async function loadAtlasSnapshot(
   if (disputed) {
     try {
       assertKnownSources("disputed.geojson", sourceIds, disputed);
-      assertCoversAnchorYear(
+      assertCoversSnapshotPeriod(
         "disputed.geojson",
         disputed,
-        manifest.anchorYear,
+        manifest,
       );
     } catch (error) {
       warnings.push(`${errorMessage(error)}；已使用空图层。`);
@@ -339,10 +377,34 @@ export async function loadAtlasSnapshot(
   }
 
   return {
+    boundaries,
+    outlines,
     realms,
     disputed: disputed ?? emptyRegionCollection(),
     places: places ?? emptyPlaceCollection(),
     sources,
     warnings,
   };
+}
+
+// Shared phase requests outlive individual year subscriptions; aborted consumers
+// must not cancel a request still needed by the next year in the same phase.
+const snapshotCache = new Map<string, Promise<AtlasDataset>>();
+const readySnapshots = new Map<string, AtlasDataset>();
+export function getCachedAtlasSnapshot(manifest: MapSnapshotManifest) {
+  return readySnapshots.get(`${manifest.id}:${manifest.version}`);
+}
+export function loadCachedAtlasSnapshot(manifest: MapSnapshotManifest) {
+  const key = `${manifest.id}:${manifest.version}`;
+  const existing = snapshotCache.get(key);
+  if (existing) return existing;
+  const request = loadAtlasSnapshot(manifest).then((dataset) => {
+    readySnapshots.set(key, dataset);
+    return dataset;
+  }).catch((error: unknown) => {
+    snapshotCache.delete(key);
+    throw error;
+  });
+  snapshotCache.set(key, request);
+  return request;
 }

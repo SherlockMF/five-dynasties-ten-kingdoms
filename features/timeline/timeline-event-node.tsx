@@ -16,7 +16,7 @@ const typeMeta: Record<
   political: { label: "政治事件", icon: Scale, className: "text-[#457267]" },
 };
 
-export function TimelineEventNode({ event }: { event: HistoricalEvent }) {
+export function TimelineEventNode({ event, currentYear = event.startYear }: { event: HistoricalEvent; currentYear?: number }) {
   const meta = typeMeta[event.eventType];
   const Icon = meta.icon;
   return (
@@ -25,10 +25,16 @@ export function TimelineEventNode({ event }: { event: HistoricalEvent }) {
         <Icon aria-hidden="true" className={cn("size-3.5", meta.className)} />
         {meta.label}
       </div>
+      <p className="mt-3 text-xs text-muted">
+        {event.endYear && event.endYear > event.startYear
+          ? `${event.startYear}—${event.endYear} 年${currentYear > event.startYear ? " · 持续中" : " · 开始"}`
+          : `${event.startYear} 年`}
+        {event.dateLabel ? ` · ${event.dateLabel}` : null}
+      </p>
       <div className="mt-3 flex items-baseline gap-1">
         <h3 className="font-serif text-lg text-ink group-hover:text-cinnabar">
           <Link
-            href={`/explore/${event.id}?year=${event.startYear}`}
+            href={`/explore/${event.id}?year=${currentYear}`}
             aria-label={`查看${event.title}详情`}
             className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
           >

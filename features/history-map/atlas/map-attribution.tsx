@@ -30,6 +30,8 @@ export function MapAttribution({
       aria-label="地图数据与重建说明"
       className="border-t border-[var(--border)] bg-paper/90 px-4 py-3 text-[0.7rem] leading-5 text-muted"
     >
+      <details className="map-source-details">
+        <summary className="flex min-h-11 cursor-pointer items-center font-medium text-ink focus-visible:outline-cinnabar lg:hidden">地图依据与精度说明 ↓</summary>
       <div className="grid gap-2 sm:grid-cols-2">
         <section aria-label="年度记录">
           <p className="font-semibold text-ink">年度记录</p>
@@ -48,6 +50,7 @@ export function MapAttribution({
           <p>{joinInferenceNotes(manifest.inferenceNotes)}</p>
         </section>
       </div>
+      </details>
       <p className="mt-2 border-t border-ink/10 pt-2">
         底图：{" "}
         <a
@@ -95,7 +98,7 @@ export function MapAttribution({
                     {!source.redistributable ? "（仅作校勘）" : ""}
                   </a>
                 ) : (
-                  <span>{source.title}（本地核对资料，不公开分发）</span>
+                  <span>{source.title}{source.redistributable ? "（编绘依据）" : "（本地核对资料，不公开分发）"}</span>
                 )}
               </li>
             ))}

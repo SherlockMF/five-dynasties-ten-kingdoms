@@ -25,6 +25,7 @@ const EVIDENCE_MATCH_KINDS: RetrievedEvidence["matchKind"][] = [
   "entity",
   "year",
   "body",
+  "context",
 ];
 const SERVER_TIMEOUT_MS = 5_000;
 

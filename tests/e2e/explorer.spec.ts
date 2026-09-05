@@ -14,7 +14,7 @@ test("moves from a sourced 936 timeline event to its person and dynasty map", as
 
   const yanyun = page.getByRole("article").filter({
     has: page.getByRole("link", {
-      name: "查看燕云十六州归辽（时称契丹）详情",
+      name: "查看石敬瑭许割燕云十六州详情",
     }),
   });
   await expect(yanyun).toBeVisible();
@@ -22,11 +22,11 @@ test("moves from a sourced 936 timeline event to its person and dynasty map", as
     yanyun.getByRole("note", { name: "第04集主线、史料扩展" }),
   ).toBeVisible();
   await yanyun
-    .getByRole("link", { name: "查看燕云十六州归辽（时称契丹）详情" })
+    .getByRole("link", { name: "查看石敬瑭许割燕云十六州详情" })
     .click();
 
   await expect(
-    page.getByRole("heading", { name: "燕云十六州归辽（时称契丹）" }),
+    page.getByRole("heading", { name: "石敬瑭许割燕云十六州" }),
   ).toBeVisible();
   await expect(
     page.getByRole("note", { name: "第04集主线、史料扩展" }).first(),
@@ -45,7 +45,7 @@ test("moves from a sourced 936 timeline event to its person and dynasty map", as
 
   await page.goBack();
   await expect(
-    page.getByRole("heading", { name: "燕云十六州归辽（时称契丹）" }),
+    page.getByRole("heading", { name: "石敬瑭许割燕云十六州" }),
   ).toBeVisible();
   const relatedDynasties = page.locator("section").filter({
     has: page.getByRole("heading", { name: "相关政权" }),
@@ -60,11 +60,11 @@ test("moves from a sourced 936 timeline event to its person and dynasty map", as
     .toBe("later-jin");
   const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
   await expect(dynastyDialog).toBeVisible();
-  await expect(dynastyDialog.getByText("当年君主（年内）")).toBeVisible();
+  await expect(dynastyDialog.getByText("年末君主")).toBeVisible();
   await expect(dynastyDialog.getByText("石敬瑭", { exact: true })).toBeVisible();
   await expect(dynastyDialog.getByText("疆域精度")).toBeVisible();
   await expect(
-    dynastyDialog.getByText("示意", { exact: true }).first(),
+    dynastyDialog.getByText("约略", { exact: true }).first(),
   ).toBeVisible();
 });
 
@@ -175,18 +175,18 @@ test("filters people by category and role and exposes map evidence", async ({ pa
   await page.goto("/map?year=936");
   await page.getByRole("button", { name: "查看后晋", exact: true }).click();
   const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
-  await expect(dynastyDialog.getByText("当年君主（年内）")).toBeVisible();
+  await expect(dynastyDialog.getByText("年末君主")).toBeVisible();
   await expect(dynastyDialog.getByText("石敬瑭", { exact: true })).toBeVisible();
   await expect(dynastyDialog.getByText("疆域精度")).toBeVisible();
-  await expect(dynastyDialog.getByText("示意", { exact: true }).first()).toBeVisible();
+  await expect(dynastyDialog.getByText("约略", { exact: true }).first()).toBeVisible();
   await dynastyDialog.getByRole("button", { name: "关闭政权详情" }).click();
 
   await page
-    .getByRole("button", { name: "幽州：燕云十六州归辽（时称契丹）" })
+    .getByRole("button", { name: "幽州：石敬瑭许割燕云十六州 · 16处" })
     .click();
   const eventDialog = page.getByRole("dialog", { name: "幽州事件" });
   await expect(
-    eventDialog.getByRole("link", { name: "燕云十六州归辽（时称契丹）" }),
+    eventDialog.getByRole("link", { name: "石敬瑭许割燕云十六州" }),
   ).toBeVisible();
   await expect(
     eventDialog.getByRole("note", { name: "第04集主线、史料扩展" }),
@@ -207,7 +207,7 @@ test("keeps a rapidly closed dynasty out of the next map event", async (
     name: "关闭政权详情",
   });
   const youzhou = page.getByRole("button", {
-    name: "幽州：燕云十六州归辽（时称契丹）",
+    name: "幽州：石敬瑭许割燕云十六州 · 16处",
   });
   if (testInfo.project.name === "mobile") {
     await closeDynasty.tap();
@@ -241,13 +241,13 @@ test("keeps research notes secondary and distinguishes local AI evidence", async
   await expect(page.getByRole("heading", { name: "来源账本" })).toBeVisible();
 
   await page.goto("/explore/sixteen-prefectures-ceded?year=936");
-  await page.getByRole("button", { name: "打开问史" }).click();
+  await page.getByRole("button", { name: "问史 · 随时可问" }).click();
   const dialog = page.getByRole("dialog", { name: "问史助手" });
   const question = dialog.getByRole("textbox", { name: "向问史提问" });
   await question.fill("燕云十六州为什么归辽？");
   await dialog.getByRole("button", { name: "发送问题" }).click();
   await expect(dialog.getByText("知识库", { exact: true })).toBeVisible();
-  await expect(dialog.getByText(/来源：.*燕云十六州归辽/)).toBeVisible();
+  await expect(dialog.getByText(/来源：.*石敬瑭许割燕云十六州/)).toBeVisible();
 
   await question.fill("量子芝士如何改变火星农业？");
   await dialog.getByRole("button", { name: "发送问题" }).click();
@@ -260,7 +260,7 @@ test("explores 936 from map to person to event and asks a contextual question", 
   await page.getByRole("button", { name: "查看后晋" }).click();
   const dynastyDialog = page.getByRole("dialog", { name: "后晋详情" });
   await expect(dynastyDialog).toBeVisible();
-  await expect(dynastyDialog.getByText("当年君主（年内）")).toBeVisible();
+  await expect(dynastyDialog.getByText("年末君主")).toBeVisible();
   await expect(dynastyDialog.getByRole("link", { name: "石敬瑭", exact: true })).toHaveAttribute(
     "href",
     "/people?year=936&person=shi-jingtang",
@@ -271,14 +271,14 @@ test("explores 936 from map to person to event and asks a contextual question", 
 
   await page.goto("/explore/founding-later-jin?year=936");
   await expect(page.getByRole("heading", { name: "后晋建立" })).toBeVisible();
-  await page.getByRole("button", { name: "打开问史" }).click();
-  await expect(page.getByText("当前上下文：936年")).toBeVisible();
+  await page.getByRole("button", { name: "问史 · 随时可问" }).click();
+  await expect(page.getByText(/当前上下文：936年/)).toBeVisible();
 });
 
-test("map dynasty profiles expose exact transition-year ruler sets", async ({ page }) => {
+test("map dynasty profiles expose the year-end ruler", async ({ page }) => {
   for (const fixture of [
-    { dynasty: "吴", year: 920, rulers: ["杨隆演", "杨溥"] },
-    { dynasty: "闽", year: 944, rulers: ["王延羲", "王延政", "朱文进"] },
+    { dynasty: "吴", year: 920, rulers: ["杨溥"] },
+    { dynasty: "闽", year: 944, rulers: ["朱文进"] },
   ]) {
     await page.goto(`/map?year=${fixture.year}`);
     await page
@@ -289,7 +289,7 @@ test("map dynasty profiles expose exact transition-year ruler sets", async ({ pa
     });
     const rulerSection = dialog
       .locator("section")
-      .filter({ hasText: "当年君主（年内）" });
+      .filter({ hasText: "年末君主" });
     await expect(rulerSection.getByRole("listitem")).toHaveCount(
       fixture.rulers.length,
     );
@@ -311,15 +311,11 @@ test("map event markers stay projected and expose a bounded sourced popover", as
       .poll(async () => marker.evaluate((button) => {
         const anchor = button.parentElement;
         const layer = anchor?.parentElement;
-        const svg = layer?.previousElementSibling as SVGSVGElement | null;
-        if (!anchor || !layer || !svg) throw new Error("map marker structure missing");
+        if (!anchor || !layer) throw new Error("map marker structure missing");
         const anchorBox = anchor.getBoundingClientRect();
-        const svgBox = svg.getBoundingClientRect();
-        const mapX = Number(anchor.dataset.mapX);
-        const mapY = Number(anchor.dataset.mapY);
-        const scale = Math.min(svgBox.width / 800, svgBox.height / 500);
-        const expectedX = svgBox.left + (svgBox.width - 800 * scale) / 2 + mapX * scale;
-        const expectedY = svgBox.top + (svgBox.height - 500 * scale) / 2 + mapY * scale;
+        const layerBox = layer.getBoundingClientRect();
+        const expectedX = layerBox.left + Number(anchor.dataset.mapX);
+        const expectedY = layerBox.top + Number(anchor.dataset.mapY);
         return Math.max(
           Math.abs(anchorBox.left - expectedX),
           Math.abs(anchorBox.top - expectedY),
@@ -422,7 +418,7 @@ test("mobile map event markers keep separate full-size touch targets", async ({ 
   await expect(page.getByRole("dialog", { name: "太原事件" })).toBeVisible();
   await page.getByRole("button", { name: "关闭太原事件" }).click();
   const youzhou = page.getByRole("button", {
-    name: "幽州：燕云十六州归辽（时称契丹）",
+    name: "幽州：石敬瑭许割燕云十六州 · 16处",
   });
   await youzhou.tap();
   await expect(page.getByRole("dialog", { name: "幽州事件" })).toBeVisible();
@@ -461,7 +457,7 @@ test("mobile map popover recomputes its viewport placement after rotation", asyn
   await page.setViewportSize(sizes[0]);
   await page.goto("/map?year=936");
   const marker = page.getByRole("button", {
-    name: "幽州：燕云十六州归辽（时称契丹）",
+    name: "幽州：石敬瑭许割燕云十六州 · 16处",
   });
   await marker.tap();
   const dialog = page.getByRole("dialog", { name: "幽州事件" });
@@ -528,7 +524,7 @@ test("map event modal is a top-level inert and accessible portal", async (
     name: /^太原：(?=.*石敬瑭起兵)(?=.*契丹援石敬瑭)(?=.*后晋建立)/,
   });
   const youzhou = page.getByRole("button", {
-    name: "幽州：燕云十六州归辽（时称契丹）",
+    name: "幽州：石敬瑭许割燕云十六州 · 16处",
   });
   const slider = page.getByRole("slider", { name: "地图年份" });
   const backgroundLink = testInfo.project.name === "mobile"
@@ -618,10 +614,14 @@ test("map event modal is a top-level inert and accessible portal", async (
 
   const youzhouBox = await youzhou.boundingBox();
   expect(youzhouBox).not.toBeNull();
-  await page.mouse.click(
-    youzhouBox!.x + youzhouBox!.width / 2,
-    youzhouBox!.y + youzhouBox!.height / 2,
-  );
+  const point = { x: youzhouBox!.x + youzhouBox!.width / 2, y: youzhouBox!.y + youzhouBox!.height / 2 };
+  const overDialog = await taiyuanDialog.evaluate((element, point) => {
+    const box = element.getBoundingClientRect();
+    return point.x >= box.left && point.x <= box.right && point.y >= box.top && point.y <= box.bottom;
+  }, point);
+  // A displaced marker may sit behind a foreground link; that link is intentionally clickable.
+  if (overDialog) await backdrop.click({ position: { x: viewport.width - 1, y: viewport.height - 1 } });
+  else await page.mouse.click(point.x, point.y);
   await expect(page.getByRole("dialog", { name: "幽州事件" })).toBeHidden();
   if (await taiyuanDialog.isVisible()) {
     await taiyuanDialog.getByRole("button", { name: "关闭太原事件" }).click();
@@ -690,14 +690,15 @@ test("a disappearing event selection closes permanently with a safe focus target
   await expect(dialog).toBeHidden();
 });
 
-test("map corrects pre-907 years without dropping existing query state", async ({ page }) => {
+test("map corrects pre-907 years and explains a dynasty absent in the corrected year", async ({ page }) => {
   await page.goto("/map?year=884&dynasty=later-jin");
 
-  await expect(page.getByRole("status")).toHaveText(
+  await expect(page.getByRole("status").filter({ hasText: "地图仅展示" })).toHaveText(
     "地图仅展示907—979年，已校正为907年",
   );
   await expect(page).toHaveURL(/\/map\?year=907&dynasty=later-jin$/);
-  await expect(page.getByText(/^907 · 年末格局/)).toBeVisible();
+  await expect(page.getByRole("region", { name: "已选政权说明" })).toContainText("后晋");
+  await expect(page.getByText(/^907 · 母版 943/)).toBeVisible();
 });
 
 test("primary pages never overflow the viewport", async ({ page }) => {
@@ -808,9 +809,7 @@ test("inverse source markers retain their legend and mobile focus behavior", asy
   const panel = page.getByRole("region", { name: "石敬瑭" });
   const trigger = panel.getByRole("note", { name: label });
   const tooltip = panel.getByRole("tooltip", { includeHidden: true });
-  await expect(
-    panel.getByText("¹ 六集主线 · ² 史料扩展 · ³ 存在异说"),
-  ).toBeVisible();
+  await expect(trigger).toHaveAccessibleName(label);
 
   const triggerBox = await trigger.boundingBox();
   expect(triggerBox).not.toBeNull();

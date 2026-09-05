@@ -1,5 +1,7 @@
 import type {
   FeatureCollection,
+  LineString,
+  MultiLineString,
   MultiPolygon,
   Point,
   Polygon,
@@ -33,6 +35,8 @@ export type MapYearRecord = {
 export type MapSnapshotManifest = {
   id: string;
   anchorYear: number | null;
+  validFromYear?: number;
+  validToYearExclusive?: number;
   version: string;
   bbox: readonly [west: number, south: number, east: number, north: number];
   files: Readonly<{
@@ -40,6 +44,8 @@ export type MapSnapshotManifest = {
     disputed?: string;
     places?: string;
     sources?: string;
+    boundaries?: string;
+    outlines?: string;
   }>;
   sourceRefs: readonly string[];
   inferenceNotes: readonly string[];
@@ -91,6 +97,8 @@ export type AtlasPlaceFeatureCollection = FeatureCollection<
 >;
 
 export type AtlasDataset = {
+  outlines?: FeatureCollection<LineString | MultiLineString, { id: string; dynastyId?: string; accuracyLevel: AtlasAccuracy; sourceRefs: string[] }>;
+  boundaries?: FeatureCollection<LineString | MultiLineString, { id: string; accuracyLevel: AtlasAccuracy; sourceRefs: string[] }>;
   realms: AtlasRegionFeatureCollection;
   disputed: AtlasRegionFeatureCollection;
   places: AtlasPlaceFeatureCollection;

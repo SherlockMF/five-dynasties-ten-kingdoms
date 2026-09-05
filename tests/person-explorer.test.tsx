@@ -34,6 +34,13 @@ function renderExplorer() {
 }
 
 describe("PersonExplorer", () => {
+  it("shows lifetime relations even when the global year is 936", () => {
+    useHistoryStore.getState().reset({ currentYear: 936, selectedPerson: "pan-mei" });
+    renderExplorer();
+    expect(screen.getByText("全生平关系")).toBeVisible();
+    expect(screen.getByRole("button", { name: /聚焦赵匡胤/ })).toBeVisible();
+    expect(screen.queryByText(/936 年 ·/)).not.toBeInTheDocument();
+  });
   beforeEach(() =>
     useHistoryStore
       .getState()
@@ -203,9 +210,7 @@ describe("PersonExplorer", () => {
 
     expect(screen.getByLabelText(label)).toHaveTextContent(marker);
     expect(screen.getByLabelText(label)).toHaveClass("text-paper");
-    expect(
-      screen.getByText("¹ 六集主线 · ² 史料扩展 · ³ 存在异说"),
-    ).toBeVisible();
+    expect(screen.queryByText("¹ 六集主线 · ² 史料扩展 · ³ 存在异说")).not.toBeInTheDocument();
     if (!("disputedNote" in provenance)) {
       expect(screen.queryByRole("note", { name: "异说" })).not.toBeInTheDocument();
     }

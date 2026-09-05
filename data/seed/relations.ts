@@ -18,8 +18,8 @@ const reviewed = (sourceRefs: string[]) => ({
 
 export const personRelations: PersonRelation[] = [
   { id: "huang-chao-zhu-wen", sourcePersonId: "huang-chao", targetPersonId: "zhu-wen", type: "ruler-subject", description: "乾符四年（877），朱温加入黄巢军；中和二年（882）转而归降唐朝。", startYear: 877, endYear: 882, ...reviewed(["《新五代史》卷一《梁本纪第一》", "《资治通鉴》卷二百五十五至卷二百五十六《唐纪七十一至七十二》"]), ...transcript([1, 2]) },
-  { id: "zhu-wen-jing-xiang", sourcePersonId: "zhu-wen", targetPersonId: "jing-xiang", type: "ruler-subject", description: "敬翔长期在朱温幕府及后梁中枢掌管军机文书。", startYear: 889, endYear: 912, ...reviewed(["《旧五代史》卷十八《梁书·敬翔传》"]), ...transcript([2]) },
-  { id: "zhu-wen-wang-yanzhang", sourcePersonId: "zhu-wen", targetPersonId: "wang-yanzhang", type: "ruler-subject", description: "王彦章随朱温征战，后成为后梁主要将领。", startYear: 900, endYear: 912, ...reviewed(["《新五代史》卷三十二《死节传第二十·王彦章》"]), ...transcript([2, 3]) },
+  { id: "zhu-wen-jing-xiang", sourcePersonId: "zhu-wen", targetPersonId: "jing-xiang", type: "ruler-subject", description: "敬翔在中和年间已入朱温幕府，长期掌管军机文书，具体入幕年份未详。", endYear: 912, ...reviewed(["《旧五代史》卷十八《梁书·敬翔传》"]), ...transcript([2]) },
+  { id: "zhu-wen-wang-yanzhang", sourcePersonId: "zhu-wen", targetPersonId: "wang-yanzhang", type: "ruler-subject", description: "王彦章早年从军效力朱温，随其征战，后成为后梁主要将领；具体投军年份未详。", endYear: 912, ...reviewed(["《新五代史》卷三十二《死节传第二十·王彦章》"]), ...transcript([2, 3]) },
   { id: "zhu-wen-zhu-yougui", sourcePersonId: "zhu-wen", targetPersonId: "zhu-yougui", type: "family", description: "朱友珪是朱温之子，912 年弑父夺位。", endYear: 912, ...reviewed(["《新五代史》卷二《梁本纪第二》"]), ...transcript([2]) },
   { id: "zhu-wen-zhu-youzhen", sourcePersonId: "zhu-wen", targetPersonId: "zhu-youzhen", type: "family", description: "朱友贞是朱温之子，后成为后梁末帝。", endYear: 912, ...reviewed(["《新五代史》卷三《梁本纪第三》"]), ...transcript([2, 3]) },
   { id: "zhu-yougui-zhu-youzhen", sourcePersonId: "zhu-yougui", targetPersonId: "zhu-youzhen", type: "enemy", description: "朱友贞一方起兵反对弑父即位的朱友珪。", startYear: 912, endYear: 913, ...reviewed(["《资治通鉴》卷二百六十八至卷二百六十九《后梁纪三至四》"]), ...transcript([2]) },
@@ -39,8 +39,8 @@ export const personRelations: PersonRelation[] = [
   { id: "shi-jingtang-sang-weihan", sourcePersonId: "shi-jingtang", targetPersonId: "sang-weihan", type: "ruler-subject", description: "桑维翰为石敬瑭起草联络契丹的书表，并任后晋宰相。", startYear: 936, endYear: 942, ...reviewed(["《旧五代史》卷八十九《晋书·桑维翰传》"]), ...transcript([4, 5]) },
   { id: "shi-jingtang-liu-zhiyuan", sourcePersonId: "shi-jingtang", targetPersonId: "liu-zhiyuan", type: "ruler-subject", description: "刘知远在后晋任侍卫亲军都虞候、河东节度使等重要军职。", startYear: 936, endYear: 942, ...reviewed(["《新五代史》卷十《汉本纪第十》"]), ...transcript([4, 5]) },
   { id: "shi-jingtang-yelu-deguang", sourcePersonId: "shi-jingtang", targetPersonId: "yelu-deguang", type: "ally", description: "936 年耶律德光出兵援立石敬瑭，双方结成带有臣属条件的军事同盟。", startYear: 936, endYear: 942, ...reviewed(["《辽史》卷三《太宗本纪上》", "《资治通鉴》卷二百八十《后晋纪一》"]), ...transcript([4]) },
-  { id: "shi-chonggui-jing-yanguang", sourcePersonId: "shi-chonggui", targetPersonId: "jing-yanguang", type: "ruler-subject", description: "景延广参与拥立石重贵，并在其初年掌枢密院。", startYear: 942, endYear: 945, ...reviewed(["《旧五代史》卷八十八《晋书·景延广传》"]), ...transcript([4, 5]) },
-  { id: "shi-chonggui-sang-weihan", sourcePersonId: "shi-chonggui", targetPersonId: "sang-weihan", type: "ruler-subject", description: "桑维翰在石重贵朝再次入相，主张谨慎处理与辽关系。", startYear: 944, endYear: 946, ...reviewed(["《旧五代史》卷八十九《晋书·桑维翰传》"]), ...transcript([5]) },
+  { id: "shi-chonggui-jing-yanguang", sourcePersonId: "shi-chonggui", targetPersonId: "jing-yanguang", type: "ruler-subject", description: "景延广以侍卫亲军都指挥使参与拥立石重贵，随后加同平章事。后被解除兵权、出任西京留守，仍仕后晋，直至 947 年被契丹俘获。", startYear: 942, endYear: 947, ...reviewed(["《旧五代史》卷八十八《晋书·景延广传》"]), ...transcript([4, 5]) },
+  { id: "shi-chonggui-sang-weihan", sourcePersonId: "shi-chonggui", targetPersonId: "sang-weihan", type: "ruler-subject", description: "石重贵即位后，桑维翰继续仕晋，943 年被召为侍中、再次入相，944 年兼任枢密使，主张谨慎处理与辽关系；947 年开封陷落时遇害。", startYear: 942, endYear: 947, ...reviewed(["《旧五代史》卷八十九《晋书·桑维翰传》", "《新五代史》卷九《晋本纪第九》"]), ...transcript([5]) },
   { id: "shi-chonggui-yelu-deguang", sourcePersonId: "shi-chonggui", targetPersonId: "yelu-deguang", type: "enemy", description: "石重贵改变对辽臣属礼仪后，后晋与耶律德光统治下的辽全面交战。", startYear: 944, endYear: 947, ...reviewed(["《辽史》卷三至卷四《太宗本纪》", "《资治通鉴》卷二百八十三至卷二百八十六"]), ...transcript([5]) },
   { id: "shi-chonggui-du-chongwei", sourcePersonId: "shi-chonggui", targetPersonId: "du-chongwei", type: "ruler-subject", description: "杜重威是石重贵朝统率主力北伐的后晋大将。", startYear: 942, endYear: 946, ...reviewed(["《旧五代史》卷一百九《汉书·杜重威传》"]), ...transcript([5]) },
   { id: "yelu-deguang-du-chongwei", sourcePersonId: "yelu-deguang", targetPersonId: "du-chongwei", type: "political", description: "946 年杜重威率后晋主力向耶律德光投降，直接改变战局。", startYear: 946, endYear: 947, ...reviewed(["《资治通鉴》卷二百八十五至卷二百八十六"]), ...transcript([5]) },
@@ -61,10 +61,10 @@ export const personRelations: PersonRelation[] = [
   { id: "zhao-kuangyin-cao-bin", sourcePersonId: "zhao-kuangyin", targetPersonId: "cao-bin", type: "ruler-subject", description: "曹彬在赵匡胤朝参与平蜀并统率伐南唐。", startYear: 960, endYear: 976, ...reviewed(["《宋史》卷二百五十八《列传第十七·曹彬》"]), ...transcript([6]) },
   { id: "zhao-kuangyin-pan-mei", sourcePersonId: "zhao-kuangyin", targetPersonId: "pan-mei", type: "ruler-subject", description: "潘美在赵匡胤朝参与灭南汉、南唐等统一战争。", startYear: 960, endYear: 976, ...reviewed(["《宋史》卷二百五十八《列传第十七·潘美》"]), ...transcript([6]) },
   { id: "zhao-kuangyin-li-chuyun", sourcePersonId: "zhao-kuangyin", targetPersonId: "li-chuyun", type: "ruler-subject", description: "李处耘在宋初奉赵匡胤命参与荆湖战役。", startYear: 960, endYear: 966, ...reviewed(["《宋史》卷二百五十七《列传第十六·李处耘》"]), ...transcript([6]) },
-  { id: "zhao-guangyi-qian-chu", sourcePersonId: "zhao-guangyi", targetPersonId: "qian-chu", type: "ruler-subject", description: "978 年纳土后，钱俶至本产品时间线截至 979 年仍以宋臣身份保留爵位。", startYear: 978, endYear: 979, ...reviewed(["《续资治通鉴长编》卷十九", "《宋史》卷四百八十《吴越钱氏》"]), ...transcript([6]) },
+  { id: "zhao-guangyi-qian-chu", sourcePersonId: "zhao-guangyi", targetPersonId: "qian-chu", type: "ruler-subject", description: "978 年纳土后，钱俶继续受赵光义封爵，以宋臣身份生活，直至 988 年去世。", startYear: 978, endYear: 988, ...reviewed(["《续资治通鉴长编》卷十九", "《宋史》卷四百八十《吴越钱氏》"]), ...transcript([6]) },
   { id: "zhao-guangyi-liu-jiyuan", sourcePersonId: "zhao-guangyi", targetPersonId: "liu-jiyuan", type: "enemy", description: "979 年赵光义亲征北汉，刘继元守太原后出降。", startYear: 979, endYear: 979, ...reviewed(["《续资治通鉴长编》卷二十", "《宋史》卷四百八十二《北汉刘氏》"]), ...transcript([6]) },
   { id: "yang-xingmi-xu-wen", sourcePersonId: "yang-xingmi", targetPersonId: "xu-wen", type: "ruler-subject", description: "《新五代史》载徐温在杨行密起于合肥时即隶帐下；以中和三年（883）杨行密受任庐州刺史作为关系的保守起点，杨行密死后徐温逐步控制吴国军政。", startYear: 883, endYear: 905, ...reviewed(["《新五代史》卷六十一《吴世家第一》"]), ...transcript([5]) },
-  { id: "xu-wen-li-bian", sourcePersonId: "xu-wen", targetPersonId: "li-bian", type: "family", description: "李昪原名徐知诰，是徐温养子并承接徐氏权力。", endYear: 927, ...reviewed(["《新五代史》卷六十二《南唐世家第二》", "《十国春秋》卷十五《南唐一》"]), ...transcript([5]) },
+  { id: "xu-wen-li-bian", sourcePersonId: "xu-wen", targetPersonId: "li-bian", type: "family", description: "李昪是徐温养子，被收养后名徐知诰，承接徐氏权力后复李姓、改名昪。", endYear: 927, ...reviewed(["《新五代史》卷六十二《南唐世家第二》", "《十国春秋》卷十五《南唐一》"]), ...transcript([5]) },
   { id: "li-bian-li-jing", sourcePersonId: "li-bian", targetPersonId: "li-jing", type: "family", description: "李璟是李昪长子，并继承南唐帝位。", endYear: 943, ...reviewed(["《新五代史》卷六十二《南唐世家第二》"]), ...transcript([5, 6]) },
   { id: "li-jing-li-yu", sourcePersonId: "li-jing", targetPersonId: "li-yu", type: "family", description: "李煜是李璟之子，于 961 年继承南唐国主之位。", endYear: 961, ...reviewed(["《新五代史》卷六十二《南唐世家第二》"]), ...transcript([6]) },
   { id: "qian-liu-qian-chu", sourcePersonId: "qian-liu", targetPersonId: "qian-chu", type: "family", description: "钱俶是钱镠之孙，后来成为吴越末代国王。", ...reviewed(["《宋史》卷四百八十《吴越钱氏》"]), ...historicalExtension() },
@@ -79,15 +79,33 @@ export const personRelations: PersonRelation[] = [
   { id: "qian-chu-zhao-kuangyin", sourcePersonId: "qian-chu", targetPersonId: "zhao-kuangyin", type: "political", description: "赵匡胤在世期间，钱俶奉北宋正朔，并出兵配合宋军进攻南唐。", startYear: 960, endYear: 976, ...reviewed(["《宋史》卷四百八十《吴越钱氏》"]), ...transcript([6]) },
   { id: "pan-mei-liu-chang", sourcePersonId: "pan-mei", targetPersonId: "liu-chang", type: "enemy", description: "潘美统率宋军进攻南汉，刘鋹于 971 年出降。", startYear: 970, endYear: 971, ...reviewed(["《宋史》卷二百五十八《潘美传》", "《宋史》卷四百八十一《南汉刘氏》"]), ...transcript([6]) },
   { id: "cao-bin-meng-chang", sourcePersonId: "cao-bin", targetPersonId: "meng-chang", type: "enemy", description: "曹彬参与宋军伐后蜀，孟昶于 965 年在成都出降。", startYear: 964, endYear: 965, ...reviewed(["《宋史》卷二百五十八《曹彬传》", "《宋史》卷四百七十九《后蜀孟氏》"]), ...transcript([6]) },
+  { id: "li-cunxu-feng-dao", sourcePersonId: "li-cunxu", targetPersonId: "feng-dao", type: "ruler-subject", description: "冯道在李存勖为晋王时任河东掌书记，具体起年未详；李存勖称帝后，冯道任户部侍郎、翰林学士。", endYear: 926, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "li-siyuan-feng-dao", sourcePersonId: "li-siyuan", targetPersonId: "feng-dao", type: "ruler-subject", description: "李嗣源即位后任用冯道为端明殿学士，后升为宰相，冯道多次就政务与民生进谏。", startYear: 926, endYear: 933, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "li-congke-feng-dao", sourcePersonId: "li-congke", targetPersonId: "feng-dao", type: "ruler-subject", description: "冯道迎李从珂入洛，继续任相，后出任同州节度使，再任司空。", startYear: 934, endYear: 936, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "shi-jingtang-feng-dao", sourcePersonId: "shi-jingtang", targetPersonId: "feng-dao", type: "ruler-subject", description: "石敬瑭建立后晋后，冯道继续入相，任守司空、同中书门下平章事，后加司徒、兼侍中。", startYear: 936, endYear: 942, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "shi-chonggui-feng-dao", sourcePersonId: "shi-chonggui", targetPersonId: "feng-dao", type: "ruler-subject", description: "冯道参与拥立石重贵，继续任宰相，后罢相出镇，直至后晋覆亡。", startYear: 942, endYear: 947, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》", "《旧五代史》卷八十八《晋书·景延广传》"]), ...historicalExtension() },
+  { id: "yelu-deguang-feng-dao", sourcePersonId: "yelu-deguang", targetPersonId: "feng-dao", type: "ruler-subject", description: "契丹灭后晋后，冯道入朝耶律德光，受任太傅，并随契丹军北行至常山。", startYear: 947, endYear: 947, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "liu-zhiyuan-feng-dao", sourcePersonId: "liu-zhiyuan", targetPersonId: "feng-dao", type: "ruler-subject", description: "刘知远建立后汉后，冯道归汉，以太师身份奉朝请。", startYear: 947, endYear: 948, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "guo-wei-feng-dao", sourcePersonId: "guo-wei", targetPersonId: "feng-dao", type: "ruler-subject", description: "郭威建立后周后，任冯道为太师、兼中书令。", startYear: 951, endYear: 954, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "chai-rong-feng-dao", sourcePersonId: "chai-rong", targetPersonId: "feng-dao", type: "ruler-subject", description: "柴荣即位后，冯道曾劝阻亲征北汉，后奉命主持郭威山陵事务，同年去世。", startYear: 954, endYear: 954, ...reviewed(["《新五代史》卷五十四《杂传第四十二·冯道》"]), ...historicalExtension() },
+  { id: "wang-jian-zhu-wen", sourcePersonId: "wang-jian", targetPersonId: "zhu-wen", type: "political", description: "907 年朱温代唐建梁，王建拒绝后梁使者，并发布讨梁檄文，表现出政治对立。", startYear: 907, endYear: 907, ...reviewed(["《新五代史》卷六十三《前蜀世家第三》"]), ...historicalExtension() },
+  { id: "zhu-wen-ma-yin", sourcePersonId: "zhu-wen", targetPersonId: "ma-yin", type: "political", description: "朱温建立后梁后，马殷遣使朝贡，受封楚王，承认后梁的册封，同时继续统治湖南。", startYear: 907, endYear: 912, ...reviewed(["《新五代史》卷六十六《楚世家第六》"]), ...historicalExtension() },
+  { id: "zhu-wen-wang-shenzhi", sourcePersonId: "zhu-wen", targetPersonId: "wang-shenzhi", type: "political", description: "后梁建立后，王审知向朱温朝贡，909 年受封闽王，同时继续统治福建。", startYear: 907, endYear: 912, ...reviewed(["《新五代史》卷六十八《闽世家第八》", "《十国春秋》卷九十《闽一》"]), ...historicalExtension() },
+  { id: "li-keyong-li-siyuan", sourcePersonId: "li-keyong", targetPersonId: "li-siyuan", type: "family", description: "李嗣源是李克用养子，本名邈佶烈，被收养后获赐名嗣源，长期随李克用征战。", endYear: 908, ...reviewed(["《新五代史》卷六《唐本纪第六》"]), ...historicalExtension() },
+  { id: "shi-jingtang-shi-chonggui-family", sourcePersonId: "shi-jingtang", targetPersonId: "shi-chonggui", type: "family", description: "石重贵是石敬瑭养子，生父石敬儒是石敬瑭兄长，二人同时为叔侄。", endYear: 942, ...reviewed(["《新五代史》卷九《晋本纪第九》"]), ...historicalExtension() },
+  { id: "shi-jingtang-shi-chonggui-succession", sourcePersonId: "shi-jingtang", targetPersonId: "shi-chonggui", type: "succession", description: "942 年石敬瑭去世后，冯道、景延广等拥立石重贵继承后晋帝位。", startYear: 942, endYear: 942, ...reviewed(["《新五代史》卷九《晋本纪第九》", "《旧五代史》卷八十八《晋书·景延广传》"]), ...historicalExtension() },
+  { id: "yelu-abaoji-yelu-deguang", sourcePersonId: "yelu-abaoji", targetPersonId: "yelu-deguang", type: "family", description: "耶律德光是耶律阿保机次子，母亲为述律平。", endYear: 926, ...reviewed(["《辽史》卷三《太宗本纪上》"]), ...historicalExtension() },
 ];
 
+// Only source-supported direct causes are labelled causal; other links provide context.
 const eventRelationDescriptions: Record<string, string> = {
-  "shi-jingtang-rebellion->founding-later-jin":
-    "太原起兵与契丹援助直接促成后晋建立。",
-  "founding-later-jin->sixteen-prefectures-ceded":
-    "获得契丹支持与燕云十六州的转移相互关联。",
-  "later-jin-falls->later-han-founded":
-    "后晋覆亡与辽军北撤为刘知远建立后汉创造了条件。",
+  "shi-jingtang-rebellion->liao-aids-later-jin": "石敬瑭在太原被围后向契丹求援，耶律德光率军来救。",
+  "sixteen-prefectures-ceded->liao-aids-later-jin": "石敬瑭以称臣、割地等条件换取契丹出兵。",
+  "liao-aids-later-jin->founding-later-jin": "契丹军解太原之围，并于十一月册立石敬瑭。",
+  "min-civil-war->southern-tang-destroys-min": "王氏内战引来南唐干预，南唐军进而攻取建州。",
+  "later-zhou-southern-tang-war->southern-tang-yields-huainan": "淮南战败迫使南唐割让江北州县并去帝号。",
+  "song-attacks-southern-tang->southern-tang-falls": "宋军围攻金陵并攻破城池，李煜出降。",
+  "battle-shiling-pass->northern-han-falls": "宋军击退辽援，阻断北汉获得外援的通道，是其败降的军事条件之一。",
 };
 
 const eventById = new Map(events.map((event) => [event.id, event]));
@@ -120,7 +138,7 @@ function declareEventRelation(sourceEventId: string, targetEventId: string) {
     id: `event-${sourceEventId}-to-${targetEventId}`,
     sourceEventId,
     targetEventId,
-    type: "cause",
+    type: eventRelationDescriptions[edge] ? "cause" : "context",
     description: eventRelationDescriptions[edge],
     sourceRefs: [
       ...new Set([...sourceEvent.sourceRefs, ...targetEvent.sourceRefs]),

@@ -9,6 +9,7 @@ export default defineConfig([
     ".next/**",
     ".worktrees/**",
     "coverage/**",
+    "output/**",
     "playwright-report/**",
     "public/maplibre/maplibre-gl-worker.mjs",
     "public/maplibre/maplibre-gl-shared.mjs",

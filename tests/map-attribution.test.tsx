@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { MapAttribution } from "@/features/history-map/atlas/map-attribution";
@@ -13,7 +13,7 @@ describe("MapAttribution", () => {
     render(
       <MapAttribution
         record={record}
-        manifest={resolveMapSnapshot(record.snapshotId)}
+        manifest={{ ...resolveMapSnapshot(record.snapshotId), sourceRefs: ["atlas-1935-936-946", "user-943-crosscheck"] }}
         sources={[
           {
             id: "atlas-1935-936-946",
@@ -37,14 +37,15 @@ describe("MapAttribution", () => {
       />,
     );
 
+    fireEvent.click(screen.getByText("地图依据与精度说明 ↓"));
     expect(screen.getByRole("region", { name: "年度记录" })).toHaveTextContent(
-      "943 年 · snapshot-943",
+      "943 年 · phase-943-944",
     );
     expect(
       screen.getByRole("region", { name: "当前快照依据" }),
     ).toHaveTextContent("943 年锚点");
     expect(screen.getByRole("region", { name: "年度记录" })).toHaveTextContent(
-      "可信度 中",
+      "可信度 低",
     );
     expect(
       screen.getByRole("region", { name: "当前快照依据" }),
@@ -55,7 +56,7 @@ describe("MapAttribution", () => {
     expect(screen.getByText(/本地 943 校勘图.*不公开分发/)).toBeVisible();
   });
 
-  it("shows the legacy illustrative source instead of a 943-only citation", () => {
+  it("shows the phase method and chronology rather than legacy boxes", () => {
     const record = resolveMapYear(942);
     render(
       <MapAttribution
@@ -63,19 +64,21 @@ describe("MapAttribution", () => {
         manifest={resolveMapSnapshot(record.snapshotId)}
         sources={[
           {
-            id: "legacy-illustrative-boundaries",
-            title: "旧版简化疆域数据",
-            reference: "local-only:legacy-illustrative-boundaries",
+            id: "continuous-method",
+            title: "共享分区编绘方法",
+            reference: "gis/continuous/README.md",
             role: "cross-check",
-            license: "Reference only",
-            redistributable: false,
-            note: "仅作示意",
+            license: "Project metadata",
+            redistributable: true,
+            note: "年末态概括",
           },
         ]}
       />,
     );
 
-    expect(screen.getByText(/旧版简化疆域数据.*不公开分发/)).toBeVisible();
+    fireEvent.click(screen.getByText("地图依据与精度说明 ↓"));
+    expect(screen.getByText(/共享分区编绘方法.*编绘依据/)).toBeVisible();
+    expect(screen.getByRole("region", { name: "年度记录" })).toHaveTextContent("phase-937-942");
     expect(screen.queryByText("公版 936—946 年地图")).not.toBeInTheDocument();
   });
 });

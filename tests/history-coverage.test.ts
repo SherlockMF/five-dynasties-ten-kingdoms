@@ -47,11 +47,11 @@ describe("expanded northern history corpus", () => {
     "zhao-pu",
   ];
 
-  it("covers the complete 74-event corpus", () => {
-    expect(events.filter((event) => event.tracks.includes("late-tang"))).toHaveLength(10);
-    expect(events).toHaveLength(74);
+  it("covers the complete 84-event corpus", () => {
+    expect(events.filter((event) => event.tracks.includes("late-tang"))).toHaveLength(14);
+    expect(events).toHaveLength(84);
     expect(tenKingdomsEvents).toHaveLength(20);
-    expect(liaoSongEvents).toHaveLength(14);
+    expect(liaoSongEvents).toHaveLength(16);
     expect(
       events.some(
         (event) =>
@@ -122,7 +122,7 @@ describe("expanded northern history corpus", () => {
       event.tracks.includes("five-dynasties"),
     );
 
-    expect(lateTangEvents).toHaveLength(10);
+    expect(lateTangEvents).toHaveLength(14);
     expect(
       lateTangEvents.every(
         (event) =>
@@ -145,19 +145,19 @@ describe("expanded northern history corpus", () => {
     expect(people.filter((person) => northernPersonIds.includes(person.id))).toHaveLength(28);
   });
 
-  it("contains the exact thirty-five valid locations", () => {
+  it("contains the exact thirty-eight valid locations", () => {
     const expectedIds = [
       "baixang", "changan", "chengdu", "chenqiao", "fengzhou", "fuzhou",
       "gaoping", "guangzhou", "guizhou", "hangzhou", "huanzhou", "jiangling",
       "jinling", "jizhou", "kaifeng", "luoyang", "mozhou", "qinzhou", "ruzhou",
       "shouzhou", "shuozhou", "shunzhou", "taiyuan", "tanzhou", "tanzhou-yanyun",
       "weizhou", "weizhou-yanyun", "wuzhou", "xinzhou", "yangzhou", "yingzhou",
-      "yingzhou-shanxi", "youzhou", "yunzhou", "zhuozhou",
+      "yingzhou-shanxi", "youzhou", "yunzhou", "zhuozhou", "jianzhou", "langzhou", "yuezhou",
     ];
 
-    expect(locations).toHaveLength(35);
+    expect(locations).toHaveLength(38);
     expect(locations.map((location) => location.id).sort()).toEqual([...expectedIds].sort());
-    expect(new Set(locations.map((location) => location.id)).size).toBe(35);
+    expect(new Set(locations.map((location) => location.id)).size).toBe(38);
     for (const location of locations) {
       expect(Number.isFinite(location.longitude), `${location.id}:longitude`).toBe(true);
       expect(Number.isFinite(location.latitude), `${location.id}:latitude`).toBe(true);
@@ -210,7 +210,7 @@ describe("expanded northern history corpus", () => {
     expect([...battle.causeEventIds].sort()).toEqual(["liao-allies-northern-han"]);
     expect([...battle.consequenceEventIds].sort()).toEqual(["northern-han-falls"]);
     expect([...fall.causeEventIds].sort()).toEqual(["battle-shiling-pass", "liao-allies-northern-han", "wuyue-submits"]);
-    expect([...fall.consequenceEventIds].sort()).toEqual([]);
+    expect([...fall.consequenceEventIds].sort()).toEqual(["battle-gaoliang-river"]);
     expect(battle.locationIds).toEqual([]);
     expect(`${battle.summary}${battle.background}${battle.process}${battle.result}${battle.impact}`)
       .not.toContain("未能进入北汉境内");
@@ -237,7 +237,7 @@ describe("expanded northern history corpus", () => {
     }
     expect([...event("song-conquers-later-shu").locationIds].sort()).toEqual(["chengdu", "fengzhou"]);
     expect([...event("song-conquers-later-shu").personIds].sort()).toEqual(["cao-bin", "meng-chang"]);
-    expect([...event("southern-tang-destroys-min").locationIds].sort()).toEqual([]);
+    expect([...event("southern-tang-destroys-min").locationIds].sort()).toEqual(["jianzhou"]);
     expect([...event("southern-tang-destroys-min").personIds].sort()).toEqual(["li-jing"]);
     expect([...event("sixteen-prefectures-ceded").locationIds].sort()).toEqual([...yanyunIds].sort());
     expect([...event("later-zhou-northern-campaign").locationIds].sort()).toEqual(["mozhou", "yingzhou"]);
@@ -254,13 +254,13 @@ describe("expanded northern history corpus", () => {
     expectIds(event("min-civil-war").personIds, []);
     expectIds(event("southern-tang-destroys-chu").personIds, ["li-jing"]);
     expectIds(event("wuping-regime-forms").personIds, []);
-    expectIds(event("wuping-regime-forms").locationIds, ["tanzhou"]);
+    expectIds(event("wuping-regime-forms").locationIds, ["langzhou", "tanzhou"]);
     expectIds(event("wuping-regime-forms").causeEventIds, ["southern-tang-destroys-chu"]);
     expectIds(event("wuping-regime-forms").consequenceEventIds, ["song-takes-wuping"]);
     expectIds(event("song-takes-jingnan").personIds, ["li-chuyun"]);
     expectIds(event("song-takes-jingnan").locationIds, ["jiangling"]);
     expectIds(event("song-takes-wuping").personIds, ["li-chuyun"]);
-    expectIds(event("song-takes-wuping").locationIds, ["jiangling", "tanzhou"]);
+    expectIds(event("song-takes-wuping").locationIds, ["jiangling", "langzhou"]);
     expectIds(event("liao-aids-northern-han-gaoping").locationIds, ["gaoping"]);
     expectIds(event("liao-aids-northern-han-gaoping").consequenceEventIds, ["battle-gaoping", "chai-rong-reforms"]);
   });

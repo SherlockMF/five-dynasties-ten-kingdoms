@@ -3,6 +3,8 @@ export type MapLegendKind =
   | "fringe"
   | "certain"
   | "inferred"
+  | "water"
+  | "selected"
   | "disputed";
 
 export interface MapLegendProps {
@@ -16,22 +18,22 @@ const legendItems: ReadonlyArray<{
 }> = [
   {
     kind: "core",
-    label: "核心区",
-    swatchClassName: "border-cinnabar bg-cinnabar/55",
+    label: "政权范围",
+    swatchClassName: "border-ink/20 bg-[linear-gradient(135deg,#bd8c83_33%,#9cb7a6_33%_66%,#c4b684_66%)]",
   },
   {
     kind: "fringe",
-    label: "边缘区",
+    label: "943地域参考",
     swatchClassName: "border-gold bg-gold/25",
   },
   {
     kind: "certain",
-    label: "确定边界",
+    label: "有据边界",
     swatchClassName: "border-ink bg-transparent",
   },
   {
     kind: "inferred",
-    label: "推定边界",
+    label: "概括边界",
     swatchClassName: "border-dashed border-ink/70 bg-transparent",
   },
   {
@@ -40,6 +42,8 @@ const legendItems: ReadonlyArray<{
     swatchClassName:
       "border-dashed border-cinnabar bg-[repeating-linear-gradient(135deg,transparent_0_3px,rgba(159,64,54,.24)_3px_5px)]",
   },
+  { kind: "water", label: "天然水域", swatchClassName: "border-[#94b5b4] bg-[#bdcfce]" },
+  { kind: "selected", label: "选中范围", swatchClassName: "border-cinnabar border-2 bg-transparent" },
 ];
 
 export function MapLegend({ availableKinds }: MapLegendProps) {
@@ -55,7 +59,7 @@ export function MapLegend({ availableKinds }: MapLegendProps) {
         疆域图例
       </p>
       <ul className="flex flex-wrap gap-x-4 gap-y-2">
-        {legendItems.map((item) => {
+        {legendItems.filter((item) => available.has(item.kind)).map((item) => {
           const enabled = available.has(item.kind);
           return (
             <li

@@ -55,6 +55,40 @@ body {
   background: var(--paper);
 }
 
+.map-year-slider {
+  appearance: none;
+  background: linear-gradient(to right, #71807a, #71807a) center / 100% 4px no-repeat;
+}
+.map-year-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  background: var(--cinnabar);
+}
+.map-year-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--paper);
+  background: var(--cinnabar);
+}
+.map-year-slider:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+@media (max-width: 639px) {
+  .atlas-map { min-height: 26rem; }
+  .atlas-map .maplibregl-ctrl-group button { width: 44px; height: 44px; }
+  input, textarea, select { font-size: max(16px, 1em); }
+}
+
+@media (min-width: 1024px) {
+  .annual-changes > section { display: block; }
+  .annual-changes::details-content { content-visibility: visible; }
+  .map-source-details > div { display: grid; }
+  .map-source-details::details-content { content-visibility: visible; }
+}
+
 .atlas-map .maplibregl-map {
   height: 100%;
   width: 100%;

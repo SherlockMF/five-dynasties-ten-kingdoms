@@ -1,0 +1,1157 @@
+{
+  "temporalBasis": "year-end; peripheral regions are fixed 943 geographic context",
+  "sources": [
+    {
+      "id": "chronology-north",
+      "title": "北方政权与割地年表",
+      "reference": "《资治通鉴》卷266—294；《新五代史》梁、唐、晋、汉、周本纪",
+      "note": "既有年度事件交叉核对；年末态按传统纪年，936 年割让与 938 年制度整合不混为一次新割地。",
+      "role": "cross-check",
+      "license": "史籍公版；现代编绘元数据",
+      "redistributable": true
+    },
+    {
+      "id": "chronology-south",
+      "title": "南方政权与地方军镇年表",
+      "reference": "《新五代史》卷61—69；《资治通鉴》卷282—292",
+      "note": "国号、控制与名义臣属分开。闽、楚亡后的地方控制单列；小分区仅表达方向，不代表州界。",
+      "role": "cross-check",
+      "license": "史籍公版；现代编绘元数据",
+      "redistributable": true
+    },
+    {
+      "id": "chronology-song",
+      "title": "宋初统一年表",
+      "reference": "《宋史》卷1—5；《续资治通鉴长编》卷4、6、12、16—20",
+      "note": "荆湖963、后蜀965、南汉971、南唐975、吴越978、北汉979；泉漳纳土978。",
+      "role": "cross-check",
+      "license": "史籍公版；现代编绘元数据",
+      "redistributable": true
+    },
+    {
+      "id": "chronology-qinfeng",
+      "title": "后周取得秦凤成阶四州",
+      "reference": "https://zh.wikisource.org/wiki/資治通鑑/卷292",
+      "note": "955 年取秦、凤、成、阶，并非取整个汉中；汉中仍随蜀至965年。",
+      "role": "cross-check",
+      "license": "史籍公版；现代编绘元数据",
+      "redistributable": true
+    },
+    {
+      "id": "continuous-method",
+      "title": "共享分区编绘方法",
+      "reference": "gis/continuous/README.md",
+      "note": "943总图固定地区母版，共享线段生成完整相邻分区；仅主要吞并割地改变归属，小范围进退不表现。周边是固定地域背景，非逐年国界。",
+      "role": "cross-check",
+      "license": "史籍公版；现代编绘元数据",
+      "redistributable": true
+    }
+  ],
+  "units": [
+    {
+      "id": "central",
+      "name": "中原主体",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 923,
+          "polityId": "later-liang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "中原主线；早期河北割据与晋分别表达。"
+        },
+        {
+          "from": 923,
+          "toExclusive": 936,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "中原主线；早期河北割据与晋分别表达。"
+        },
+        {
+          "from": 936,
+          "toExclusive": 947,
+          "polityId": "later-jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "中原主线；早期河北割据与晋分别表达。"
+        },
+        {
+          "from": 947,
+          "toExclusive": 951,
+          "polityId": "later-han",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "中原主线；早期河北割据与晋分别表达。"
+        },
+        {
+          "from": 951,
+          "toExclusive": 960,
+          "polityId": "later-zhou",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "中原主线；早期河北割据与晋分别表达。"
+        },
+        {
+          "from": 960,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "中原主线；早期河北割据与晋分别表达。"
+        }
+      ]
+    },
+    {
+      "id": "hedong",
+      "name": "河东核心",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 923,
+          "polityId": "jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "河东概括范围。"
+        },
+        {
+          "from": 923,
+          "toExclusive": 936,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "河东概括范围。"
+        },
+        {
+          "from": 936,
+          "toExclusive": 947,
+          "polityId": "later-jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "河东概括范围。"
+        },
+        {
+          "from": 947,
+          "toExclusive": 951,
+          "polityId": "later-han",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "河东概括范围。"
+        },
+        {
+          "from": 951,
+          "toExclusive": 979,
+          "polityId": "northern-han",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "河东概括范围。"
+        },
+        {
+          "from": 979,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "河东概括范围。"
+        }
+      ]
+    },
+    {
+      "id": "hebei",
+      "name": "河北西部军镇",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 921,
+          "polityId": "hebei-circuits",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        },
+        {
+          "from": 921,
+          "toExclusive": 923,
+          "polityId": "jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        },
+        {
+          "from": 923,
+          "toExclusive": 936,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        },
+        {
+          "from": 936,
+          "toExclusive": 947,
+          "polityId": "later-jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        },
+        {
+          "from": 947,
+          "toExclusive": 951,
+          "polityId": "later-han",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        },
+        {
+          "from": 951,
+          "toExclusive": 960,
+          "polityId": "later-zhou",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        },
+        {
+          "from": 960,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "成德、义武等军镇合并表达；921年前后的依附关系不等于统一行政归属。"
+        }
+      ]
+    },
+    {
+      "id": "yanyun",
+      "name": "燕云",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 911,
+          "polityId": "yan-local",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "913年晋灭燕；936割地，938年契丹制度整合。分区非十六州逐州精确边界。"
+        },
+        {
+          "from": 911,
+          "toExclusive": 913,
+          "polityId": "yan",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "913年晋灭燕；936割地，938年契丹制度整合。分区非十六州逐州精确边界。"
+        },
+        {
+          "from": 913,
+          "toExclusive": 923,
+          "polityId": "jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "913年晋灭燕；936割地，938年契丹制度整合。分区非十六州逐州精确边界。"
+        },
+        {
+          "from": 923,
+          "toExclusive": 936,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "913年晋灭燕；936割地，938年契丹制度整合。分区非十六州逐州精确边界。"
+        },
+        {
+          "from": 936,
+          "toExclusive": 980,
+          "polityId": "liao",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "913年晋灭燕；936割地，938年契丹制度整合。分区非十六州逐州精确边界。"
+        }
+      ]
+    },
+    {
+      "id": "guannan",
+      "name": "关南三关周边",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 911,
+          "polityId": "yan-local",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        },
+        {
+          "from": 911,
+          "toExclusive": 913,
+          "polityId": "yan",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        },
+        {
+          "from": 913,
+          "toExclusive": 923,
+          "polityId": "jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        },
+        {
+          "from": 923,
+          "toExclusive": 936,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        },
+        {
+          "from": 936,
+          "toExclusive": 959,
+          "polityId": "liao",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        },
+        {
+          "from": 959,
+          "toExclusive": 960,
+          "polityId": "later-zhou",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        },
+        {
+          "from": 960,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "959 后周北征取得瀛莫及三关方向概括区。"
+        }
+      ]
+    },
+    {
+      "id": "liao-core",
+      "name": "契丹北方概括范围",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 916,
+          "polityId": "khitan",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "北方范围沿用既有轮廓，907—925不把渤海区域提前并入。"
+        },
+        {
+          "from": 916,
+          "toExclusive": 980,
+          "polityId": "liao",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "北方范围沿用既有轮廓，907—925不把渤海区域提前并入。"
+        }
+      ]
+    },
+    {
+      "id": "balhae",
+      "name": "渤海方向",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 926,
+          "polityId": "balhae",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "926契丹灭渤海；只表达本网站现有覆盖内的渤海部分，不宣称完整国界。"
+        },
+        {
+          "from": 926,
+          "toExclusive": 980,
+          "polityId": "liao",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "926契丹灭渤海；只表达本网站现有覆盖内的渤海部分，不宣称完整国界。"
+        }
+      ]
+    },
+    {
+      "id": "qi",
+      "name": "岐凤翔",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 924,
+          "polityId": "qi",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "岐以凤翔核心概括，924后纳入后唐；不画现代陕西边界。"
+        },
+        {
+          "from": 924,
+          "toExclusive": 936,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "岐以凤翔核心概括，924后纳入后唐；不画现代陕西边界。"
+        },
+        {
+          "from": 936,
+          "toExclusive": 947,
+          "polityId": "later-jin",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "岐以凤翔核心概括，924后纳入后唐；不画现代陕西边界。"
+        },
+        {
+          "from": 947,
+          "toExclusive": 951,
+          "polityId": "later-han",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "岐以凤翔核心概括，924后纳入后唐；不画现代陕西边界。"
+        },
+        {
+          "from": 951,
+          "toExclusive": 960,
+          "polityId": "later-zhou",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "岐以凤翔核心概括，924后纳入后唐；不画现代陕西边界。"
+        },
+        {
+          "from": 960,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "岐以凤翔核心概括，924后纳入后唐；不画现代陕西边界。"
+        }
+      ]
+    },
+    {
+      "id": "sichuan",
+      "name": "四川",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 925,
+          "polityId": "former-shu",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "925前蜀灭亡；934后蜀建国。"
+        },
+        {
+          "from": 925,
+          "toExclusive": 934,
+          "polityId": "later-tang",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "925前蜀灭亡；934后蜀建国。"
+        },
+        {
+          "from": 934,
+          "toExclusive": 965,
+          "polityId": "later-shu",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "925前蜀灭亡；934后蜀建国。"
+        },
+        {
+          "from": 965,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-north",
+            "continuous-method"
+          ],
+          "note": "925前蜀灭亡；934后蜀建国。"
+        }
+      ]
+    },
+    {
+      "id": "huainan",
+      "name": "淮南",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 937,
+          "polityId": "wu",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "958割江北诸州；955—957战事保留年度事件，不画无据的逐年战线。"
+        },
+        {
+          "from": 937,
+          "toExclusive": 958,
+          "polityId": "southern-tang",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "958割江北诸州；955—957战事保留年度事件，不画无据的逐年战线。"
+        },
+        {
+          "from": 958,
+          "toExclusive": 960,
+          "polityId": "later-zhou",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "958割江北诸州；955—957战事保留年度事件，不画无据的逐年战线。"
+        },
+        {
+          "from": 960,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "958割江北诸州；955—957战事保留年度事件，不画无据的逐年战线。"
+        }
+      ]
+    },
+    {
+      "id": "jiangnan",
+      "name": "江南本部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 937,
+          "polityId": "wu",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "吴与南唐继承。"
+        },
+        {
+          "from": 937,
+          "toExclusive": 975,
+          "polityId": "southern-tang",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "吴与南唐继承。"
+        },
+        {
+          "from": 975,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "吴与南唐继承。"
+        }
+      ]
+    },
+    {
+      "id": "wuyue",
+      "name": "吴越本部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 978,
+          "polityId": "wuyue",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "978纳土。"
+        },
+        {
+          "from": 978,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "978纳土。"
+        }
+      ]
+    },
+    {
+      "id": "fuzhou",
+      "name": "福州方向",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 945,
+          "polityId": "min",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "王氏909封闽王，907已为王氏控制，地图身份沿用闽；945李仁达，947吴越接收。"
+        },
+        {
+          "from": 945,
+          "toExclusive": 947,
+          "polityId": "fuzhou-local",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "王氏909封闽王，907已为王氏控制，地图身份沿用闽；945李仁达，947吴越接收。"
+        },
+        {
+          "from": 947,
+          "toExclusive": 978,
+          "polityId": "wuyue",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "王氏909封闽王，907已为王氏控制，地图身份沿用闽；945李仁达，947吴越接收。"
+        },
+        {
+          "from": 978,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "王氏909封闽王，907已为王氏控制，地图身份沿用闽；945李仁达，947吴越接收。"
+        }
+      ]
+    },
+    {
+      "id": "min-interior",
+      "name": "建州内陆",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 943,
+          "polityId": "min",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "943殷与闽并立；945王延政虽复闽号，同年末建州已入南唐。"
+        },
+        {
+          "from": 943,
+          "toExclusive": 945,
+          "polityId": "yin",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "943殷与闽并立；945王延政虽复闽号，同年末建州已入南唐。"
+        },
+        {
+          "from": 945,
+          "toExclusive": 975,
+          "polityId": "southern-tang",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "943殷与闽并立；945王延政虽复闽号，同年末建州已入南唐。"
+        },
+        {
+          "from": 975,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "943殷与闽并立；945王延政虽复闽号，同年末建州已入南唐。"
+        }
+      ]
+    },
+    {
+      "id": "quanzhou",
+      "name": "泉漳",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 945,
+          "polityId": "min",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "945留氏独立控制，949清源军；964改平海，名义臣属变动不作控制面吞并。978纳土。"
+        },
+        {
+          "from": 945,
+          "toExclusive": 949,
+          "polityId": "quanzhou-local",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "945留氏独立控制，949清源军；964改平海，名义臣属变动不作控制面吞并。978纳土。"
+        },
+        {
+          "from": 949,
+          "toExclusive": 964,
+          "polityId": "qingyuan",
+          "displayName": "清源军",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "945留氏独立控制，949清源军；964改平海，名义臣属变动不作控制面吞并。978纳土。"
+        },
+        {
+          "from": 964,
+          "toExclusive": 978,
+          "polityId": "qingyuan",
+          "displayName": "平海军",
+          "sourceRefs": ["chronology-south", "continuous-method"],
+          "note": "乾德二年（964）清源军改平海军；978纳土。核对泉州市丰泽区历史沿革：https://www.qzfz.gov.cn/zjfz/lsyg/。改名不改变控制面。"
+        },
+        {
+          "from": 978,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "945留氏独立控制，949清源军；964改平海，名义臣属变动不作控制面吞并。978纳土。"
+        }
+      ]
+    },
+    {
+      "id": "hunan",
+      "name": "湖南本部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 951,
+          "polityId": "chu",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "951年末南唐接收；952刘言等逐南唐军，周行逢等地方控制以武平统称。"
+        },
+        {
+          "from": 951,
+          "toExclusive": 952,
+          "polityId": "southern-tang",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "951年末南唐接收；952刘言等逐南唐军，周行逢等地方控制以武平统称。"
+        },
+        {
+          "from": 952,
+          "toExclusive": 963,
+          "polityId": "wuping",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "951年末南唐接收；952刘言等逐南唐军，周行逢等地方控制以武平统称。"
+        },
+        {
+          "from": 963,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "951年末南唐接收；952刘言等逐南唐军，周行逢等地方控制以武平统称。"
+        }
+      ]
+    },
+    {
+      "id": "lingnan-north",
+      "name": "桂宜等楚南方向",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 951,
+          "polityId": "chu",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "南汉乘楚乱取得桂宜等地；此为区域概括，不声称逐州同日转移。"
+        },
+        {
+          "from": 951,
+          "toExclusive": 971,
+          "polityId": "southern-han",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "南汉乘楚乱取得桂宜等地；此为区域概括，不声称逐州同日转移。"
+        },
+        {
+          "from": 971,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-south",
+            "continuous-method"
+          ],
+          "note": "南汉乘楚乱取得桂宜等地；此为区域概括，不声称逐州同日转移。"
+        }
+      ]
+    },
+    {
+      "id": "jingnan",
+      "name": "荆南",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 924,
+          "polityId": "jingnan-local",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "高氏军镇建国前已有控制，924封南平王。"
+        },
+        {
+          "from": 924,
+          "toExclusive": 963,
+          "polityId": "jingnan",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "高氏军镇建国前已有控制，924封南平王。"
+        },
+        {
+          "from": 963,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "高氏军镇建国前已有控制，924封南平王。"
+        }
+      ]
+    },
+    {
+      "id": "lingnan",
+      "name": "岭南本部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 917,
+          "polityId": "lingnan-local",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "刘氏军镇917建国前单列；交趾不纳入本套核心覆盖。"
+        },
+        {
+          "from": 917,
+          "toExclusive": 971,
+          "polityId": "southern-han",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "刘氏军镇917建国前单列；交趾不纳入本套核心覆盖。"
+        },
+        {
+          "from": 971,
+          "toExclusive": 980,
+          "polityId": "northern-song",
+          "sourceRefs": [
+            "chronology-song",
+            "continuous-method"
+          ],
+          "note": "刘氏军镇917建国前单列；交趾不纳入本套核心覆盖。"
+        }
+      ]
+    },
+    {
+      "id": "tibetan-regions",
+      "name": "吐蕃诸部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "tibetan-regions",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "dali-region",
+      "name": "洱海—大理地区",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "dali",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "khotan",
+      "name": "于阗",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "khotan",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "xizhou",
+      "name": "西州回鹘",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "xizhou",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "ganzhou",
+      "name": "甘州回鹘",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "ganzhou",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "guiyi",
+      "name": "归义军",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "guiyi",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "karluk",
+      "name": "葛逻禄等部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "karluk",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "kyrgyz",
+      "name": "黠戛斯",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "kyrgyz",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "tatar",
+      "name": "鞑靼诸部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "tatar",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "jurchen-regions",
+      "name": "室韦、靺鞨与女真诸部",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "jurchen-regions",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "goryeo",
+      "name": "高丽一带",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "goryeo",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    },
+    {
+      "id": "annan-region",
+      "name": "交趾诸政权",
+      "periods": [
+        {
+          "from": 907,
+          "toExclusive": 980,
+          "polityId": "annan-regimes",
+          "sourceRefs": [
+            "atlas-943-fixed-master",
+            "continuous-method"
+          ],
+          "note": "943总图地域背景固定展示；不主张907—979每年属于同一政权，名称也不代表建国年代。"
+        }
+      ]
+    }
+  ]
+}

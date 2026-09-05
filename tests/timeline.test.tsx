@@ -9,6 +9,24 @@ import { Timeline } from "@/features/timeline/timeline";
 describe("Timeline", () => {
   beforeEach(() => useHistoryStore.getState().reset({ currentYear: 923 }));
 
+  it("does not repeat the 884 incident throughout the later feud", () => {
+    useHistoryStore.getState().setCurrentYear(893);
+    render(<Timeline events={events} />);
+    expect(screen.queryByRole("link", { name: /上源驿之变/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /王潮、王审知取得福州/ })).toBeVisible();
+    expect(screen.getByRole("button", { name: "选择885—890年，暂无收录事件" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "选择893年，有历史事件" })).toHaveAttribute("aria-current", "date");
+    expect(screen.getByRole("button", { name: "选择894—895年，暂无收录事件" })).toBeInTheDocument();
+  });
+
+  it("marks ongoing events and preserves the browsing year in detail links", () => {
+    useHistoryStore.getState().setCurrentYear(902);
+    render(<Timeline events={events.filter(event => event.id === "zhu-wen-controls-court")} />);
+    expect(screen.getByRole("button", { name: "选择902年，有历史事件" })).toHaveAttribute("aria-current", "date");
+    expect(screen.getByRole("link", { name: /查看朱温控制唐廷详情/ })).toHaveAttribute("href", "/explore/zhu-wen-controls-court?year=902");
+    expect(screen.getByText("901—903 年 · 持续中")).toBeVisible();
+  });
+
   it("changes the shared year and opens an event", async () => {
     const user = userEvent.setup();
     render(<Timeline events={events} />);

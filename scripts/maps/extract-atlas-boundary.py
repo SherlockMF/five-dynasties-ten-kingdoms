@@ -162,8 +162,10 @@ def polygonize_mask(mask: np.ndarray, coefficients: np.ndarray) -> ogr.Geometry:
             polygons.append(geometry.Clone())
     if not polygons:
         raise ValueError("Polygonization produced no foreground geometry")
-    polygons.sort(key=lambda geometry: geometry.GetArea(), reverse=True)
-    return polygons[0]
+    result = ogr.Geometry(ogr.wkbMultiPolygon)
+    for polygon in polygons:
+        result.AddGeometry(polygon)
+    return result
 
 
 def feature_geometry(feature: dict[str, Any]) -> ogr.Geometry:
@@ -173,7 +175,7 @@ def feature_geometry(feature: dict[str, Any]) -> ogr.Geometry:
     return geometry
 
 
-def largest_polygon(geometry: ogr.Geometry) -> ogr.Geometry:
+def polygon_parts(geometry: ogr.Geometry) -> ogr.Geometry:
     if geometry.GetGeometryType() in (ogr.wkbPolygon, ogr.wkbPolygon25D):
         return geometry
     polygons = [
@@ -184,7 +186,10 @@ def largest_polygon(geometry: ogr.Geometry) -> ogr.Geometry:
     ]
     if not polygons:
         raise ValueError("Geometry difference produced no polygon")
-    return max(polygons, key=lambda polygon: polygon.GetArea())
+    result = ogr.Geometry(ogr.wkbMultiPolygon)
+    for polygon in polygons:
+        result.AddGeometry(polygon)
+    return result
 
 
 def resolve_extracted_overlaps(
@@ -201,7 +206,7 @@ def resolve_extracted_overlaps(
             float(resolution.get("clearanceDegrees", 0.0))
         )
         geometry = feature_geometry(clipped).Difference(dominant_geometry)
-        clipped["geometry"] = json.loads(largest_polygon(geometry).ExportToJson())
+        clipped["geometry"] = json.loads(polygon_parts(geometry).ExportToJson())
         clipped["properties"]["disputedNote"] += f" {resolution['reason']}"
 
 
@@ -318,7 +323,7 @@ def main() -> None:
             if feature["properties"]["dynastyId"] in extracted_by_dynasty:
                 continue
             geometry = feature_geometry(feature).Difference(publication_clearance)
-            feature["geometry"] = json.loads(largest_polygon(geometry).ExportToJson())
+            feature["geometry"] = json.loads(polygon_parts(geometry).ExportToJson())
         args.publication_output.write_text(
             json.dumps(publication, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",

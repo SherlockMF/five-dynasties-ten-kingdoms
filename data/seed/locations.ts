@@ -6,6 +6,10 @@ const base = { sourceRefs: ["谭其骧主编《中国历史地图集》第五册
 const yanyunBase = { sourceRefs: [...base.sourceRefs, "何岁利：《考古学视野下的燕云十六州——以鄚州城为中心》，《故宫博物院院刊》2023年第7期（总255期）。"], verificationStatus: "illustrative" as const };
 
 export const locations: HistoricalLocation[] = [
+  { id: "langzhou", name: "朗州", longitude: 111.69, latitude: 29.03, modernReference: "今湖南常德城区一带；坐标为现代城市近似参照", sourceRefs: ["常德市人民政府《走进常德·历史沿革》：朗州治武陵县（今常德市区）"], verificationStatus: "illustrative", ...historicalExtension() },
+  { id: "jianzhou", name: "建州", longitude: 118.3, latitude: 27.04, modernReference: "今福建建瓯一带；坐标为现代城市近似参照", sourceRefs: ["福建省人民政府《福建的“建”，从这里开始》（2023-08-27）"], verificationStatus: "illustrative", ...historicalExtension() },
+  { id: "yuezhou", name: "越州", longitude: 120.58, latitude: 30.0, modernReference: "今浙江绍兴一带；坐标为现代城市近似参照", sourceRefs: ["《绍兴县志（一）》建置沿革（浙江省地方志数字资源平台）"], verificationStatus: "illustrative", ...historicalExtension() },
+
   { id: "changan", name: "长安", longitude: 108.94, latitude: 34.26, modernReference: "今陕西西安一带", ...base, ...historicalExtension() },
   { id: "kaifeng", name: "开封", longitude: 114.31, latitude: 34.8, modernReference: "今河南开封", ...base, ...transcript([2, 3, 4, 5, 6]) },
   { id: "luoyang", name: "洛阳", longitude: 112.45, latitude: 34.62, modernReference: "今河南洛阳", ...base, ...transcript([3, 4]) },
