@@ -56,6 +56,8 @@ const { buildPersonPrompt } = loadTypeScriptModule(resolve(projectRoot, "lib/ai/
 const { personEventDialogues } = loadTypeScriptModule(resolve(projectRoot, "data/person-dialogues.ts"));
 const data = {
   personDialogues: personEventDialogues,
+  personRelations: seedData.personRelations.map(({ sourcePersonId, targetPersonId, type, description, sourceRefs }) => ({ sourcePersonId, targetPersonId, type, description, sourceRefs })),
+  eventRelations: seedData.eventRelations.map(({ sourceEventId, targetEventId, type }) => ({ sourceEventId, targetEventId, type })),
   meta: {
     title: "一卷山河",
     description: "轻松逛懂五代十国",
