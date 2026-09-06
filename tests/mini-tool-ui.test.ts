@@ -51,6 +51,13 @@ function boot(data: unknown = fixtureData) {
 }
 
 describe("mini-tool offline exploration", () => {
+  it("keeps existing prehistory events but does not offer maps for them", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-event-id="wu-founded"]')!.click();
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("902");
+    expect(document.querySelector('[data-event-map]')).toBeNull();
+  });
   it("plays through shared years and pauses when a detail is opened", () => {
     vi.useFakeTimers();
     try {
@@ -164,7 +171,8 @@ describe("mini-tool offline exploration", () => {
   it("renders five views and the guide boundaries", () => {
     boot();
     expect(document.querySelectorAll("button[data-view]")).toHaveLength(5);
-    expect(document.body.textContent).toContain("875—979");
+    expect(document.querySelector('.range-panel__years')?.textContent).toBe("907—979");
+    expect(document.body.textContent).toContain("唐末前史");
     expect(document.body.textContent).toContain("内容来源");
     expect(document.body.textContent).toContain("不使用生成式 AI");
     expect(document.body.textContent).toContain("示意，不代表精确疆界");
@@ -369,12 +377,17 @@ describe("mini-tool offline exploration", () => {
     expect(document.body.textContent).toContain("历史地图资料未载入");
     expect(document.querySelector("svg")).toBeNull();
     boot();
+    document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
+    const timelineYear = document.querySelector<HTMLSelectElement>('[data-field="year"]')!;
+    timelineYear.value = "875";
+    timelineYear.dispatchEvent(new Event("change"));
     document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
     const year = document.querySelector<HTMLSelectElement>('[data-field="atlas-year"]')!;
-    year.value = "875";
-    year.dispatchEvent(new Event("change"));
-    expect(document.body.textContent).toContain("仅展示自然地理背景");
-    expect(document.querySelector(".atlas__region")).toBeNull();
+    expect(year.value).toBe("907");
+    expect(Array.from(year.options).map(option => option.value)).toEqual(["907", "908"]);
+    expect(document.querySelector<HTMLInputElement>('[data-year-slider]')!.min).toBe("907");
+    expect(document.querySelector<HTMLButtonElement>('[data-year-step="-1"]')!.disabled).toBe(true);
+    expect(document.querySelector(".atlas__region")).not.toBeNull();
   });
 
   it("pinches around the touch midpoint, pans with one remaining finger and prevents drag clicks", () => {

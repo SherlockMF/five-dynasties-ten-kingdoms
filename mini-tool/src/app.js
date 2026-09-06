@@ -50,6 +50,20 @@
     return match;
   }
 
+  function atlasYears(data) {
+    var atlas = data.atlas;
+    if (!atlas || !atlas.years || !atlas.snapshots) return [];
+    return Object.keys(atlas.years).map(Number).filter(function (year) {
+      var snapshot = atlas.snapshots[atlas.years[year]];
+      return year >= 907 && year <= data.meta.maxYear && snapshot && snapshot.regions && snapshot.regions.length;
+    }).sort(function (a, b) { return a - b; });
+  }
+
+  function availableYear(year, years) {
+    for (var i = 0; i < years.length; i++) if (years[i] >= year) return years[i];
+    return years[years.length - 1];
+  }
+
   function heading(title, eyebrow) {
     var group = element("div", "section-heading");
     if (eyebrow) group.appendChild(element("p", "eyebrow", eyebrow));
@@ -172,8 +186,8 @@
     root.appendChild(paths);
     var range = element("section", "paper-panel range-panel");
     range.appendChild(element("p", "eyebrow", "内容范围"));
-    range.appendChild(element("p", "range-panel__years", data.meta.minYear + "—" + data.meta.maxYear));
-    range.appendChild(element("p", "muted", "聚焦晚唐崩解、五代更替、十国并立与北宋统一进程。"));
+    range.appendChild(element("p", "range-panel__years", "907—" + data.meta.maxYear));
+    range.appendChild(element("p", "muted", "主体与地图：五代更替、十国并立至北宋统一。纪年另收录 875—906 年唐末前史，不提供该阶段地图。"));
     root.appendChild(range);
     var notes = element("section", "notice-panel");
     notes.appendChild(element("h3", "notice-panel__title", "阅读说明"));
@@ -216,7 +230,7 @@
         link.addEventListener("click", function () { openPerson(person, data, link); }); peopleLinks.appendChild(link);
       });
       dialog.appendChild(peopleLinks);
-      if ((item.locationIds || []).length && data.atlas) {
+      if ((item.locationIds || []).length && atlasYears(data).indexOf(item.startYear) !== -1) {
         var mapLink = button("在 " + item.startYear + " 年地图中查看", { className: "text-button", "data-event-map": item.id });
         mapLink.addEventListener("click", function () {
           openDialog(item.title + " · 地图", function (mapDialog) {
@@ -262,23 +276,27 @@
   }
 
   function yearControls(root, data, state, setState) {
+    var mapMode = state.view === "atlas" || state.embedded;
+    var years = mapMode ? atlasYears(data) : [];
+    var minYear = mapMode ? years[0] : data.meta.minYear;
+    var maxYear = mapMode ? years[years.length - 1] : data.meta.maxYear;
     var bar = element("div", "year-player");
     [-1, 1].forEach(function (step) {
       var control = button(step < 0 ? "上一年" : "下一年", { className: "year-step", "data-year-step": step });
-      control.disabled = step < 0 ? state.atlasYear <= data.meta.minYear : state.atlasYear >= data.meta.maxYear;
-      control.addEventListener("click", function () { setState({ year: state.atlasYear + step, playing: false }); });
+      control.disabled = step < 0 ? state.atlasYear <= minYear : state.atlasYear >= maxYear;
+      control.addEventListener("click", function () { setState({ year: mapMode ? years[years.indexOf(state.atlasYear) + step] : state.atlasYear + step, playing: false }); });
       bar.appendChild(control);
     });
     var label = element("label", "year-range");
     var value = element("strong", "", state.atlasYear + " 年");
     var slider = element("input", "");
-    slider.type = "range"; slider.min = data.meta.minYear; slider.max = data.meta.maxYear; slider.value = state.atlasYear;
+    slider.type = "range"; slider.min = minYear; slider.max = maxYear; slider.value = state.atlasYear;
     slider.setAttribute("data-year-slider", ""); slider.setAttribute("aria-label", "历史年份");
-    slider.addEventListener("input", function () { document.dispatchEvent(new Event("mini-tool-pause")); value.textContent = slider.value + " 年"; });
-    slider.addEventListener("change", function () { setState({ year: Number(slider.value), playing: false }); });
+    slider.addEventListener("input", function () { document.dispatchEvent(new Event("mini-tool-pause")); if (mapMode) slider.value = availableYear(Number(slider.value), years); value.textContent = slider.value + " 年"; });
+    slider.addEventListener("change", function () { setState({ year: mapMode ? availableYear(Number(slider.value), years) : Number(slider.value), playing: false }); });
     label.appendChild(value); label.appendChild(slider); bar.appendChild(label);
     var play = button(state.playing ? "暂停" : "播放", { className: "year-play", "data-action": "play-history", "aria-pressed": String(Boolean(state.playing)) });
-    play.addEventListener("click", function () { setState({ playing: !state.playing, year: state.atlasYear >= data.meta.maxYear ? data.meta.minYear : state.atlasYear }); });
+    play.addEventListener("click", function () { setState({ playing: !state.playing, year: state.atlasYear >= maxYear ? minYear : state.atlasYear }); });
     if (!state.embedded) bar.appendChild(play);
     root.appendChild(bar);
   }
@@ -636,15 +654,16 @@
 
   function renderAtlas(root, data, state, setState) {
     root.appendChild(heading("看见同一年的山河", "山河"));
-    yearControls(root, data, state, setState);
     var atlas = data.atlas;
-    if (!atlas || !atlas.years || !atlas.snapshots || !atlas.paths) {
+    var validYears = atlasYears(data);
+    if (!atlas || !atlas.years || !atlas.snapshots || !atlas.paths || !validYears.length) {
       root.appendChild(status("历史地图资料未载入，暂时无法展示疆域。"));
       return;
     }
-    var years = [];
-    var year;
-    for (year = data.meta.minYear; year <= data.meta.maxYear; year += 1) years.push({ value: year, label: year + " 年" });
+    state.atlasYear = availableYear(state.atlasYear, validYears);
+    state.year = state.atlasYear;
+    yearControls(root, data, state, setState);
+    var years = validYears.map(function (year) { return { value: year, label: year + " 年" }; });
     var controls = element("details", "atlas-year-picker");
     controls.appendChild(element("summary", "", "精确选择年份"));
     controls.appendChild(createSelect("查看年份", "atlas-year", years, state.atlasYear, function (event) { setState({ atlasYear: Number(event.target.value), atlasPolity: "" }); }));
@@ -852,8 +871,10 @@
       else if (typeof patch.atlasYear === "number") patch.year = patch.atlasYear;
       Object.keys(patch).forEach(function (key) { state[key] = patch[key]; });
       if (state.playing && !timer) timer = setInterval(function () {
-        if (!document.body.contains(root) || document.hidden || state.atlasYear >= data.meta.maxYear) { pause(); return; }
-        setState({ year: state.atlasYear + 1 });
+        var years = state.view === "atlas" ? atlasYears(data) : [];
+        var endYear = state.view === "atlas" ? years[years.length - 1] : data.meta.maxYear;
+        if (!document.body.contains(root) || document.hidden || state.atlasYear >= endYear) { pause(); return; }
+        setState({ year: state.view === "atlas" ? years[years.indexOf(state.atlasYear) + 1] : state.atlasYear + 1 });
       }, 1600);
       if (!state.playing && timer) pause();
       var active = document.activeElement;
