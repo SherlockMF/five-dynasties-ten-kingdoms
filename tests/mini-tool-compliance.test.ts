@@ -107,7 +107,7 @@ describe("mini-tool artifact compliance", () => {
   it("packages a deterministic ZIP with index.html at the archive root", () => {
     const first = packageArtifact();
     const second = packageArtifact();
-    expect(second).toEqual(first);
+    expect(second.equals(first)).toBe(true);
     expect(second.byteLength).toBeLessThan(2 * 1024 * 1024);
 
     const inspect = [
