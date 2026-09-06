@@ -9,6 +9,7 @@
     { id: "events", label: "事件" },
     { id: "atlas", label: "山河" }
   ];
+  var LIST_PAGE_SIZE = 12;
 
   function element(tagName, className, text) {
     var node = document.createElement(tagName);
@@ -74,6 +75,15 @@
     row.appendChild(element("h3", "detail-row__label", label));
     row.appendChild(element("p", "detail-row__value", value || "暂无补充说明"));
     return row;
+  }
+
+  function relatedNames(ids, items, formatter) {
+    var names = [];
+    (ids || []).forEach(function (id) {
+      var item = findById(items || [], id);
+      if (item) names.push(formatter ? formatter(item) : item.name || item.title);
+    });
+    return names.length ? names.join("、") : "暂无关联记录";
   }
 
   function openDialog(title, contentBuilder, opener) {
@@ -161,7 +171,7 @@
   function eventCard(item, onOpen) {
     var card = element("article", "history-card event-card");
     var year = item.endYear && item.endYear !== item.startYear ? item.startYear + "—" + item.endYear : item.startYear;
-    card.appendChild(element("p", "history-card__meta", year + " · " + item.eventType));
+    card.appendChild(element("p", "history-card__meta", year + " · " + eventTypeLabel(item.eventType)));
     card.appendChild(element("h3", "history-card__title", item.title));
     appendText(card, "p", "history-card__summary", item.summary);
     var open = button("查看事件", { className: "text-button", "data-event-id": item.id, "aria-label": "查看事件：" + item.title });
@@ -170,13 +180,18 @@
     return card;
   }
 
-  function openEvent(item, opener) {
+  function openEvent(item, data, opener) {
     openDialog(item.title, function (dialog) {
-      dialog.appendChild(element("p", "dialog__meta", item.startYear + " · " + item.eventType));
+      dialog.appendChild(element("p", "dialog__meta", item.startYear + " · " + eventTypeLabel(item.eventType)));
       dialog.appendChild(labelledValue("背景", item.background));
       dialog.appendChild(labelledValue("经过", item.process));
       dialog.appendChild(labelledValue("结果", item.result));
       dialog.appendChild(labelledValue("影响", item.impact));
+      dialog.appendChild(labelledValue("关联人物", relatedNames(item.personIds, data.people)));
+      dialog.appendChild(labelledValue("关联政权", relatedNames(item.dynastyIds, data.dynasties)));
+      dialog.appendChild(labelledValue("关联地点", relatedNames(item.locationIds, data.locations, function (location) {
+        return location.name + (location.modernReference ? "（" + location.modernReference + "）" : "");
+      })));
       dialog.appendChild(labelledValue("内容来源", item.sourceRefs && item.sourceRefs.length ? item.sourceRefs.join("；") : "资料整理，暂无单列条目"));
       if (item.disputedNote) dialog.appendChild(labelledValue("史料分歧", item.disputedNote));
     }, opener);
@@ -207,7 +222,7 @@
     for (year = data.meta.minYear; year <= data.meta.maxYear; year += 1) years.push({ value: year, label: year + " 年" });
     var tracks = unique([].concat.apply([], data.events.map(function (item) { return item.tracks || []; })));
     controls.appendChild(createSelect("年份", "year", years, state.year, function (event) { setState({ year: event.target.value === "all" ? "all" : Number(event.target.value) }); }));
-    controls.appendChild(createSelect("线索", "track", [{ value: "all", label: "全部线索" }].concat(tracks.map(function (track) { return { value: track, label: track }; })), state.track, function (event) { setState({ track: event.target.value }); }));
+    controls.appendChild(createSelect("线索", "track", [{ value: "all", label: "全部线索" }].concat(tracks.map(function (track) { return { value: track, label: trackLabel(track) }; })), state.track, function (event) { setState({ track: event.target.value }); }));
     root.appendChild(controls);
     var matches = data.events.filter(function (item) {
       var yearMatches = state.year === "all" || item.startYear === state.year || (item.endYear && item.startYear <= state.year && item.endYear >= state.year);
@@ -219,13 +234,25 @@
       return;
     }
     var list = element("div", "card-list");
-    matches.forEach(function (item) { list.appendChild(eventCard(item, openEvent)); });
+    matches.forEach(function (item) {
+      list.appendChild(eventCard(item, function (selected, opener) { openEvent(selected, data, opener); }));
+    });
     root.appendChild(list);
   }
 
   function categoryLabel(category) {
     var labels = { "five-dynasties": "五代", "ten-kingdoms": "十国", neighbor: "周边政权", transition: "统一过渡" };
     return labels[category] || category;
+  }
+
+  function trackLabel(track) {
+    var labels = { "late-tang": "晚唐余波", "five-dynasties": "五代主线", "ten-kingdoms": "十国并立", "liao-north": "辽与北方", "song-unification": "宋初统一" };
+    return labels[track] || track;
+  }
+
+  function eventTypeLabel(eventType) {
+    var labels = { founding: "政权建立", collapse: "政权灭亡", war: "战争", succession: "皇位变化", political: "政治事件" };
+    return labels[eventType] || eventType;
   }
 
   function renderChips(values, selected, attribute, onSelect, labeler) {
@@ -252,24 +279,33 @@
     search.setAttribute("data-field", "person-search");
     searchLabel.appendChild(element("span", "visually-hidden", "搜索人物"));
     searchLabel.appendChild(search);
-    search.addEventListener("input", function (event) {
-      var nextValue = event.target.value;
-      setState({ personQuery: nextValue });
+    var isComposing = false;
+    function commitSearch(nextValue) {
+      setState({ personQuery: nextValue, peopleLimit: LIST_PAGE_SIZE });
       var nextSearch = root.querySelector('[data-field="person-search"]');
       if (nextSearch) {
         nextSearch.focus();
         nextSearch.setSelectionRange(nextValue.length, nextValue.length);
       }
+    }
+    search.addEventListener("compositionstart", function () { isComposing = true; });
+    search.addEventListener("compositionend", function (event) {
+      isComposing = false;
+      commitSearch(event.target.value);
+    });
+    search.addEventListener("input", function (event) {
+      if (isComposing || event.isComposing) return;
+      commitSearch(event.target.value);
     });
     root.appendChild(searchLabel);
     var categories = unique(data.dynasties.map(function (item) { return item.category; }));
-    root.appendChild(renderChips(["all"].concat(categories), state.personCategory, "data-category", function (value) { setState({ personCategory: value }); }, categoryLabel));
+    root.appendChild(renderChips(["all"].concat(categories), state.personCategory, "data-category", function (value) { setState({ personCategory: value, peopleLimit: LIST_PAGE_SIZE }); }, categoryLabel));
     var dynastyById = {};
     data.dynasties.forEach(function (item) { dynastyById[item.id] = item; });
     var query = state.personQuery.toLowerCase().replace(/^\s+|\s+$/g, "");
     var matches = data.people.filter(function (item) {
       var searchable = [item.name].concat(item.aliases || [], item.roles || []).join(" ").toLowerCase();
-      var categoryMatches = state.personCategory === "all" || item.dynastyIds.some(function (id) { return dynastyById[id] && dynastyById[id].category === state.personCategory; });
+      var categoryMatches = state.personCategory === "all" || (item.dynastyIds || []).some(function (id) { return dynastyById[id] && dynastyById[id].category === state.personCategory; });
       return categoryMatches && (!query || searchable.indexOf(query) !== -1);
     });
     if (!matches.length) {
@@ -277,7 +313,7 @@
       return;
     }
     var list = element("div", "card-list card-list--people");
-    matches.forEach(function (item) {
+    matches.slice(0, state.peopleLimit).forEach(function (item) {
       var card = element("article", "history-card person-card");
       appendText(card, "p", "history-card__meta", (item.roles || []).join(" · "));
       card.appendChild(element("h3", "history-card__title", item.name));
@@ -288,27 +324,43 @@
           appendText(dialog, "p", "dialog__meta", (item.roles || []).join(" · "));
           dialog.appendChild(labelledValue("人物小传", item.biography || item.summary));
           if (item.aliases && item.aliases.length) dialog.appendChild(labelledValue("别名", item.aliases.join("、")));
+          dialog.appendChild(labelledValue("所属政权", relatedNames(item.dynastyIds, data.dynasties)));
+          dialog.appendChild(labelledValue("关联关键事件", relatedNames(data.events.filter(function (event) {
+            return (event.personIds || []).indexOf(item.id) !== -1;
+          }).map(function (event) { return event.id; }), data.events)));
         }, open);
       });
       card.appendChild(open);
       list.appendChild(card);
     });
     root.appendChild(list);
+    if (matches.length > state.peopleLimit) {
+      var morePeople = button("加载更多", { className: "button button--primary", "data-action": "load-more-people" });
+      morePeople.addEventListener("click", function () { setState({ peopleLimit: state.peopleLimit + LIST_PAGE_SIZE }); });
+      root.appendChild(morePeople);
+    }
   }
 
   function renderEvents(root, data, state, setState) {
     root.appendChild(heading("从关键转折理解格局", "事件"));
     root.appendChild(element("p", "lede", "按事件类型筛选，展开查看背景、经过与影响。"));
     var types = unique(data.events.map(function (item) { return item.eventType; }));
-    root.appendChild(renderChips(["all"].concat(types), state.eventType, "data-event-type", function (value) { setState({ eventType: value }); }, function (value) { return value; }));
+    root.appendChild(renderChips(["all"].concat(types), state.eventType, "data-event-type", function (value) { setState({ eventType: value, eventsLimit: LIST_PAGE_SIZE }); }, eventTypeLabel));
     var matches = data.events.filter(function (item) { return state.eventType === "all" || item.eventType === state.eventType; });
     if (!matches.length) {
       root.appendChild(status("没有找到这一类型的事件。", "查看全部类型", "show-all-event-types", function () { setState({ eventType: "all" }); }));
       return;
     }
     var list = element("div", "card-list");
-    matches.forEach(function (item) { list.appendChild(eventCard(item, openEvent)); });
+    matches.slice(0, state.eventsLimit).forEach(function (item) {
+      list.appendChild(eventCard(item, function (selected, opener) { openEvent(selected, data, opener); }));
+    });
     root.appendChild(list);
+    if (matches.length > state.eventsLimit) {
+      var moreEvents = button("加载更多", { className: "button button--primary", "data-action": "load-more-events" });
+      moreEvents.addEventListener("click", function () { setState({ eventsLimit: state.eventsLimit + LIST_PAGE_SIZE }); });
+      root.appendChild(moreEvents);
+    }
   }
 
   function svgNode(tagName, attributes, text) {
@@ -375,7 +427,7 @@
 
   function createApp(root, data) {
     if (!root || !data || !data.meta) return;
-    var state = { view: "guide", year: 907, track: "all", personQuery: "", personCategory: "all", eventType: "all", atlasYear: 907 };
+    var state = { view: "guide", year: 907, track: "all", personQuery: "", personCategory: "all", peopleLimit: LIST_PAGE_SIZE, eventType: "all", eventsLimit: LIST_PAGE_SIZE, atlasYear: 907 };
     function setState(patch, focusHeading) {
       Object.keys(patch).forEach(function (key) { state[key] = patch[key]; });
       render();

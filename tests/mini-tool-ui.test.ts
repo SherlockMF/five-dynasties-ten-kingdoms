@@ -66,8 +66,30 @@ describe("mini-tool offline exploration", () => {
     expect(document.body.textContent).toContain("后梁建立、唐亡");
     expect(document.body.textContent).not.toContain("吴国立国");
     document.querySelector<HTMLButtonElement>('[data-event-id="later-liang-founded"]')!.click();
-    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("影响");
-    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("《旧五代史》");
+    const dialogText = document.querySelector('[role="dialog"]')?.textContent;
+    expect(dialogText).toContain("影响");
+    expect(dialogText).toContain("《旧五代史》");
+    expect(dialogText).toContain("关联人物朱温");
+    expect(dialogText).toContain("关联政权唐、后梁");
+    expect(dialogText).toContain("关联地点开封（今河南开封）");
+  });
+
+  it("shows Chinese labels for slug track and event type keys", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.events[0].eventType = "founding";
+    data.events[0].tracks = ["five-dynasties"];
+    data.events[1].eventType = "political";
+    data.events[1].tracks = ["ten-kingdoms"];
+    boot(data);
+
+    document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
+    const trackOption = document.querySelector<HTMLOptionElement>('option[value="five-dynasties"]')!;
+    expect(trackOption.textContent).toBe("五代主线");
+    expect(document.querySelector('[data-event-id="later-liang-founded"]')?.closest("article")?.textContent).toContain("政权建立");
+
+    document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
+    const typeChip = document.querySelector<HTMLButtonElement>('[data-event-type="founding"]')!;
+    expect(typeChip.textContent).toBe("政权建立");
   });
 
   it("recovers from empty timeline results", () => {
@@ -88,8 +110,9 @@ describe("mini-tool offline exploration", () => {
     search.value = "朱全忠";
     search.dispatchEvent(new Event("input", { bubbles: true }));
     expect(document.body.textContent).toContain("朱温");
-    search.value = "不存在的人";
-    search.dispatchEvent(new Event("input", { bubbles: true }));
+    const currentSearch = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
+    currentSearch.value = "不存在的人";
+    currentSearch.dispatchEvent(new Event("input", { bubbles: true }));
     expect(document.querySelector('[role="status"]')?.textContent).toContain("没有找到");
     document.querySelector<HTMLButtonElement>('[data-action="clear-search"]')!.click();
     expect(document.body.textContent).toContain("朱温");
@@ -105,6 +128,25 @@ describe("mini-tool offline exploration", () => {
     expect(document.activeElement).toBe(document.querySelector('[data-field="person-search"]'));
   });
 
+  it("does not replace the search input during Chinese IME composition", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    const search = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
+    search.focus();
+    search.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true }));
+    search.value = "朱";
+    search.dispatchEvent(new InputEvent("input", { bubbles: true, data: "朱", inputType: "insertCompositionText", isComposing: true }));
+    expect(document.querySelector('[data-field="person-search"]')).toBe(search);
+    expect(document.body.textContent).toContain("李克用");
+
+    search.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "朱" }));
+    const currentSearch = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
+    expect(currentSearch).not.toBe(search);
+    expect(document.activeElement).toBe(currentSearch);
+    expect(document.body.textContent).not.toContain("李克用");
+    expect(document.body.textContent).toContain("朱温");
+  });
+
   it("filters people and events with category chips and opens biography", () => {
     boot();
     document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
@@ -112,11 +154,36 @@ describe("mini-tool offline exploration", () => {
     expect(document.body.textContent).toContain("朱温");
     expect(document.body.textContent).not.toContain("李克用");
     document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!.click();
-    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("由唐末藩镇走向称帝");
+    const dialogText = document.querySelector('[role="dialog"]')?.textContent;
+    expect(dialogText).toContain("由唐末藩镇走向称帝");
+    expect(dialogText).toContain("所属政权后梁");
+    expect(dialogText).toContain("关联关键事件后梁建立、唐亡");
     document.querySelector<HTMLButtonElement>('[data-action="close-dialog"]')!.click();
     document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
     document.querySelector<HTMLButtonElement>('[data-event-type="政权更替"]')!.click();
     expect(document.body.textContent).toContain("吴国立国");
+  });
+
+  it("tolerates missing relation targets in person and event details", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.people[0].dynastyIds = ["missing-dynasty"];
+    data.events[0].personIds = ["missing-person"];
+    data.events[0].dynastyIds = ["missing-dynasty"];
+    data.events[0].locationIds = ["missing-location"];
+    boot(data);
+
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!.click();
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("所属政权暂无关联记录");
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("关联关键事件暂无关联记录");
+    document.querySelector<HTMLButtonElement>('[data-action="close-dialog"]')!.click();
+
+    document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-event-id="later-liang-founded"]')!.click();
+    const dialogText = document.querySelector('[role="dialog"]')?.textContent;
+    expect(dialogText).toContain("关联人物暂无关联记录");
+    expect(dialogText).toContain("关联政权暂无关联记录");
+    expect(dialogText).toContain("关联地点暂无关联记录");
   });
 
   it("restores focus to the opener when a dialog closes with Escape", () => {
@@ -139,6 +206,27 @@ describe("mini-tool offline exploration", () => {
     expect(document.querySelector("svg")?.textContent).toContain("后梁");
     expect(document.querySelector('[data-polity-id="later-liang"]')?.textContent).toContain("后梁");
     expect(document.body.textContent).toContain("示意，不代表精确疆界");
+  });
+
+  it("renders long people and event lists in small batches", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.people = Array.from({ length: 13 }, (_, index) => ({
+      ...fixtureData.people[0], id: `person-${index}`, name: `人物${index}`,
+    }));
+    data.events = Array.from({ length: 13 }, (_, index) => ({
+      ...fixtureData.events[0], id: `event-${index}`, title: `事件${index}`, personIds: [],
+    }));
+    boot(data);
+
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    expect(document.querySelectorAll("[data-person-id]")).toHaveLength(12);
+    document.querySelector<HTMLButtonElement>('[data-action="load-more-people"]')!.click();
+    expect(document.querySelectorAll("[data-person-id]")).toHaveLength(13);
+
+    document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
+    expect(document.querySelectorAll("[data-event-id]")).toHaveLength(12);
+    document.querySelector<HTMLButtonElement>('[data-action="load-more-events"]')!.click();
+    expect(document.querySelectorAll("[data-event-id]")).toHaveLength(13);
   });
 
   it("focuses each view heading and announces view changes", () => {
