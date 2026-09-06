@@ -4,6 +4,20 @@
 
 当前数据快照：84 个事件、52 位人物、35 个地点、17 个核心政权。数字用于描述本次发布快照，不是页面测试依赖的永久总量。
 
+## 版本与后续开发
+
+**本分支 `feat/continuous-atlas` 是原版网页，也是后续开发的默认主线。** 小红书参赛版单独留存，不替代、不合并覆盖原版；本文下方的功能与运行说明均描述原版。
+
+| 版本 | 分支 | 维护定位 |
+| --- | --- | --- |
+| 原版 Next.js 网页 | `feat/continuous-atlas` | 继续开发功能、交互与历史资料 |
+| 一卷山河 · 小红书离线小工具 | `codex/xhs-mini-tool` | 近期参赛版本，仅按需维护提交包 |
+
+- [小红书版源码与维护说明](https://github.com/SherlockMF/wudaishiguo/tree/codex/xhs-mini-tool/mini-tool)：与主站是两套运行边界，小工具的离线限制不适用于原版开发。
+- [2026-09-06 固定参赛快照](https://github.com/SherlockMF/wudaishiguo/tree/xhs-contest-2026-09-06/mini-tool/releases/2026-09-06)：标签 `xhs-contest-2026-09-06` 保留 ZIP、图标、发布文案、截图和校验值；不覆盖，修订另建版本。
+
+继续日常开发时，先用 `git branch --show-current` 确认位于 `feat/continuous-atlas`，再按“本地运行”启动网页。需要切换版本时，先提交或另行保存工作区改动，再执行 `git switch <分支名>`，不要强制丢弃修改。原版新功能不自动同步到参赛快照。
+
 ## 功能
 
 - 时间线：按年份查看事件，并筛选“五代主线、十国并立、辽与北方、宋初统一”四条轨道。
