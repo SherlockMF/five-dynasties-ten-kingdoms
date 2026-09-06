@@ -10,6 +10,7 @@ describe("mini-tool build", () => {
     const html = readFileSync(resolve(dist, "index.html"), "utf8");
     expect(existsSync(resolve(dist, "assets/data.js"))).toBe(true);
     expect(existsSync(resolve(dist, "assets/app.js"))).toBe(true);
+    expect(existsSync(resolve(dist, "assets/icon.png"))).toBe(true);
     expect(html.indexOf("./assets/data.js")).toBeLessThan(html.indexOf("./assets/app.js"));
     expect(html).not.toMatch(/<script(?![^>]*src=)/i);
     expect(html).not.toContain('type="module"');

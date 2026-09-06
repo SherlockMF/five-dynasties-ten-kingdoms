@@ -109,6 +109,7 @@ mkdirSync(assetsRoot, { recursive: true });
 cpSync(resolve(sourceRoot, "index.html"), resolve(distRoot, "index.html"));
 cpSync(resolve(sourceRoot, "styles.css"), resolve(assetsRoot, "styles.css"));
 cpSync(resolve(sourceRoot, "app.js"), resolve(assetsRoot, "app.js"));
+cpSync(resolve(sourceRoot, "assets/icon.png"), resolve(assetsRoot, "icon.png"));
 writeFileSync(resolve(assetsRoot, "data.js"), `window.__MINI_TOOL_DATA__=${JSON.stringify(data)};\n`, "utf8");
 
 console.log(`Built Xiaohongshu mini tool at ${distRoot}`);
