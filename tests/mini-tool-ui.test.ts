@@ -10,7 +10,7 @@ const fixtureData = {
     { id: "wu", name: "吴", category: "十国", startYear: 902, endYear: 937, summary: "江淮政权。", color: "#477b72" },
   ],
   people: [
-    { id: "zhu-wen", name: "朱温", aliases: ["朱全忠"], dynastyIds: ["later-liang"], roles: ["皇帝"], summary: "后梁建立者。", biography: "由唐末藩镇走向称帝。" },
+    { id: "zhu-wen", name: "朱温", aliases: ["朱全忠"], dynastyIds: ["later-liang"], roles: ["皇帝"], summary: "后梁建立者。", biography: "由唐末藩镇走向称帝。", portrait: { src: "./assets/portraits/zhu-wen.webp", kind: "artistic", note: "依据历史题材创作", sourceTitle: "原项目人物画像" } },
     { id: "li-keyong", name: "李克用", aliases: [], dynastyIds: ["tang"], roles: ["节度使"], summary: "沙陀军事领袖。", biography: "长期与朱温争衡。" },
   ],
   events: [
@@ -26,9 +26,19 @@ const fixtureData = {
     },
   ],
   locations: [
-    { id: "kaifeng", name: "开封", longitude: 114.3, latitude: 34.8, modernReference: "今河南开封" },
+    { id: "kaifeng", name: "开封", longitude: 114.3, latitude: 34.8, modernReference: "今河南开封", mapPoint: [420, 350] },
     { id: "yangzhou", name: "扬州", longitude: 119.4, latitude: 32.4, modernReference: "今江苏扬州" },
   ],
+  atlas: {
+    viewBox: [0, 0, 720, 760], years: { 907: "first", 908: "second" },
+    landPath: "M0 0L720 0L720 760Z", waterPath: "M20 20L30 20L30 30Z",
+    paths: { p0: "M100 100L500 100L500 500Z", p1: "M200 200L400 200L400 400Z" },
+    sourceNote: "原项目历史疆域资料",
+    snapshots: {
+      first: { id: "first", startYear: 907, endYear: 907, note: "后梁初立", regions: [{ id: "liang", dynastyId: "later-liang", name: "后梁", color: "#9f4036", path: "p0", label: [320, 300] }] },
+      second: { id: "second", startYear: 908, endYear: 908, note: "次年疆域", regions: [{ id: "liang", dynastyId: "later-liang", name: "后梁", color: "#9f4036", path: "p1", label: [320, 300] }] },
+    },
+  },
 };
 
 function boot(data: unknown = fixtureData) {
@@ -206,6 +216,65 @@ describe("mini-tool offline exploration", () => {
     expect(document.querySelector("svg")?.textContent).toContain("后梁");
     expect(document.querySelector('[data-polity-id="later-liang"]')?.textContent).toContain("后梁");
     expect(document.body.textContent).toContain("示意，不代表精确疆界");
+  });
+
+  it("restores local portrait images and their artistic source notes in biography", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    expect(document.querySelector(".person-card img")?.getAttribute("src")).toBe("./assets/portraits/zhu-wen.webp");
+    document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!.click();
+    expect(document.querySelector('[role="dialog"] img')?.getAttribute("src")).toBe("./assets/portraits/zhu-wen.webp");
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("艺术创作，非真实容貌复原");
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("原项目人物画像");
+  });
+
+  it("uses stage paths, local geography and only current-year event locations", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    expect(document.querySelector(".atlas__land")?.getAttribute("d")).toBe(fixtureData.atlas.landPath);
+    expect(document.querySelector(".atlas__water")?.getAttribute("d")).toBe(fixtureData.atlas.waterPath);
+    expect(document.querySelector(".atlas__region")?.getAttribute("d")).toBe(fixtureData.atlas.paths.p0);
+    expect(document.querySelectorAll("[data-map-location]")).toHaveLength(1);
+    expect(document.querySelector("[data-map-location]")?.getAttribute("data-map-location")).toBe("kaifeng");
+    const year = document.querySelector<HTMLSelectElement>('[data-field="atlas-year"]')!;
+    year.value = "908";
+    year.dispatchEvent(new Event("change"));
+    expect(document.querySelector(".atlas__region")?.getAttribute("d")).toBe(fixtureData.atlas.paths.p1);
+    expect(document.querySelectorAll("[data-map-location]")).toHaveLength(0);
+  });
+
+  it("opens region detail, highlights the region and supports bounded viewport controls", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    const region = document.querySelector(".atlas__region")!;
+    region.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    expect(region.getAttribute("aria-pressed")).toBe("true");
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("五代第一朝");
+    document.querySelector<HTMLButtonElement>('[data-action="close-dialog"]')!.click();
+    expect(document.activeElement).toBe(region);
+    document.querySelector<HTMLButtonElement>('[data-action="zoom-in"]')!.click();
+    const zoomed = document.querySelector("svg")!.getAttribute("viewBox");
+    expect(zoomed).not.toBe("0 0 720 760");
+    document.querySelector<HTMLButtonElement>('[data-action="pan-right"]')!.click();
+    expect(document.querySelector("svg")!.getAttribute("viewBox")).not.toBe(zoomed);
+    document.querySelector<HTMLButtonElement>('[data-action="reset-map"]')!.click();
+    expect(document.querySelector("svg")!.getAttribute("viewBox")).toBe("0 0 720 760");
+  });
+
+  it("shows explicit missing-map states without fabricated territories", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    delete data.atlas;
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    expect(document.body.textContent).toContain("历史地图资料未载入");
+    expect(document.querySelector("svg")).toBeNull();
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    const year = document.querySelector<HTMLSelectElement>('[data-field="atlas-year"]')!;
+    year.value = "875";
+    year.dispatchEvent(new Event("change"));
+    expect(document.body.textContent).toContain("仅展示自然地理背景");
+    expect(document.querySelector(".atlas__region")).toBeNull();
   });
 
   it("renders timeline events in batches and resets the limit when filters change", () => {

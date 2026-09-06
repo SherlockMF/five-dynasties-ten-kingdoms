@@ -109,11 +109,21 @@ describe("mini-tool artifact compliance", () => {
     });
     cpSync(resolve(projectRoot, "lib/deep-freeze.ts"), resolve(workspace, "lib/deep-freeze.ts"));
     cpSync(resolve(projectRoot, "scripts/build-mini-tool.mjs"), buildScript);
+    cpSync(resolve(projectRoot, "scripts/build-mini-tool-atlas.mjs"), resolve(workspace, "scripts/build-mini-tool-atlas.mjs"));
+    cpSync(resolve(projectRoot, "data/portraits.ts"), resolve(workspace, "data/portraits.ts"));
+    cpSync(resolve(projectRoot, "data/maps"), resolve(workspace, "data/maps"), { recursive: true });
+    cpSync(resolve(projectRoot, "public/portraits/series"), resolve(workspace, "public/portraits/series"), { recursive: true });
+    cpSync(resolve(projectRoot, "public/maps/continuous"), resolve(workspace, "public/maps/continuous"), { recursive: true });
+    for (const year of [934, 943, 949, 954, 959]) {
+      cpSync(resolve(projectRoot, `public/maps/${year}`), resolve(workspace, `public/maps/${year}`), { recursive: true });
+    }
+    cpSync(resolve(projectRoot, "gis/continuous/land-mask.geojson"), resolve(workspace, "gis/continuous/land-mask.geojson"));
+    cpSync(resolve(projectRoot, "features/history-map/atlas/atlas-style.ts"), resolve(workspace, "features/history-map/atlas/atlas-style.ts"));
     cpSync(resolve(projectRoot, "scripts/package-mini-tool.py"), packageScript);
     cpSync(resolve(projectRoot, "package.json"), resolve(workspace, "package.json"));
     distExistedBeforeBuild = existsSync(dist);
     execFileSync(process.execPath, [buildScript], { cwd: workspace, stdio: "pipe" });
-  });
+  }, 30000);
 
   afterAll(() => {
     rmSync(workspace, { recursive: true, force: true });
@@ -137,14 +147,14 @@ describe("mini-tool artifact compliance", () => {
     const files = listFiles(dist);
     expect(existsSync(resolve(dist, "index.html"))).toBe(true);
     expect(files.every((file) => allowed.has(extname(file).toLowerCase()))).toBe(true);
-    expect(directoryBytes(dist)).toBeLessThan(2 * 1024 * 1024);
+    expect(directoryBytes(dist)).toBeLessThan(10 * 1024 * 1024);
   });
 
   it("packages a deterministic ZIP with index.html at the archive root", () => {
     const first = packageArtifact();
     const second = packageArtifact();
     expect(second.equals(first)).toBe(true);
-    expect(second.byteLength).toBeLessThan(2 * 1024 * 1024);
+    expect(second.byteLength).toBeLessThan(10 * 1024 * 1024);
 
     const inspect = [
       "import json, pathlib, zipfile",

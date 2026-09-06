@@ -2,6 +2,8 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFil
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import sharp from "sharp";
+import { buildMiniToolAtlas, projectMiniToolLocation } from "./build-mini-tool-atlas.mjs";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const sourceRoot = resolve(projectRoot, "mini-tool/src");
@@ -49,6 +51,7 @@ function optionalText(value) {
 }
 
 const { seedData } = loadTypeScriptModule(resolve(projectRoot, "data/seed/index.ts"));
+const { portraits } = loadTypeScriptModule(resolve(projectRoot, "data/portraits.ts"));
 const data = {
   meta: {
     title: "一卷山河",
@@ -73,6 +76,12 @@ const data = {
     roles: item.roles,
     summary: item.summary,
     biography: optionalText(item.biography),
+    portrait: portraits[item.id] ? {
+      src: `./assets/portraits/${item.id}.webp`,
+      kind: portraits[item.id].kind,
+      sourceTitle: portraits[item.id].source?.title || "",
+      note: portraits[item.id].note.replace(/https?:\/\/\S+/g, ""),
+    } : null,
   })),
   events: seedData.events
     .slice()
@@ -101,8 +110,10 @@ const data = {
     longitude: item.longitude,
     latitude: item.latitude,
     modernReference: optionalText(item.modernReference),
+    mapPoint: projectMiniToolLocation(item.longitude, item.latitude),
   })),
 };
+data.atlas = await buildMiniToolAtlas(projectRoot);
 
 rmSync(distRoot, { recursive: true, force: true });
 mkdirSync(assetsRoot, { recursive: true });
@@ -110,6 +121,14 @@ cpSync(resolve(sourceRoot, "index.html"), resolve(distRoot, "index.html"));
 cpSync(resolve(sourceRoot, "styles.css"), resolve(assetsRoot, "styles.css"));
 cpSync(resolve(sourceRoot, "app.js"), resolve(assetsRoot, "app.js"));
 cpSync(resolve(sourceRoot, "assets/icon.png"), resolve(assetsRoot, "icon.png"));
+mkdirSync(resolve(assetsRoot, "portraits"), { recursive: true });
+for (const person of seedData.people) {
+  const portrait = portraits[person.id];
+  if (!portrait) throw new Error(`Missing portrait: ${person.id}`);
+  await sharp(resolve(projectRoot, "public", portrait.src.slice(1)))
+    .resize(240, 320, { fit: "cover" }).webp({ quality: 65 })
+    .toFile(resolve(assetsRoot, "portraits", `${person.id}.webp`));
+}
 writeFileSync(resolve(assetsRoot, "data.js"), `window.__MINI_TOOL_DATA__=${JSON.stringify(data)};\n`, "utf8");
 
 console.log(`Built Xiaohongshu mini tool at ${distRoot}`);

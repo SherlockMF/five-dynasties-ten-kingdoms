@@ -387,6 +387,18 @@ main {
   margin: 8px 0 12px;
 }
 
+.person-card {
+  display: flex;
+  align-items: flex-start;
+}
+
+.person-card__body { flex: 1; min-width: 0; }
+.portrait { flex: 0 0 96px; margin: 0 16px 0 0; position: relative; width: 96px; }
+.portrait__image { background: #e7dfcf; border-radius: 9px; display: block; height: auto; max-width: 100%; width: 100%; }
+.portrait__badge { background: rgba(23, 40, 36, 0.72); border-radius: 0 0 9px 9px; bottom: 0; color: #fffaf1; font-size: 10px; left: 0; padding: 2px 0; position: absolute; text-align: center; width: 100%; }
+.portrait--detail { margin: 0 auto 22px; max-width: 100%; width: 240px; }
+.portrait__caption { color: #65716c; font-size: 12px; margin: 7px 0 0; }
+
 .text-button,
 .dialog__close {
   background: transparent;
@@ -488,7 +500,7 @@ main {
 }
 
 .atlas {
-  background: #dfe9e2;
+  background: #cddde0;
   border: 1px solid #b8c9bf;
   margin-left: 0;
   margin-right: 0;
@@ -503,9 +515,18 @@ main {
 
 .atlas__land {
   fill: #f7f1df;
-  stroke: #b79755;
-  stroke-width: 2;
+  stroke: #b9ad8c;
+  stroke-width: 0.8;
 }
+
+.atlas__water { fill: #cddde0; stroke: #b0c4ca; stroke-width: 0.6; pointer-events: none; }
+.atlas__region { cursor: pointer; fill-opacity: 0.72; stroke: #fffaf1; stroke-width: 0.8; }
+.atlas__region--selected, .atlas__region:focus { fill-opacity: 1; stroke: #172824; stroke-width: 2; }
+.atlas__stage { color: #65716c; font-size: 13px; }
+.atlas__source { background: #fffaf1; color: #65716c; font-size: 11px; margin: 0; padding: 0 15px 12px; }
+.atlas__tools { background: #fffaf1; display: flex; flex-wrap: wrap; padding: 5px; }
+.atlas__tool { background: transparent; border: 1px solid #d8cebc; border-radius: 7px; flex: 1; font-size: 18px; margin: 2px; min-height: 44px; min-width: 36px; padding: 3px; }
+.atlas-events { margin-top: 24px; }
 
 .atlas__place {
   fill: var(--cinnabar);
@@ -516,14 +537,16 @@ main {
 .atlas__label {
   fill: var(--ink);
   font-family: sans-serif;
-  font-size: 11px;
+  font-size: 13px;
+  pointer-events: none;
 }
 
 .atlas__polity-label {
   fill: var(--ink);
   font-family: Georgia, "Songti SC", serif;
-  font-size: 12px;
+  font-size: 18px;
   font-weight: 700;
+  pointer-events: none;
 }
 
 .atlas__caption {
@@ -572,6 +595,8 @@ main {
 .polity-item__name {
   min-width: 64px;
 }
+
+.polity-item__open { background: transparent; border: 0; font-weight: 700; min-height: 44px; min-width: 72px; padding: 6px 10px 6px 0; text-align: left; }
 
 .polity-item__years {
   color: #65716c;
@@ -624,6 +649,9 @@ main {
 }
 
 @media (max-width: 380px) {
+  .person-card { padding: 14px; }
+  .portrait { flex-basis: 78px; margin-right: 12px; width: 78px; }
+  .portrait--detail { width: 240px; margin-left: auto; margin-right: auto; }
   .path-card {
     width: calc(100% - 10px);
   }

@@ -6,6 +6,8 @@
 
 - `mini-tool/src` 是手工维护的 HTML、CSS、经典 JavaScript 与图标源文件。
 - `data/seed` 是历史数据来源；构建脚本只抽取小工具所需字段，不修改源数据。
+- `data/portraits.ts` 和 `public/portraits/series` 提供全部人物画像，构建时压缩为 240×320 WebP，并保留创作说明。
+- `data/maps/continuous-registry.json` 与原地图发布数据提供阶段疆域；构建时预投影为离线 SVG 路径，年份归属沿用原项目。
 - `output/xhs-mini-tool/dist` 是每次构建重建的静态目录，不应手工编辑。
 - `output/xhs-mini-tool/一卷山河.zip` 是上传包，`output/xhs-mini-tool/icon.png` 是单独上传的图标。`output` 已被 Git 忽略，可随时由源码重建。
 
@@ -47,7 +49,7 @@ git diff --check
 - 不发起网络请求，不加载外部图片、字体或媒体，不使用 Worker、WebGL、WASM、iframe、剪贴板、文件下载或站外跳转。
 - 不收集或传输个人信息，不请求位置、相机、麦克风、相册等敏感权限，不嵌入广告或第三方内容。
 - 地图只作阅读辅助示意，不代表精确疆界；内容来源、AI 边界与地图精度提示必须保留。
-- ZIP 不超过 10 MiB，交付目标为 2 MiB 以内；图标为 1:1 PNG 且不超过 5 MiB。
+- ZIP 不超过 10 MiB，优先控制在 2 MiB 附近；为保留完整画像与疆域可超过建议值，交付时记录实际大小和审计提示。图标为 1:1 PNG 且不超过 5 MiB。
 
 若新增 Native 能力，应先按本地小工具 skill 的 JSBridge 规范核对 API 和权限声明；不得自行调用未列出的桥接能力。现代浏览器验证不能替代 Chrome 61、小红书模拟器或真机验证，缺少对应证据时必须在校验摘要中标为未实测。
 

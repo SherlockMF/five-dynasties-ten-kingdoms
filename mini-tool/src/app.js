@@ -163,7 +163,7 @@
     var notes = element("section", "notice-panel");
     notes.appendChild(element("h3", "notice-panel__title", "阅读说明"));
     notes.appendChild(element("p", "", "内容来源：以传统正史、编年史及公开研究资料为线索整理，详情中的来源标签用于继续查考。"));
-    notes.appendChild(element("p", "", "AI 边界：本工具不使用生成式 AI，不进行在线问答；检索仅在包内历史资料中完成。"));
+    notes.appendChild(element("p", "", "AI 边界：本工具运行时不使用生成式 AI，不进行在线问答；人物画像含艺术创作，具体参考与说明见人物详情。检索仅在包内历史资料中完成。"));
     notes.appendChild(element("p", "", "山河图为阅读辅助示意，不代表精确疆界；历史地名以现代地点作参照。"));
     root.appendChild(notes);
   }
@@ -274,6 +274,25 @@
     return group;
   }
 
+  function portraitFigure(item, detail) {
+    if (!item.portrait || !item.portrait.src) return null;
+    var figure = element("figure", detail ? "portrait portrait--detail" : "portrait");
+    var image = element("img", "portrait__image");
+    image.src = item.portrait.src;
+    image.alt = item.name + "人物画像（艺术创作）";
+    image.width = 240;
+    image.height = 320;
+    figure.appendChild(image);
+    if (detail) {
+      figure.appendChild(element("figcaption", "portrait__caption", "人物画像 · 艺术创作，非真实容貌复原。"));
+      appendText(figure, "p", "portrait__caption", item.portrait.note);
+      appendText(figure, "p", "portrait__caption", item.portrait.sourceTitle ? "参考来源：" + item.portrait.sourceTitle : "");
+    } else {
+      figure.appendChild(element("figcaption", "portrait__badge", "艺术创作"));
+    }
+    return figure;
+  }
+
   function renderPeople(root, data, state, setState) {
     root.appendChild(heading("在人的选择里看见时代", "人物"));
     var searchLabel = element("label", "search-field");
@@ -320,13 +339,18 @@
     var list = element("div", "card-list card-list--people");
     matches.slice(0, state.peopleLimit).forEach(function (item) {
       var card = element("article", "history-card person-card");
-      appendText(card, "p", "history-card__meta", (item.roles || []).join(" · "));
-      card.appendChild(element("h3", "history-card__title", item.name));
-      appendText(card, "p", "history-card__summary", item.summary);
+      var portrait = portraitFigure(item, false);
+      if (portrait) card.appendChild(portrait);
+      var body = element("div", "person-card__body");
+      appendText(body, "p", "history-card__meta", (item.roles || []).join(" · "));
+      body.appendChild(element("h3", "history-card__title", item.name));
+      appendText(body, "p", "history-card__summary", item.summary);
       var open = button("阅读小传", { className: "text-button", "data-person-id": item.id, "aria-label": "阅读" + item.name + "小传" });
       open.addEventListener("click", function () {
         openDialog(item.name, function (dialog) {
           appendText(dialog, "p", "dialog__meta", (item.roles || []).join(" · "));
+          var detailPortrait = portraitFigure(item, true);
+          if (detailPortrait) dialog.appendChild(detailPortrait);
           dialog.appendChild(labelledValue("人物小传", item.biography || item.summary));
           if (item.aliases && item.aliases.length) dialog.appendChild(labelledValue("别名", item.aliases.join("、")));
           dialog.appendChild(labelledValue("所属政权", relatedNames(item.dynastyIds, data.dynasties)));
@@ -335,7 +359,8 @@
           }).map(function (event) { return event.id; }), data.events)));
         }, open);
       });
-      card.appendChild(open);
+      body.appendChild(open);
+      card.appendChild(body);
       list.appendChild(card);
     });
     root.appendChild(list);
@@ -377,62 +402,133 @@
 
   function renderAtlas(root, data, state, setState) {
     root.appendChild(heading("看见同一年的山河", "山河"));
-    root.appendChild(element("p", "lede", "地点按经纬度作相对定位，政权仅展示存续关系。"));
+    root.appendChild(element("p", "lede", "循着年份看政权疆域与当年事件，点击色块了解政权。"));
+    var atlas = data.atlas;
+    if (!atlas || !atlas.years || !atlas.snapshots || !atlas.paths) {
+      root.appendChild(status("历史地图资料未载入，暂时无法展示疆域。"));
+      return;
+    }
     var years = [];
     var year;
     for (year = data.meta.minYear; year <= data.meta.maxYear; year += 1) years.push({ value: year, label: year + " 年" });
     var controls = element("div", "filter-panel filter-panel--single");
-    controls.appendChild(createSelect("查看年份", "atlas-year", years, state.atlasYear, function (event) { setState({ atlasYear: Number(event.target.value) }); }));
+    controls.appendChild(createSelect("查看年份", "atlas-year", years, state.atlasYear, function (event) { setState({ atlasYear: Number(event.target.value), atlasPolity: "" }); }));
     root.appendChild(controls);
-    var active = data.dynasties.filter(function (item) { return item.startYear <= state.atlasYear && item.endYear >= state.atlasYear; });
+    var snapshot = atlas.snapshots[atlas.years[state.atlasYear]];
+    var regions = snapshot ? snapshot.regions : [];
+    if (!snapshot) root.appendChild(status("这一年尚无疆域阶段资料，仅展示自然地理背景。可选择 907—979 年查看历史疆域。"));
+    else root.appendChild(element("p", "atlas__stage", snapshot.startYear + "—" + snapshot.endYear + " 年末格局 · 点击政权查看详情"));
     var figure = element("figure", "atlas");
-    var svg = svgNode("svg", { viewBox: "0 0 620 420", role: "img", "aria-label": state.atlasYear + "年政权与重要地点示意图", preserveAspectRatio: "xMidYMid meet" });
-    svg.appendChild(svgNode("path", { d: "M132 48 C225 17 349 35 438 82 C524 128 529 223 472 304 C420 377 282 373 177 329 C82 289 53 192 88 111 C98 87 112 67 132 48 Z", class: "atlas__land" }));
-    data.locations.forEach(function (location) {
-      var x = 70 + ((location.longitude - 73) / 62) * 480;
-      var y = 328 - ((location.latitude - 18) / 36) * 255;
-      if (x < 72) x = 72;
-      if (x > 548) x = 548;
-      if (y < 70) y = 70;
-      if (y > 330) y = 330;
-      svg.appendChild(svgNode("circle", { cx: String(x), cy: String(y), r: "5", class: "atlas__place" }));
-      svg.appendChild(svgNode("text", { x: String(x + 9), y: String(y + 4), class: "atlas__label" }, location.name));
+    var box = atlas.viewBox;
+    var svg = svgNode("svg", { viewBox: box.join(" "), role: "group", "aria-label": state.atlasYear + "年政权与重要地点示意图", preserveAspectRatio: "xMidYMid meet" });
+    svg.appendChild(svgNode("path", { d: atlas.landPath, class: "atlas__land", "fill-rule": "evenodd" }));
+    function openPolity(region, opener) {
+      var dynasty = findById(data.dynasties, region.dynastyId);
+      state.atlasPolity = region.id;
+      var paths = svg.querySelectorAll("[data-region-id]");
+      Array.prototype.forEach.call(paths, function (path) {
+        var selected = path.getAttribute("data-region-id") === region.id;
+        path.setAttribute("class", "atlas__region" + (selected ? " atlas__region--selected" : ""));
+        path.setAttribute("aria-pressed", selected ? "true" : "false");
+      });
+      openDialog(region.name, function (dialog) {
+        dialog.appendChild(element("p", "dialog__meta", state.atlasYear + " 年 · " + (dynasty ? categoryLabel(dynasty.category) : "历史政权")));
+        if (dynasty) {
+          dialog.appendChild(labelledValue("存续时间", dynasty.startYear + "—" + dynasty.endYear));
+          dialog.appendChild(labelledValue("政权概况", dynasty.summary));
+        }
+        dialog.appendChild(labelledValue("疆域阶段说明", snapshot.note));
+        if (region.note) dialog.appendChild(labelledValue("区域说明", region.note));
+        if (region.accuracy) dialog.appendChild(labelledValue("疆界精度", region.accuracy === "precise" ? "资料标记为较精确边界，仍以阶段说明为准" : "近似范围示意；虚线标示非精确疆界"));
+        dialog.appendChild(labelledValue("地图来源与边界", atlas.sourceNote));
+      }, opener);
+    }
+    regions.forEach(function (region) {
+      var path = svgNode("path", { d: atlas.paths[region.path], fill: region.color, class: "atlas__region" + (state.atlasPolity === region.id ? " atlas__region--selected" : ""), "data-region-id": region.id, tabindex: "0", role: "button", "aria-pressed": state.atlasPolity === region.id ? "true" : "false", "aria-label": "查看政权：" + region.name });
+      path.setAttribute("fill-rule", "evenodd");
+      if (region.accuracy && region.accuracy !== "precise") path.setAttribute("stroke-dasharray", "4 2");
+      path.addEventListener("click", function () { openPolity(region, path); });
+      path.addEventListener("keydown", function (event) { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openPolity(region, path); } });
+      svg.appendChild(path);
     });
-    active.forEach(function (dynasty, index) {
-      var x = 105 + (index % 5) * 103;
-      var y = 350 + Math.floor(index / 5) * 22;
-      svg.appendChild(svgNode("circle", { cx: String(x - 10), cy: String(y - 4), r: "4", fill: dynasty.color || "#477b72" }));
-      svg.appendChild(svgNode("text", { x: String(x), y: String(y), class: "atlas__polity-label" }, dynasty.name));
+    svg.appendChild(svgNode("path", { d: atlas.waterPath, class: "atlas__water", "fill-rule": "evenodd" }));
+    regions.forEach(function (region) {
+      svg.appendChild(svgNode("text", { x: region.label[0], y: region.label[1], class: "atlas__polity-label", "text-anchor": "middle" }, region.name));
+    });
+    var yearEvents = data.events.filter(function (item) { return item.startYear <= state.atlasYear && (item.endYear || item.startYear) >= state.atlasYear; });
+    var eventLocations = unique([].concat.apply([], yearEvents.map(function (item) { return item.locationIds || []; })));
+    eventLocations.forEach(function (id) {
+      var location = findById(data.locations, id);
+      if (!location || !location.mapPoint) return;
+      svg.appendChild(svgNode("circle", { cx: location.mapPoint[0], cy: location.mapPoint[1], r: "5", class: "atlas__place", "data-map-location": id }));
+      svg.appendChild(svgNode("text", { x: location.mapPoint[0] + 8, y: location.mapPoint[1] - 8, class: "atlas__label" }, location.name));
     });
     figure.appendChild(svg);
-    figure.appendChild(element("figcaption", "atlas__caption", "山河图为阅读辅助示意，不代表精确疆界；地点位置来自包内经纬度资料。"));
+    var tools = element("div", "atlas__tools");
+    tools.setAttribute("aria-label", "地图视野控制");
+    function updateViewport() {
+      var width = box[2] / state.atlasZoom;
+      var height = box[3] / state.atlasZoom;
+      state.atlasX = Math.max(0, Math.min(box[2] - width, state.atlasX));
+      state.atlasY = Math.max(0, Math.min(box[3] - height, state.atlasY));
+      svg.setAttribute("viewBox", [state.atlasX, state.atlasY, width, height].join(" "));
+    }
+    [{ label: "+", name: "zoom-in", title: "放大地图", zoom: 1.5 }, { label: "−", name: "zoom-out", title: "缩小地图", zoom: 1 / 1.5 }, { label: "↑", name: "pan-up", title: "向北移动", dy: -1 }, { label: "↓", name: "pan-down", title: "向南移动", dy: 1 }, { label: "←", name: "pan-left", title: "向西移动", dx: -1 }, { label: "→", name: "pan-right", title: "向东移动", dx: 1 }, { label: "全图", name: "reset-map", title: "恢复完整地图" }].forEach(function (tool) {
+      var control = button(tool.label, { className: "atlas__tool", "data-action": tool.name, "aria-label": tool.title });
+      control.addEventListener("click", function () {
+        if (tool.zoom) {
+          var oldWidth = box[2] / state.atlasZoom;
+          var oldHeight = box[3] / state.atlasZoom;
+          state.atlasZoom = Math.max(1, Math.min(4, state.atlasZoom * tool.zoom));
+          state.atlasX += (oldWidth - box[2] / state.atlasZoom) / 2;
+          state.atlasY += (oldHeight - box[3] / state.atlasZoom) / 2;
+        } else if (tool.dx || tool.dy) {
+          state.atlasX += (tool.dx || 0) * box[2] / state.atlasZoom / 5;
+          state.atlasY += (tool.dy || 0) * box[3] / state.atlasZoom / 5;
+        } else { state.atlasZoom = 1; state.atlasX = 0; state.atlasY = 0; }
+        updateViewport();
+      });
+      tools.appendChild(control);
+    });
+    updateViewport();
+    figure.appendChild(tools);
+    figure.appendChild(element("figcaption", "atlas__caption", "山河图为阅读辅助示意，不代表精确疆界；红点为当年事件地点。可放大后用方向按钮移动。"));
+    appendText(figure, "p", "atlas__source", atlas.sourceNote);
     root.appendChild(figure);
     var section = element("section", "polity-section");
-    section.appendChild(element("h3", "polity-section__title", state.atlasYear + " 年存续政权"));
-    if (!active.length) {
-      section.appendChild(status("这一年暂未收录存续政权。"));
+    section.appendChild(element("h3", "polity-section__title", state.atlasYear + " 年图中政权"));
+    if (!regions.length) {
+      section.appendChild(status("这一年暂未收录疆域阶段。"));
     } else {
       var list = element("ul", "polity-list");
-      active.forEach(function (item) {
+      regions.forEach(function (region) {
+        var item = findById(data.dynasties, region.dynastyId) || region;
         var row = element("li", "polity-item");
-        row.setAttribute("data-polity-id", item.id);
+        row.setAttribute("data-polity-id", region.dynastyId);
         var swatch = element("span", "polity-item__swatch");
-        swatch.style.backgroundColor = item.color || "#477b72";
+        swatch.style.backgroundColor = region.color;
         swatch.setAttribute("aria-hidden", "true");
         row.appendChild(swatch);
-        row.appendChild(element("strong", "polity-item__name", item.name));
-        row.appendChild(element("span", "polity-item__years", item.startYear + "—" + item.endYear));
-        row.appendChild(element("span", "polity-item__category", categoryLabel(item.category)));
+        var open = button(region.name, { className: "polity-item__open", "aria-label": "查看政权：" + region.name });
+        open.addEventListener("click", function () { openPolity(region, open); });
+        row.appendChild(open);
+        if (item.startYear) row.appendChild(element("span", "polity-item__years", item.startYear + "—" + item.endYear));
+        if (item.category) row.appendChild(element("span", "polity-item__category", categoryLabel(item.category)));
         list.appendChild(row);
       });
       section.appendChild(list);
     }
     root.appendChild(section);
+    var events = element("section", "atlas-events");
+    events.appendChild(element("h3", "polity-section__title", state.atlasYear + " 年事件"));
+    yearEvents.forEach(function (item) { events.appendChild(eventCard(item, function (selected, opener) { openEvent(selected, data, opener); })); });
+    if (!yearEvents.length) events.appendChild(element("p", "muted", "这一年暂无收录事件，可切换年份继续查看。"));
+    root.appendChild(events);
   }
 
   function createApp(root, data) {
     if (!root || !data || !data.meta) return;
-    var state = { view: "guide", year: 907, track: "all", timelineLimit: LIST_PAGE_SIZE, personQuery: "", personCategory: "all", peopleLimit: LIST_PAGE_SIZE, eventType: "all", eventsLimit: LIST_PAGE_SIZE, atlasYear: 907 };
+    var state = { view: "guide", year: 907, track: "all", timelineLimit: LIST_PAGE_SIZE, personQuery: "", personCategory: "all", peopleLimit: LIST_PAGE_SIZE, eventType: "all", eventsLimit: LIST_PAGE_SIZE, atlasYear: 907, atlasPolity: "", atlasZoom: 1, atlasX: 0, atlasY: 0 };
     function setState(patch, focusHeading) {
       Object.keys(patch).forEach(function (key) { state[key] = patch[key]; });
       render();
