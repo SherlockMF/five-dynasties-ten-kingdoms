@@ -1,17 +1,29 @@
 import { execFileSync } from "node:child_process";
 import {
+  cpSync,
   existsSync,
+  mkdirSync,
+  mkdtempSync,
   readFileSync,
   readdirSync,
+  rmSync,
   statSync,
   unlinkSync,
+  writeFileSync,
 } from "node:fs";
 import { homedir } from "node:os";
 import { extname, resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-const dist = resolve("output/xhs-mini-tool/dist");
-const archive = resolve("output/xhs-mini-tool/一卷山河.zip");
+const projectRoot = resolve(".");
+const testOutputRoot = resolve(projectRoot, "output");
+mkdirSync(testOutputRoot, { recursive: true });
+const workspace = mkdtempSync(resolve(testOutputRoot, "mini-tool-compliance-"));
+const dist = resolve(workspace, "output/xhs-mini-tool/dist");
+const archive = resolve(workspace, "output/xhs-mini-tool/一卷山河.zip");
+const buildScript = resolve(workspace, "scripts/build-mini-tool.mjs");
+const packageScript = resolve(workspace, "scripts/package-mini-tool.py");
+let distExistedBeforeBuild = true;
 const allowed = new Set([
   ".html",
   ".css",
@@ -83,11 +95,35 @@ function pythonExecutable(): string {
 }
 
 function packageArtifact(): Buffer {
-  execFileSync(pythonExecutable(), ["scripts/package-mini-tool.py"], { stdio: "pipe" });
+  execFileSync(pythonExecutable(), [packageScript], { stdio: "pipe" });
   return readFileSync(archive);
 }
 
 describe("mini-tool artifact compliance", () => {
+  beforeAll(() => {
+    cpSync(resolve(projectRoot, "mini-tool/src"), resolve(workspace, "mini-tool/src"), {
+      recursive: true,
+    });
+    cpSync(resolve(projectRoot, "data/seed"), resolve(workspace, "data/seed"), {
+      recursive: true,
+    });
+    cpSync(resolve(projectRoot, "lib/deep-freeze.ts"), resolve(workspace, "lib/deep-freeze.ts"));
+    cpSync(resolve(projectRoot, "scripts/build-mini-tool.mjs"), buildScript);
+    cpSync(resolve(projectRoot, "scripts/package-mini-tool.py"), packageScript);
+    cpSync(resolve(projectRoot, "package.json"), resolve(workspace, "package.json"));
+    distExistedBeforeBuild = existsSync(dist);
+    execFileSync(process.execPath, [buildScript], { cwd: workspace, stdio: "pipe" });
+  });
+
+  afterAll(() => {
+    rmSync(workspace, { recursive: true, force: true });
+  });
+
+  it("builds its own artifact without relying on repository output", () => {
+    expect(distExistedBeforeBuild).toBe(false);
+    expect(existsSync(resolve(dist, "index.html"))).toBe(true);
+  });
+
   it("contains no restricted capability or external resource", () => {
     for (const file of listTextFiles(dist)) {
       const text = readFileSync(file, "utf8");
@@ -125,11 +161,28 @@ describe("mini-tool artifact compliance", () => {
     expect(names.every((name) => allowed.has(extname(name).toLowerCase()))).toBe(true);
   });
 
+  it.each(["extra.html", "assets/help.html"])(
+    "rejects an additional HTML file anywhere in the artifact: %s",
+    (relativePath) => {
+      const extraHtml = resolve(dist, relativePath);
+      mkdirSync(resolve(extraHtml, ".."), { recursive: true });
+      writeFileSync(extraHtml, "<!DOCTYPE html><title>extra</title>", "utf8");
+      try {
+        expect(() => packageArtifact()).toThrow(/exactly one HTML file/i);
+      } finally {
+        unlinkSync(extraHtml);
+      }
+    },
+  );
+
   it("exposes a working npm packaging command on the current platform", () => {
     if (existsSync(archive)) unlinkSync(archive);
     const npmCli = process.env.npm_execpath;
     expect(npmCli).toBeTruthy();
-    execFileSync(process.execPath, [npmCli!, "run", "mini-tool:package"], { stdio: "pipe" });
+    execFileSync(process.execPath, [npmCli!, "run", "mini-tool:package"], {
+      cwd: workspace,
+      stdio: "pipe",
+    });
     expect(existsSync(archive)).toBe(true);
   });
 });

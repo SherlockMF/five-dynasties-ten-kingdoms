@@ -25,8 +25,9 @@ FIXED_TIMESTAMP = (2026, 1, 1, 0, 0, 0)
 
 def artifact_files() -> list[Path]:
     files = sorted(path for path in DIST.rglob("*") if path.is_file())
-    if not files or DIST / "index.html" not in files:
-        raise SystemExit("index.html must exist at the artifact root")
+    html_files = [path for path in files if path.suffix.lower() == ".html"]
+    if html_files != [DIST / "index.html"]:
+        raise SystemExit("artifact must contain exactly one HTML file at root: index.html")
 
     unsupported = [path.relative_to(DIST) for path in files if path.suffix.lower() not in ALLOWED]
     if unsupported:
