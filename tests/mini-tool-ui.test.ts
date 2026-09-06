@@ -51,6 +51,48 @@ function boot(data: unknown = fixtureData) {
 }
 
 describe("mini-tool offline exploration", () => {
+  it("offers bounded offline questions, follow-ups and selectable person prompts in one dialog", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.people[0].prompt = "朱温完整提示词\n事实与角色边界";
+    data.people[0].sourceRefs = ["人物资料来源"];
+    data.personDialogues = { "zhu-wen": { "later-liang-founded": { background: "测试用已核实演绎" } } };
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    const opener = document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!;
+    opener.click();
+    document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
+    expect(document.body.textContent).toContain("预设剧情演示，非实时 AI");
+    document.querySelector<HTMLButtonElement>('[data-demo-question="life"]')!.click();
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("资料说明");
+    document.querySelector<HTMLButtonElement>('[data-demo-question="later-liang-founded"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-demo-field="background"]')!.click();
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("测试用已核实演绎");
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("非历史原话");
+    document.querySelector<HTMLButtonElement>('[data-demo-field="result"]')!.click();
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("后梁建立。");
+    for (let i = 0; i < 15; i++) document.querySelector<HTMLButtonElement>('[data-demo-question="life"]')!.click();
+    expect(document.querySelector('[role="log"]')?.children).toHaveLength(12);
+    expect(document.querySelector<HTMLSelectElement>('[data-field="demo-event"]')!.value).toBe("");
+    document.querySelector<HTMLButtonElement>('[data-action="clear-demo"]')!.click();
+    expect(document.querySelector('[role="log"]')?.children).toHaveLength(0);
+    expect(document.querySelector('[data-demo-field]')).toBeNull();
+    document.querySelector<HTMLButtonElement>('[data-person-panel="prompt"]')!.click();
+    const prompt = document.querySelector<HTMLTextAreaElement>('textarea')!;
+    expect(prompt.readOnly).toBe(true);
+    expect(prompt.value).toBe(data.people[0].prompt);
+    document.querySelector<HTMLButtonElement>('[data-action="select-prompt"]')!.click();
+    expect(prompt.selectionStart).toBe(0);
+    expect(prompt.selectionEnd).toBe(prompt.value.length);
+    expect(document.querySelectorAll('[role="dialog"]')).toHaveLength(1);
+    document.querySelector<HTMLButtonElement>('[data-person-panel="profile"]')!.click();
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("人物小传");
+    document.querySelector<HTMLButtonElement>('[data-action="close-dialog"]')!.click();
+    expect(document.activeElement).toBe(opener);
+    document.querySelector<HTMLButtonElement>('[data-person-id="li-keyong"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
+    expect(document.querySelector('[role="log"]')?.children).toHaveLength(0);
+    expect(document.querySelector('[data-demo-question="later-liang-founded"]')).toBeNull();
+  });
   it("shows a readable recovery status when the local data bundle is unavailable", () => {
     document.body.innerHTML = '<nav class="tabs"></nav><main id="main"></main>';
     delete (window as unknown as { __MINI_TOOL_DATA__?: unknown }).__MINI_TOOL_DATA__;
@@ -275,6 +317,38 @@ describe("mini-tool offline exploration", () => {
     year.dispatchEvent(new Event("change"));
     expect(document.body.textContent).toContain("仅展示自然地理背景");
     expect(document.querySelector(".atlas__region")).toBeNull();
+  });
+
+  it("pinches around the touch midpoint, pans with one remaining finger and prevents drag clicks", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    const svg = document.querySelector("svg")!;
+    svg.getBoundingClientRect = () => ({ x: 0, y: 0, left: 0, top: 0, right: 720, bottom: 760, width: 720, height: 760, toJSON() {} });
+    const region = document.querySelector(".atlas__region")!;
+    function pointer(type: string, id: number, x: number) {
+      const event = new Event(type, { bubbles: true });
+      Object.assign(event, { pointerId: id, pointerType: "touch", clientX: x, clientY: 380, button: 0 });
+      region.dispatchEvent(event);
+    }
+    pointer("pointerdown", 1, 260);
+    pointer("pointerdown", 2, 460);
+    pointer("pointermove", 1, 160);
+    pointer("pointermove", 2, 560);
+    expect(svg.getAttribute("viewBox")).toBe("180 190 360 380");
+    pointer("pointerup", 2, 560);
+    pointer("pointermove", 1, 200);
+    expect(svg.getAttribute("viewBox")).toBe("160 190 360 380");
+    pointer("pointerup", 1, 200);
+    region.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+    pointer("pointerdown", 3, 200);
+    pointer("pointercancel", 3, 200);
+    pointer("pointermove", 3, 100);
+    expect(svg.getAttribute("viewBox")).toBe("160 190 360 380");
+    pointer("pointerdown", 4, 200);
+    pointer("pointerup", 4, 200);
+    region.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull();
   });
 
   it("renders timeline events in batches and resets the limit when filters change", () => {

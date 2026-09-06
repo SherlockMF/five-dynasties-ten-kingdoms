@@ -52,7 +52,10 @@ function optionalText(value) {
 
 const { seedData } = loadTypeScriptModule(resolve(projectRoot, "data/seed/index.ts"));
 const { portraits } = loadTypeScriptModule(resolve(projectRoot, "data/portraits.ts"));
+const { buildPersonPrompt } = loadTypeScriptModule(resolve(projectRoot, "lib/ai/persona.ts"));
+const { personEventDialogues } = loadTypeScriptModule(resolve(projectRoot, "data/person-dialogues.ts"));
 const data = {
+  personDialogues: personEventDialogues,
   meta: {
     title: "一卷山河",
     description: "轻松逛懂五代十国",
@@ -76,6 +79,9 @@ const data = {
     roles: item.roles,
     summary: item.summary,
     biography: optionalText(item.biography),
+    prompt: buildPersonPrompt(item, "history"),
+    sourceRefs: item.sourceRefs,
+    disputedNote: optionalText(item.disputedNote),
     portrait: portraits[item.id] ? {
       src: `./assets/portraits/${item.id}.webp`,
       kind: portraits[item.id].kind,

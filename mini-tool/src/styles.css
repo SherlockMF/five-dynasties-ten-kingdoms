@@ -49,12 +49,19 @@ button {
 }
 
 button:focus,
+textarea:focus,
 input:focus,
-select:focus,
-[tabindex="-1"]:focus {
+select:focus {
   outline: 2px solid var(--cinnabar);
   outline-offset: 3px;
 }
+
+.view-title:focus, main:focus { outline: none; }
+@supports selector(:focus-visible) {
+  button:focus:not(:focus-visible) { outline: none; }
+}
+
+.atlas svg { touch-action: none; user-select: none; -webkit-user-select: none; }
 
 .app-shell {
   min-height: 100vh;
@@ -474,6 +481,17 @@ main {
   margin: 0;
   padding-right: 16px;
 }
+
+.person-actions { display: flex; flex-wrap: wrap; margin: 12px -4px; }
+.person-actions > * { margin: 4px; }
+.person-actions [aria-pressed="true"] { background: #18302b; color: #fffaf1; }
+.person-content { min-width: 0; }
+.fine-print { font-size: 12px; line-height: 1.8; color: #626e68; margin: 12px 0; }
+.person-prompt { display: block; width: 100%; margin-top: 12px; padding: 12px; border: 1px solid #cebea7; border-radius: 12px; background: #fffaf1; color: #18302b; font: inherit; font-size: 16px; line-height: 1.8; resize: vertical; white-space: pre-wrap; overflow-wrap: break-word; -webkit-user-select: text; user-select: text; }
+.demo-log { max-height: 330px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.demo-turn { margin: 12px 0; padding: 14px; border: 1px solid #ddcfbb; border-radius: 14px; background: #fffaf1; }
+.demo-question { margin-bottom: 14px; font-weight: 600; }
+.demo-answer { white-space: pre-wrap; line-height: 1.85; }
 
 .dialog__meta {
   color: var(--cinnabar);

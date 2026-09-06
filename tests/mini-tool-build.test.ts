@@ -32,10 +32,14 @@ describe("mini-tool build", () => {
     const data = JSON.parse(script.slice("window.__MINI_TOOL_DATA__=".length).trim().replace(/;$/, ""));
     expect(data.people).toHaveLength(52);
     for (const person of data.people) {
+      expect(person.prompt).toContain(person.name);
+      expect(person.prompt).toContain("事实与角色边界");
+      expect(person.sourceRefs.length).toBeGreaterThan(0);
       expect(person.portrait.src).toBe(`./assets/portraits/${person.id}.webp`);
       expect(existsSync(resolve(dist, person.portrait.src))).toBe(true);
       expect(person.portrait.note).toBeTruthy();
     }
+    expect(data.personDialogues["shi-jingtang"]["sixteen-prefectures-ceded"].background).toContain("契丹");
     for (let year = 907; year <= 979; year += 1) {
       expect(data.atlas.snapshots[data.atlas.years[year]]).toBeTruthy();
     }

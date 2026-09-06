@@ -293,6 +293,124 @@
     return figure;
   }
 
+  function personExperience(dialog, item, data, profile) {
+    var navigation = element("div", "person-actions");
+    var content = element("div", "person-content");
+    var messages = [];
+    var selectedEvent = null;
+    var ownEvents = data.events.filter(function (event) { return (event.personIds || []).indexOf(item.id) !== -1; });
+    function renderLog(log) {
+      clear(log);
+      messages.forEach(function (message) {
+        var turn = element("div", "demo-turn");
+        appendText(turn, "p", "demo-question", "你：" + message.question);
+        appendText(turn, "p", "eyebrow", message.kind);
+        appendText(turn, "p", "demo-answer", message.answer);
+        appendText(turn, "p", "fine-print", message.sources);
+        log.appendChild(turn);
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+    function show(panel) {
+      clear(content);
+      Array.prototype.forEach.call(navigation.children, function (control) {
+        control.setAttribute("aria-pressed", String(control.getAttribute("data-person-panel") === panel));
+      });
+      if (panel === "profile") { profile(content); return; }
+      if (panel === "prompt") {
+        appendText(content, "h3", "detail-row__label", "把人物设定带去其他 AI 工具");
+        appendText(content, "p", "fine-print", "先选中全文，再使用设备提供的复制操作。部分容器可能不提供复制菜单；选中不代表已复制。");
+        var prompt = element("textarea", "person-prompt");
+        prompt.readOnly = true;
+        prompt.rows = 12;
+        prompt.setAttribute("aria-label", item.name + "人物提示词");
+        prompt.value = item.prompt || "此人物提示词尚未收录。";
+        var select = button("选中全部", { className: "button", "data-action": "select-prompt" });
+        select.addEventListener("click", function () { prompt.focus(); prompt.select(); prompt.setSelectionRange(0, prompt.value.length); });
+        content.appendChild(select);
+        content.appendChild(prompt);
+        return;
+      }
+      appendText(content, "p", "eyebrow", "预设剧情演示，非实时 AI");
+      appendText(content, "p", "fine-print", "点击问题探索，暂不支持自由输入。角色演绎不是历史原话；其余回答为资料说明。仅保留最近 12 轮。");
+      var log = element("div", "demo-log");
+      log.setAttribute("role", "log");
+      log.setAttribute("aria-label", item.name + "演示对话");
+      log.setAttribute("aria-live", "polite");
+      renderLog(log);
+      content.appendChild(log);
+      var questions = element("div", "person-actions");
+      var followups = element("div", "person-actions");
+      function reply(question, answer, sources, adapted) {
+        messages.push({ question: question, answer: answer, sources: (sources || []).join("；"), kind: adapted ? "角色演绎，非历史原话" : "资料说明" });
+        if (messages.length > 12) messages.shift();
+        renderLog(log);
+      }
+      function eventReply(event, field, label) {
+        var adapted = data.personDialogues && data.personDialogues[item.id] && data.personDialogues[item.id][event.id];
+        var text = adapted && adapted[field];
+        reply(event.title + " · " + label, (text || event[field]) + (event.disputedNote ? "\n史料异说：" + event.disputedNote : ""), event.sourceRefs, Boolean(text));
+      }
+      function renderFollowups() {
+        clear(followups);
+        if (!selectedEvent) return;
+        [["background", "为什么发生"], ["process", "事情经过"], ["result", "后来结果"], ["impact", "历史影响"]].forEach(function (field) {
+          if (!selectedEvent[field[0]]) return;
+          var question = button(field[1], { className: "chip", "data-demo-field": field[0] });
+          question.addEventListener("click", function () { eventReply(selectedEvent, field[0], field[1]); });
+          followups.appendChild(question);
+        });
+      }
+      [["life", "讲讲你的生平"], ["boundary", "这些回答可信吗？"]].forEach(function (entry) {
+        var question = button(entry[1], { className: "chip", "data-demo-question": entry[0] });
+        question.addEventListener("click", function () {
+          selectedEvent = null;
+          var selector = content.querySelector('[data-field="demo-event"]');
+          if (selector) selector.value = "";
+          renderFollowups();
+          reply(entry[1], entry[0] === "life" ? (item.biography || item.summary) + (item.disputedNote ? "\n史料异说：" + item.disputedNote : "") : "这是预设演示，不是真实人物发言。资料说明来自已收录记录，角色对白为文学化改编，不能当作史料引文。未收录的问题不作推断。", item.sourceRefs, false);
+        });
+        questions.appendChild(question);
+      });
+      content.appendChild(questions);
+      if (ownEvents.length) {
+        content.appendChild(createSelect("选择想聊的事件", "demo-event", [{ value: "", label: "请选择事件" }].concat(ownEvents.map(function (event) { return { value: event.id, label: event.startYear + " · " + event.title }; })), selectedEvent ? selectedEvent.id : "", function (event) {
+          selectedEvent = findById(ownEvents, event.target.value);
+          renderFollowups();
+          if (selectedEvent) eventReply(selectedEvent, "summary", "聊聊这件事");
+        }));
+        ownEvents.slice(0, 3).forEach(function (event) {
+          var question = button(event.title, { className: "chip", "data-demo-question": event.id });
+          question.addEventListener("click", function () {
+            selectedEvent = event;
+            content.querySelector('[data-field="demo-event"]').value = event.id;
+            renderFollowups();
+            eventReply(event, "summary", "聊聊这件事");
+          });
+          questions.appendChild(question);
+        });
+      } else appendText(content, "p", "fine-print", "此人物暂无收录的关联事件。");
+      renderFollowups();
+      content.appendChild(followups);
+      var reset = button("清空演示", { className: "text-button", "data-action": "clear-demo" });
+      reset.addEventListener("click", function () {
+        messages = []; selectedEvent = null;
+        var selector = content.querySelector('[data-field="demo-event"]');
+        if (selector) selector.value = "";
+        renderLog(log); renderFollowups();
+      });
+      content.appendChild(reset);
+    }
+    [["profile", "人物小传"], ["demo", "对话演示"], ["prompt", "查看人物提示词"]].forEach(function (entry) {
+      var control = button(entry[1], { className: "chip", "data-person-panel": entry[0] });
+      control.addEventListener("click", function () { show(entry[0]); });
+      navigation.appendChild(control);
+    });
+    dialog.appendChild(navigation);
+    dialog.appendChild(content);
+    show("profile");
+  }
+
   function renderPeople(root, data, state, setState) {
     root.appendChild(heading("在人的选择里看见时代", "人物"));
     var searchLabel = element("label", "search-field");
@@ -348,6 +466,7 @@
       var open = button("阅读小传", { className: "text-button", "data-person-id": item.id, "aria-label": "阅读" + item.name + "小传" });
       open.addEventListener("click", function () {
         openDialog(item.name, function (dialog) {
+          personExperience(dialog, item, data, function (dialog) {
           appendText(dialog, "p", "dialog__meta", (item.roles || []).join(" · "));
           var detailPortrait = portraitFigure(item, true);
           if (detailPortrait) dialog.appendChild(detailPortrait);
@@ -357,6 +476,7 @@
           dialog.appendChild(labelledValue("关联关键事件", relatedNames(data.events.filter(function (event) {
             return (event.personIds || []).indexOf(item.id) !== -1;
           }).map(function (event) { return event.id; }), data.events)));
+          });
         }, open);
       });
       body.appendChild(open);
@@ -420,6 +540,7 @@
     else root.appendChild(element("p", "atlas__stage", snapshot.startYear + "—" + snapshot.endYear + " 年末格局 · 点击政权查看详情"));
     var figure = element("figure", "atlas");
     var box = atlas.viewBox;
+    var suppressMapClickUntil = 0;
     var svg = svgNode("svg", { viewBox: box.join(" "), role: "group", "aria-label": state.atlasYear + "年政权与重要地点示意图", preserveAspectRatio: "xMidYMid meet" });
     svg.appendChild(svgNode("path", { d: atlas.landPath, class: "atlas__land", "fill-rule": "evenodd" }));
     function openPolity(region, opener) {
@@ -447,7 +568,10 @@
       var path = svgNode("path", { d: atlas.paths[region.path], fill: region.color, class: "atlas__region" + (state.atlasPolity === region.id ? " atlas__region--selected" : ""), "data-region-id": region.id, tabindex: "0", role: "button", "aria-pressed": state.atlasPolity === region.id ? "true" : "false", "aria-label": "查看政权：" + region.name });
       path.setAttribute("fill-rule", "evenodd");
       if (region.accuracy && region.accuracy !== "precise") path.setAttribute("stroke-dasharray", "4 2");
-      path.addEventListener("click", function () { openPolity(region, path); });
+      path.addEventListener("click", function (event) {
+        if (event.detail && Date.now() < suppressMapClickUntil) return;
+        openPolity(region, path);
+      });
       path.addEventListener("keydown", function (event) { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openPolity(region, path); } });
       svg.appendChild(path);
     });
@@ -473,6 +597,61 @@
       state.atlasY = Math.max(0, Math.min(box[3] - height, state.atlasY));
       svg.setAttribute("viewBox", [state.atlasX, state.atlasY, width, height].join(" "));
     }
+    var pointers = {};
+    var gesture = null;
+    var moved = false;
+    function pointerList() { return Object.keys(pointers).map(function (id) { return pointers[id]; }).slice(0, 2); }
+    function center(points) {
+      return points.length > 1 ? { x: (points[0].x + points[1].x) / 2, y: (points[0].y + points[1].y) / 2 } : points[0];
+    }
+    function distance(points) {
+      return points.length > 1 ? Math.sqrt(Math.pow(points[1].x - points[0].x, 2) + Math.pow(points[1].y - points[0].y, 2)) : 0;
+    }
+    function beginGesture() {
+      var points = pointerList();
+      if (!points.length) { gesture = null; return; }
+      var rect = svg.getBoundingClientRect();
+      var width = box[2] / state.atlasZoom;
+      var height = box[3] / state.atlasZoom;
+      var scale = Math.min(rect.width / width, rect.height / height);
+      if (!scale) return;
+      var midpoint = center(points);
+      var left = rect.left + (rect.width - width * scale) / 2;
+      var top = rect.top + (rect.height - height * scale) / 2;
+      gesture = { center: midpoint, distance: distance(points), zoom: state.atlasZoom, scale: scale, left: left, top: top,
+        anchorX: state.atlasX + (midpoint.x - left) / scale, anchorY: state.atlasY + (midpoint.y - top) / scale };
+    }
+    svg.addEventListener("pointerdown", function (event) {
+      if (event.pointerType === "mouse" && event.button !== 0) return;
+        if (!Object.keys(pointers).length) { moved = false; suppressMapClickUntil = 0; }
+      pointers[event.pointerId] = { x: event.clientX, y: event.clientY };
+      if (Object.keys(pointers).length > 1) moved = true;
+      if (event.target.setPointerCapture) event.target.setPointerCapture(event.pointerId);
+      beginGesture();
+    });
+    svg.addEventListener("pointermove", function (event) {
+      if (!pointers[event.pointerId] || !gesture) return;
+      pointers[event.pointerId] = { x: event.clientX, y: event.clientY };
+      var points = pointerList();
+      var midpoint = center(points);
+      if (Math.abs(midpoint.x - gesture.center.x) + Math.abs(midpoint.y - gesture.center.y) > 5) moved = true;
+      if (points.length > 1 && gesture.distance > 0) {
+        state.atlasZoom = Math.max(1, Math.min(4, gesture.zoom * distance(points) / gesture.distance));
+      }
+      var scale = gesture.scale * state.atlasZoom / gesture.zoom;
+      state.atlasX = gesture.anchorX - (midpoint.x - gesture.left) / scale;
+      state.atlasY = gesture.anchorY - (midpoint.y - gesture.top) / scale;
+      updateViewport();
+    });
+    function endPointer(event) {
+      if (!pointers[event.pointerId]) return;
+      delete pointers[event.pointerId];
+      if (moved) suppressMapClickUntil = Date.now() + 400;
+      beginGesture();
+    }
+    svg.addEventListener("pointerup", endPointer);
+    svg.addEventListener("pointercancel", endPointer);
+    svg.addEventListener("lostpointercapture", endPointer);
     [{ label: "+", name: "zoom-in", title: "放大地图", zoom: 1.5 }, { label: "−", name: "zoom-out", title: "缩小地图", zoom: 1 / 1.5 }, { label: "↑", name: "pan-up", title: "向北移动", dy: -1 }, { label: "↓", name: "pan-down", title: "向南移动", dy: 1 }, { label: "←", name: "pan-left", title: "向西移动", dx: -1 }, { label: "→", name: "pan-right", title: "向东移动", dx: 1 }, { label: "全图", name: "reset-map", title: "恢复完整地图" }].forEach(function (tool) {
       var control = button(tool.label, { className: "atlas__tool", "data-action": tool.name, "aria-label": tool.title });
       control.addEventListener("click", function () {
@@ -492,7 +671,7 @@
     });
     updateViewport();
     figure.appendChild(tools);
-    figure.appendChild(element("figcaption", "atlas__caption", "山河图为阅读辅助示意，不代表精确疆界；红点为当年事件地点。可放大后用方向按钮移动。"));
+    figure.appendChild(element("figcaption", "atlas__caption", "双指缩放，单指拖动，轻点政权查看详情。红点为当年事件地点；疆域为历史概括示意，不代表精确疆界。"));
     appendText(figure, "p", "atlas__source", atlas.sourceNote);
     root.appendChild(figure);
     var section = element("section", "polity-section");
