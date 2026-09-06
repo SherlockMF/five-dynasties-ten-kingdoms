@@ -11,6 +11,7 @@ describe("mini-tool build", () => {
     expect(existsSync(resolve(dist, "assets/data.js"))).toBe(true);
     expect(existsSync(resolve(dist, "assets/app.js"))).toBe(true);
     expect(existsSync(resolve(dist, "assets/icon.png"))).toBe(true);
+    expect(html).toContain('<link rel="icon" href="./assets/icon.png">');
     expect(html.indexOf("./assets/data.js")).toBeLessThan(html.indexOf("./assets/app.js"));
     expect(html).not.toMatch(/<script(?![^>]*src=)/i);
     expect(html).not.toContain('type="module"');
