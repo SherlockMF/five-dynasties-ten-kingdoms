@@ -15,6 +15,8 @@
     "test:e2e": "playwright test",
     "mini-tool:build": "node scripts/build-mini-tool.mjs",
     "mini-tool:test": "vitest run mini-tool",
+    "mini-tool:package": "py -3 scripts/package-mini-tool.py",
+    "mini-tool:audit": "py -3 .codex/skills/minitool-zip-builder/scripts/audit_artifact.py output/xhs-mini-tool/dist && py -3 .codex/skills/minitool-zip-builder/scripts/audit_artifact.py output/xhs-mini-tool/一卷山河.zip",
     "maps:export": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/maps/export-snapshot.ps1",
     "maps:export:943": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/maps/export-943.ps1"
   },
