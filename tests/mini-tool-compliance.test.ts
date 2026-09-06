@@ -110,6 +110,7 @@ describe("mini-tool artifact compliance", () => {
     cpSync(resolve(projectRoot, "lib/deep-freeze.ts"), resolve(workspace, "lib/deep-freeze.ts"));
     cpSync(resolve(projectRoot, "lib/ai/persona.ts"), resolve(workspace, "lib/ai/persona.ts"));
     cpSync(resolve(projectRoot, "data/person-dialogues.ts"), resolve(workspace, "data/person-dialogues.ts"));
+    cpSync(resolve(projectRoot, "data/reading-paths.ts"), resolve(workspace, "data/reading-paths.ts"));
     cpSync(resolve(projectRoot, "scripts/build-mini-tool.mjs"), buildScript);
     cpSync(resolve(projectRoot, "scripts/build-mini-tool-atlas.mjs"), resolve(workspace, "scripts/build-mini-tool-atlas.mjs"));
     cpSync(resolve(projectRoot, "data/portraits.ts"), resolve(workspace, "data/portraits.ts"));

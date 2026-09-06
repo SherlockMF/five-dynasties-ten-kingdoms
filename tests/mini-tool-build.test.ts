@@ -31,6 +31,14 @@ describe("mini-tool build", () => {
     const script = readFileSync(resolve(dist, "assets/data.js"), "utf8");
     const data = JSON.parse(script.slice("window.__MINI_TOOL_DATA__=".length).trim().replace(/;$/, ""));
     expect(data.people).toHaveLength(52);
+    expect(data.meta.defaultYear).toBe(936);
+    expect(data.readingPaths).toHaveLength(3);
+    for (const path of data.readingPaths) {
+      for (const id of path.eventIds) expect(data.events.some((event: { id: string }) => event.id === id)).toBe(true);
+    }
+    const liang = data.dynasties.find((item: { id: string }) => item.id === "later-liang");
+    expect(liang.capital).toBeTruthy();
+    expect(liang.rulerPeriods.some((ruler: { personId?: string }) => ruler.personId === "zhu-wen")).toBe(true);
     for (const person of data.people) {
       expect(person.prompt).toContain(person.name);
       expect(person.prompt).toContain("事实与角色边界");

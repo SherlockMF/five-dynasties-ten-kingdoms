@@ -2,6 +2,14 @@
 
 “一卷山河”是主站历史资料的离线小工具版本，简介为“轻松逛懂五代十国”。本文面向后续维护者：读完后应能从仓库数据重建静态包、执行双目标审计，并找到待上传的 ZIP 与图标。
 
+## 维护状态：参赛版独立留存
+
+本版只用于近期小红书参赛，保留在 `codex/xhs-mini-tool`，不合并覆盖原版。后续开发默认回到 `feat/continuous-atlas` 的 Next.js 网页。两套界面并非自动同步；原版的数据或组件修改不会改变已经留存的 ZIP。
+
+2026-09-06 固定交付见[参赛快照](releases/2026-09-06/README.md)，对应标签 `xhs-contest-2026-09-06`。此快照包含 ZIP、图标和发布图文，已纳入 Git；不要重写标签或覆盖快照，修订时另建日期／版本目录。
+
+当前参赛体验保留 936 年叙事入口与三条阅读主线、单一纪年选择、可搜索的一页人物关系网、独立地图点位及手势缩放、离线人物角色对话。对话初始问题只预填输入框，用户发送后才出现问答。人物提示词支持选取复制，不调用剪贴板 API。
+
 ## 产物边界
 
 - `mini-tool/src` 是手工维护的 HTML、CSS、经典 JavaScript 与图标源文件。
@@ -9,7 +17,7 @@
 - `data/portraits.ts` 和 `public/portraits/series` 提供全部人物画像，构建时压缩为 240×320 WebP，并保留创作说明。
 - `data/maps/continuous-registry.json` 与原地图发布数据提供阶段疆域；构建时预投影为离线 SVG 路径，年份归属沿用原项目。
 - `output/xhs-mini-tool/dist` 是每次构建重建的静态目录，不应手工编辑。
-- `output/xhs-mini-tool/一卷山河.zip` 是上传包，`output/xhs-mini-tool/icon.png` 是单独上传的图标。`output` 已被 Git 忽略，可随时由源码重建。
+- `output/xhs-mini-tool/一卷山河.zip` 是工作中的上传包，`output/xhs-mini-tool/icon.png` 是单独上传的图标。`output` 已被 Git 忽略，可随时由源码重建；固定参赛包另存于上述受版本控制的快照中。
 
 小工具与 Next.js 主站是两套运行边界。修改主站组件不会自动改变小工具界面；需要在 `mini-tool/src` 中同步相应行为，再重新构建和验证。
 

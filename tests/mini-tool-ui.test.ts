@@ -51,12 +51,186 @@ function boot(data: unknown = fixtureData) {
 }
 
 describe("mini-tool offline exploration", () => {
+  it("does not prepend the speaker pronoun to a biography starting with another person", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.people[0].biography = "李克用死后，朱温继续经营中原。";
+    boot(data); document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-chat-send]')!.click();
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("李克用死后，我继续经营中原。");
+    expect(document.querySelector('[role="log"]')?.textContent).not.toContain("我李克用");
+  });
+  it("opens the nearest visible point when overlapping hit areas target a different marker", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.locations[1].mapPoint = [422,352]; data.events[1].startYear = 907;
+    boot(data); document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    const markers = Array.from(document.querySelectorAll('[data-map-location]'));
+    markers.forEach((marker,index) => {
+      vi.spyOn(marker.querySelector('.atlas__place')!, 'getBoundingClientRect').mockReturnValue({x:100+index*10,y:100,left:100+index*10,top:100,width:5,height:5,right:105+index*10,bottom:105,toJSON:()=>({})});
+    });
+    markers[1].dispatchEvent(new MouseEvent('click',{bubbles:true,detail:1,clientX:102,clientY:102}));
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("后梁建立、唐亡");
+    expect(document.querySelector('.dialog__title')?.textContent).not.toBe("吴国立国");
+  });
+  it("prefills an unsent question that can be replaced or cleared by choosing a topic", () => {
+    boot(); document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
+    expect(document.querySelector('[role="log"]')?.children).toHaveLength(0);
+    const input = document.querySelector<HTMLTextAreaElement>('[data-chat-input]')!;
+    expect(input.value).toBe("介绍一下你的生平");
+    input.focus();
+    expect(input.selectionEnd - input.selectionStart).toBe(input.value.length);
+    document.querySelector<HTMLButtonElement>('[data-person-panel="profile"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
+    expect(document.querySelector('[role="log"]')?.children).toHaveLength(0);
+    document.querySelector<HTMLButtonElement>('[data-demo-question="boundary"]')!.click();
+    expect(document.querySelector<HTMLTextAreaElement>('[data-chat-input]')!.value).toBe("");
+  });
+  it("offers first-person local conversation rather than a demo label", () => {
+    boot(); document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-person-id="zhu-wen"]')!.click();
+    expect(document.querySelector('[data-person-panel="demo"]')?.textContent).toBe("与他对话");
+    document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-demo-question="life"]')!.click();
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("我是朱温");
+    expect(document.querySelector('[data-chat-input]')).not.toBeNull();
+  });
+  it("keeps nearby locations separate at every zoom and separates overlapping points when enlarged", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.locations[1].mapPoint = [422,352]; data.events[1].startYear = 907;
+    boot(data); document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    expect(document.querySelector('[data-map-cluster]')).toBeNull();
+    expect(document.querySelectorAll('[data-map-location]')).toHaveLength(2);
+    const svg = document.querySelector('.atlas svg')!;
+    for (let i=0;i<4;i++) svg.dispatchEvent(new KeyboardEvent('keydown',{key:'+',bubbles:true}));
+    expect(document.querySelector('[data-map-cluster]')).toBeNull();
+    const points = Array.from(document.querySelectorAll('.atlas__place'));
+    const distance = Math.hypot(Number(points[0].getAttribute('cx'))-Number(points[1].getAttribute('cx')), Number(points[0].getAttribute('cy'))-Number(points[1].getAttribute('cy')));
+    expect(distance * Math.pow(1.5,4)).toBeGreaterThanOrEqual(19);
+    document.querySelector('[data-map-location="yangzhou"]')!.dispatchEvent(new MouseEvent('click'));
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("吴国立国");
+  });
+  it("keeps map markers prominent with a separate generous hit area while zooming", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    const svg = document.querySelector('.atlas svg')!;
+    const marker = document.querySelector('[data-map-location="kaifeng"]')!;
+    expect(marker.querySelector('.atlas__hit')).not.toBeNull();
+    svg.dispatchEvent(new KeyboardEvent("keydown", {key:"+",bubbles:true}));
+    const point = marker.querySelector('.atlas__place')!;
+    const hit = marker.querySelector('.atlas__hit')!;
+    expect(Number(hit.getAttribute('r'))).toBeGreaterThan(Number(point.getAttribute('r')));
+    expect(Number(point.getAttribute('r')) * 1.5).toBeLessThan(7);
+    expect(parseFloat((point as SVGElement).style.strokeWidth)).toBeLessThan(2);
+    for (let i = 0; i < 2; i++) svg.dispatchEvent(new KeyboardEvent("keydown", {key:"+",bubbles:true}));
+    expect(Number(point.getAttribute('r')) * Math.pow(1.5,3)).toBeCloseTo(7);
+    marker.dispatchEvent(new MouseEvent("click", {bubbles:true}));
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain("后梁建立");
+  });
+  it("centers the people page on a searchable relationship graph instead of a person list", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.personRelations = [{sourcePersonId:"zhu-wen",targetPersonId:"li-keyong",type:"enemy",description:"长期争衡",sourceRefs:["原资料"]}];
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    expect(document.querySelector('[data-person-graph]')).not.toBeNull();
+    expect(document.querySelectorAll('.person-card')).toHaveLength(1);
+    document.querySelector('[data-graph-person="li-keyong"]')!.dispatchEvent(new MouseEvent("click"));
+    expect(document.querySelector('[data-graph-center]')?.getAttribute("data-graph-center")).toBe("li-keyong");
+    const search = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
+    search.value = "朱全忠"; search.dispatchEvent(new Event("input", {bubbles:true}));
+    document.querySelector<HTMLButtonElement>('[data-focus-person="zhu-wen"]')!.click();
+    expect(document.querySelector('[data-graph-center]')?.getAttribute("data-graph-center")).toBe("zhu-wen");
+  });
+  it("opens with the configured 936 narrative and enters its map", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.meta.defaultYear = 936; data.atlas.years[936] = "first";
+    boot(data);
+    expect(document.querySelector('.story-year')?.textContent).toBe("936");
+    expect(document.body.textContent).toContain("一年之内，天下的边界为何被重新书写？");
+    document.querySelector<HTMLButtonElement>('[data-story-map]')!.click();
+    expect(document.querySelector<HTMLSelectElement>('[data-field="atlas-year"]')!.value).toBe("936");
+  });
+  it("shows every real neighbor together without pagination or missing targets", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.people = [data.people[0]].concat(Array.from({length:8}, (_, index) => ({...data.people[1],id:"neighbor-"+index,name:"关联人物"+index})));
+    data.personRelations = data.people.slice(1).map((person: {id:string}) => ({sourcePersonId:"zhu-wen",targetPersonId:person.id,type:"ally"}));
+    data.personRelations.push({sourcePersonId:"zhu-wen",targetPersonId:"missing",type:"ally"});
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
+    expect(document.querySelectorAll('[data-graph-person]')).toHaveLength(9);
+    expect(document.querySelector('[data-graph-next]')).toBeNull();
+    expect(document.querySelector('[data-graph-person="neighbor-7"]')).not.toBeNull();
+    expect(document.querySelector('[data-graph-person="missing"]')).toBeNull();
+  });
+  it("uses a single year rail with step and play controls in timeline", () => {
+    boot();
+    document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
+    expect(document.querySelector('[data-year-slider]')).toBeNull();
+    expect(document.querySelectorAll('.timeline-rail')).toHaveLength(1);
+    document.querySelector<HTMLButtonElement>('[data-year-step="1"]')!.click();
+    expect(document.querySelector('[data-rail-year="908"]')?.getAttribute("aria-current")).toBe("date");
+  });
+  it("reads a route in one dialog and can return to the previous stop", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.readingPaths = [{ id:"test-path", title:"测试路线", period:"902—907", description:"两站", eventIds:["wu-founded","later-liang-founded"] }];
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-reading-path="test-path"]')!.click();
+    expect(document.querySelector('.dialog__title')?.textContent).toBe("吴国立国");
+    expect(document.querySelector('[data-event-map]')).toBeNull();
+    expect(document.querySelector<HTMLButtonElement>('[data-route-step="-1"]')!.disabled).toBe(true);
+    document.querySelector<HTMLButtonElement>('[data-route-step="1"]')!.click();
+    expect(document.querySelectorAll('.dialog-backdrop')).toHaveLength(1);
+    expect(document.querySelector('.dialog__title')?.textContent).toBe("后梁建立、唐亡");
+    expect(document.querySelector<HTMLButtonElement>('[data-route-step="1"]')!.disabled).toBe(true);
+    document.querySelector<HTMLButtonElement>('[data-route-step="-1"]')!.click();
+    expect(document.querySelector('.dialog__title')?.textContent).toBe("吴国立国");
+  });
+  it("shows capitals, the year-end ruler and polity events", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.dynasties[1].capital = "开封";
+    data.dynasties[1].rulerPeriods = [{ name: "旧君", startYear: 900, endYear: 907 }, { name: "朱温", personId: "zhu-wen", startYear: 907, endYear: 912 }];
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
+    document.querySelector('[data-region-id]')!.dispatchEvent(new MouseEvent("click"));
+    const dialog = document.querySelector('[role="dialog"]')!;
+    expect(dialog.textContent).toContain("都城开封");
+    expect(dialog.querySelector('[data-ruler-person="zhu-wen"]')).not.toBeNull();
+    expect(dialog.textContent).not.toContain("旧君");
+    expect(dialog.querySelector('[data-event-id="later-liang-founded"]')).not.toBeNull();
+  });
+  it("supports multi-track selection and an event-marked year rail", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.events[0].tracks = ["five-dynasties"];
+    data.events[1].startYear = 907; data.events[1].tracks = ["ten-kingdoms"];
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
+    expect(document.querySelector('[data-rail-year="907"]')?.getAttribute("aria-current")).toBe("date");
+    document.querySelector<HTMLButtonElement>('[data-track="five-dynasties"]')!.click();
+    expect(document.querySelector('[data-event-id="wu-founded"]')).toBeNull();
+    document.querySelector<HTMLButtonElement>('[data-track="ten-kingdoms"]')!.click();
+    expect(document.querySelector('[data-event-id="wu-founded"]')).not.toBeNull();
+  });
   it("keeps existing prehistory events but does not offer maps for them", () => {
     boot();
     document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
     document.querySelector<HTMLButtonElement>('[data-event-id="wu-founded"]')!.click();
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain("902");
     expect(document.querySelector('[data-event-map]')).toBeNull();
+  });
+  it("keeps late-Tang events independent of subject selection and allows empty selections", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.events[0].tracks = ["five-dynasties"];
+    data.events[1].tracks = ["late-tang", "ten-kingdoms"];
+    boot(data);
+    document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-track="five-dynasties"]')!.click();
+    document.querySelector<HTMLButtonElement>('[data-track="five-dynasties"]')!.click();
+    expect(document.querySelector('[data-event-id="later-liang-founded"]')).toBeNull();
+    document.querySelector<HTMLButtonElement>('[data-rail-year="902"]')!.click();
+    expect(document.querySelector('[data-event-id="wu-founded"]')).not.toBeNull();
+    expect(document.querySelector('[data-rail-year="902"]')?.getAttribute("aria-current")).toBe("date");
   });
   it("plays through shared years and pauses when a detail is opened", () => {
     vi.useFakeTimers();
@@ -65,10 +239,10 @@ describe("mini-tool offline exploration", () => {
       document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
       document.querySelector<HTMLButtonElement>('[data-action="play-history"]')!.click();
       vi.advanceTimersByTime(1600);
-      expect(document.querySelector<HTMLInputElement>('[data-year-slider]')!.value).toBe("908");
+      expect(document.querySelector('[data-rail-year="908"]')?.getAttribute("aria-current")).toBe("date");
       document.dispatchEvent(new Event("mini-tool-pause"));
       vi.advanceTimersByTime(3200);
-      expect(document.querySelector<HTMLInputElement>('[data-year-slider]')!.value).toBe("908");
+      expect(document.querySelector('[data-rail-year="908"]')?.getAttribute("aria-current")).toBe("date");
       expect(document.querySelector('[data-action="play-history"]')?.textContent).toBe("播放");
     } finally { vi.useRealTimers(); }
   });
@@ -93,9 +267,9 @@ describe("mini-tool offline exploration", () => {
     const first = document.querySelector('.dialog-backdrop')!;
     const related = first.querySelector<HTMLButtonElement>('[data-related-person="li-keyong"]')!;
     expect(related).not.toBeNull(); related.click();
-    expect(first.hasAttribute("hidden")).toBe(true);
-    document.querySelector<HTMLButtonElement>('.dialog-backdrop:not([hidden]) [data-action="close-dialog"]')!.click();
-    expect(first.hasAttribute("hidden")).toBe(false);
+    expect(document.querySelectorAll('.dialog-backdrop')).toHaveLength(1);
+    expect(first.textContent).toContain("李克用");
+    document.querySelector<HTMLButtonElement>('[data-action="back-person"]')!.click();
     expect(document.activeElement).toBe(related);
     first.querySelector<HTMLButtonElement>('[data-event-id="later-liang-founded"]')!.click();
     expect(document.querySelector('.dialog-backdrop:not([hidden])')?.textContent).toContain("关联人物");
@@ -105,10 +279,7 @@ describe("mini-tool offline exploration", () => {
   it("shares the year between timeline and atlas and opens events from map points", () => {
     boot();
     document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
-    const slider = document.querySelector<HTMLInputElement>('[data-year-slider]')!;
-    expect(slider).not.toBeNull();
-    slider.value = "908";
-    slider.dispatchEvent(new Event("change", { bubbles: true }));
+    document.querySelector<HTMLButtonElement>('[data-year-step="1"]')!.click();
     document.querySelector<HTMLButtonElement>('[data-view="atlas"]')!.click();
     expect(document.querySelector<HTMLSelectElement>('[data-field="atlas-year"]')!.value).toBe("908");
     document.querySelector<HTMLButtonElement>('[data-year-step="-1"]')!.click();
@@ -127,11 +298,11 @@ describe("mini-tool offline exploration", () => {
     document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
     expect(document.querySelector('.dialog--chat')).not.toBeNull();
     expect(document.querySelector('.chat-composer')).not.toBeNull();
-    expect(document.body.textContent).toContain("预设剧情演示，非实时 AI");
+    expect(document.body.textContent).toContain("离线回答，不接入实时 AI");
     document.querySelector<HTMLButtonElement>('[data-demo-question="life"]')!.click();
-    expect(document.querySelector('.message--user')?.textContent).toContain("讲讲你的生平");
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("讲讲你的生平");
     expect(document.querySelector('.message--person')?.textContent).toContain("朱温");
-    expect(document.querySelector('[role="log"]')?.textContent).toContain("资料说明");
+    expect(document.querySelector('[role="log"]')?.textContent).toContain("角色演绎");
     document.querySelector<HTMLButtonElement>('[data-demo-question="later-liang-founded"]')!.click();
     document.querySelector<HTMLButtonElement>('[data-demo-field="background"]')!.click();
     expect(document.querySelector('[role="log"]')?.textContent).toContain("测试用已核实演绎");
@@ -156,6 +327,8 @@ describe("mini-tool offline exploration", () => {
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain("人物小传");
     document.querySelector<HTMLButtonElement>('[data-action="close-dialog"]')!.click();
     expect(document.activeElement).toBe(opener);
+    const searchOther = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
+    searchOther.value = "李克用"; searchOther.dispatchEvent(new Event("input", { bubbles: true }));
     document.querySelector<HTMLButtonElement>('[data-person-id="li-keyong"]')!.click();
     document.querySelector<HTMLButtonElement>('[data-person-panel="demo"]')!.click();
     expect(document.querySelector('[role="log"]')?.children).toHaveLength(0);
@@ -258,7 +431,7 @@ describe("mini-tool offline exploration", () => {
     search.value = "朱";
     search.dispatchEvent(new InputEvent("input", { bubbles: true, data: "朱", inputType: "insertCompositionText", isComposing: true }));
     expect(document.querySelector('[data-field="person-search"]')).toBe(search);
-    expect(document.body.textContent).toContain("李克用");
+    expect(document.querySelector('[data-focus-person]')).toBeNull();
 
     search.dispatchEvent(new CompositionEvent("compositionend", { bubbles: true, data: "朱" }));
     const currentSearch = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
@@ -457,9 +630,12 @@ describe("mini-tool offline exploration", () => {
     boot(data);
 
     document.querySelector<HTMLButtonElement>('[data-view="people"]')!.click();
-    expect(document.querySelectorAll("[data-person-id]")).toHaveLength(12);
+    expect(document.querySelectorAll("[data-person-id]")).toHaveLength(1);
+    const searchPeople = document.querySelector<HTMLInputElement>('[data-field="person-search"]')!;
+    searchPeople.value = "人"; searchPeople.dispatchEvent(new Event("input", { bubbles: true }));
+    expect(document.querySelectorAll("[data-focus-person]")).toHaveLength(12);
     document.querySelector<HTMLButtonElement>('[data-action="load-more-people"]')!.click();
-    expect(document.querySelectorAll("[data-person-id]")).toHaveLength(13);
+    expect(document.querySelectorAll("[data-focus-person]")).toHaveLength(13);
 
     document.querySelector<HTMLButtonElement>('[data-view="events"]')!.click();
     expect(document.querySelectorAll("[data-event-id]")).toHaveLength(12);

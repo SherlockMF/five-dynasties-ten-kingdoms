@@ -54,7 +54,9 @@ const { seedData } = loadTypeScriptModule(resolve(projectRoot, "data/seed/index.
 const { portraits } = loadTypeScriptModule(resolve(projectRoot, "data/portraits.ts"));
 const { buildPersonPrompt } = loadTypeScriptModule(resolve(projectRoot, "lib/ai/persona.ts"));
 const { personEventDialogues } = loadTypeScriptModule(resolve(projectRoot, "data/person-dialogues.ts"));
+const { readingPaths } = loadTypeScriptModule(resolve(projectRoot, "data/reading-paths.ts"));
 const data = {
+  readingPaths,
   personDialogues: personEventDialogues,
   personRelations: seedData.personRelations.map(({ sourcePersonId, targetPersonId, type, description, sourceRefs }) => ({ sourcePersonId, targetPersonId, type, description, sourceRefs })),
   eventRelations: seedData.eventRelations.map(({ sourceEventId, targetEventId, type }) => ({ sourceEventId, targetEventId, type })),
@@ -63,6 +65,7 @@ const data = {
     description: "轻松逛懂五代十国",
     minYear: 875,
     maxYear: 979,
+    defaultYear: 936,
   },
   dynasties: seedData.dynasties.map((item) => ({
     id: item.id,
@@ -72,6 +75,8 @@ const data = {
     endYear: item.endYear,
     summary: item.summary,
     color: item.color,
+    capital: item.capital || "",
+    rulerPeriods: item.rulerPeriods,
   })),
   people: seedData.people.map((item) => ({
     id: item.id,
