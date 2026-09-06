@@ -27,8 +27,8 @@ function resolveLocalModule(fromFile, specifier) {
 function loadTypeScriptModule(filename) {
   const absolute = resolve(filename);
   if (moduleCache.has(absolute)) return moduleCache.get(absolute).exports;
-  const module = { exports: {} };
-  moduleCache.set(absolute, module);
+  const loadedModule = { exports: {} };
+  moduleCache.set(absolute, loadedModule);
   const source = readFileSync(absolute, "utf8");
   const output = ts.transpileModule(source, {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2017 },
@@ -40,8 +40,8 @@ function loadTypeScriptModule(filename) {
     throw new Error(ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticHost));
   }
   const wrapper = new Function("require", "module", "exports", output.outputText);
-  wrapper((specifier) => loadTypeScriptModule(resolveLocalModule(absolute, specifier)), module, module.exports);
-  return module.exports;
+  wrapper((specifier) => loadTypeScriptModule(resolveLocalModule(absolute, specifier)), loadedModule, loadedModule.exports);
+  return loadedModule.exports;
 }
 
 function optionalText(value) {
