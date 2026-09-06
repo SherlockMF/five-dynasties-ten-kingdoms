@@ -208,6 +208,30 @@ describe("mini-tool offline exploration", () => {
     expect(document.body.textContent).toContain("示意，不代表精确疆界");
   });
 
+  it("renders timeline events in batches and resets the limit when filters change", () => {
+    const data = JSON.parse(JSON.stringify(fixtureData));
+    data.events = Array.from({ length: 13 }, (_, index) => ({
+      ...fixtureData.events[0], id: `timeline-event-${index}`, title: `纪年事件${index}`,
+    }));
+    boot(data);
+
+    document.querySelector<HTMLButtonElement>('[data-view="timeline"]')!.click();
+    expect(document.querySelectorAll("[data-event-id]")).toHaveLength(12);
+    document.querySelector<HTMLButtonElement>('[data-action="load-more-timeline"]')!.click();
+    expect(document.querySelectorAll("[data-event-id]")).toHaveLength(13);
+
+    const track = document.querySelector<HTMLSelectElement>('[data-field="track"]')!;
+    track.value = "政权";
+    track.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(document.querySelectorAll("[data-event-id]")).toHaveLength(12);
+    document.querySelector<HTMLButtonElement>('[data-action="load-more-timeline"]')!.click();
+
+    const year = document.querySelector<HTMLSelectElement>('[data-field="year"]')!;
+    year.value = "all";
+    year.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(document.querySelectorAll("[data-event-id]")).toHaveLength(12);
+  });
+
   it("renders long people and event lists in small batches", () => {
     const data = JSON.parse(JSON.stringify(fixtureData));
     data.people = Array.from({ length: 13 }, (_, index) => ({

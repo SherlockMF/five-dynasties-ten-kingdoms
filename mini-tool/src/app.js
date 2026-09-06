@@ -221,8 +221,8 @@
     var year;
     for (year = data.meta.minYear; year <= data.meta.maxYear; year += 1) years.push({ value: year, label: year + " 年" });
     var tracks = unique([].concat.apply([], data.events.map(function (item) { return item.tracks || []; })));
-    controls.appendChild(createSelect("年份", "year", years, state.year, function (event) { setState({ year: event.target.value === "all" ? "all" : Number(event.target.value) }); }));
-    controls.appendChild(createSelect("线索", "track", [{ value: "all", label: "全部线索" }].concat(tracks.map(function (track) { return { value: track, label: trackLabel(track) }; })), state.track, function (event) { setState({ track: event.target.value }); }));
+    controls.appendChild(createSelect("年份", "year", years, state.year, function (event) { setState({ year: event.target.value === "all" ? "all" : Number(event.target.value), timelineLimit: LIST_PAGE_SIZE }); }));
+    controls.appendChild(createSelect("线索", "track", [{ value: "all", label: "全部线索" }].concat(tracks.map(function (track) { return { value: track, label: trackLabel(track) }; })), state.track, function (event) { setState({ track: event.target.value, timelineLimit: LIST_PAGE_SIZE }); }));
     root.appendChild(controls);
     var matches = data.events.filter(function (item) {
       var yearMatches = state.year === "all" || item.startYear === state.year || (item.endYear && item.startYear <= state.year && item.endYear >= state.year);
@@ -230,14 +230,19 @@
       return yearMatches && trackMatches;
     });
     if (!matches.length) {
-      root.appendChild(status("这一年没有找到符合当前线索的事件。", "查看全部事件", "show-all-events", function () { setState({ year: "all", track: "all" }); }));
+      root.appendChild(status("这一年没有找到符合当前线索的事件。", "查看全部事件", "show-all-events", function () { setState({ year: "all", track: "all", timelineLimit: LIST_PAGE_SIZE }); }));
       return;
     }
     var list = element("div", "card-list");
-    matches.forEach(function (item) {
+    matches.slice(0, state.timelineLimit).forEach(function (item) {
       list.appendChild(eventCard(item, function (selected, opener) { openEvent(selected, data, opener); }));
     });
     root.appendChild(list);
+    if (matches.length > state.timelineLimit) {
+      var moreTimeline = button("加载更多", { className: "button button--primary", "data-action": "load-more-timeline" });
+      moreTimeline.addEventListener("click", function () { setState({ timelineLimit: state.timelineLimit + LIST_PAGE_SIZE }); });
+      root.appendChild(moreTimeline);
+    }
   }
 
   function categoryLabel(category) {
@@ -427,7 +432,7 @@
 
   function createApp(root, data) {
     if (!root || !data || !data.meta) return;
-    var state = { view: "guide", year: 907, track: "all", personQuery: "", personCategory: "all", peopleLimit: LIST_PAGE_SIZE, eventType: "all", eventsLimit: LIST_PAGE_SIZE, atlasYear: 907 };
+    var state = { view: "guide", year: 907, track: "all", timelineLimit: LIST_PAGE_SIZE, personQuery: "", personCategory: "all", peopleLimit: LIST_PAGE_SIZE, eventType: "all", eventsLimit: LIST_PAGE_SIZE, atlasYear: 907 };
     function setState(patch, focusHeading) {
       Object.keys(patch).forEach(function (key) { state[key] = patch[key]; });
       render();
