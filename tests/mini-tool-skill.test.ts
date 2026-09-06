@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
 describe("workspace mini-tool skill", () => {
   it("pins the expected package and audit files", () => {

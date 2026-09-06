@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { describe, expect, it } from "vitest";
 
 const fixtureData = {
   meta: { title: "一卷山河", description: "轻松逛懂五代十国", minYear: 875, maxYear: 979 },
