@@ -1,3 +1,14 @@
+:root {
+  --ink: #172824;
+  --paper: #f3f0e7;
+  --paper-light: #fffaf1;
+  --cinnabar: #9f4036;
+  --coral: #df7567;
+  --gold: #b79755;
+  --jade: #477b72;
+  --line: #d8cebc;
+}
+
 *,
 *::before,
 *::after {
@@ -11,25 +22,53 @@ body {
 }
 
 html {
+  background: var(--paper);
   touch-action: manipulation;
 }
 
 body {
-  background: #f5f0e7;
-  color: #173f3c;
+  background: var(--paper);
+  color: var(--ink);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: 16px;
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+button,
+input,
+select {
+  color: inherit;
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus,
+input:focus,
+select:focus,
+[tabindex="-1"]:focus {
+  outline: 2px solid var(--cinnabar);
+  outline-offset: 3px;
+}
+
+.app-shell {
+  min-height: 100vh;
+  min-height: var(--app-height, 100vh);
 }
 
 .skip-link {
   background: #ffffff;
-  color: #173f3c;
+  color: var(--ink);
   left: 12px;
-  padding: 8px 12px;
-  position: absolute;
-  top: -48px;
-  z-index: 10;
+  padding: 10px 14px;
+  position: fixed;
+  top: -60px;
+  z-index: 50;
 }
 
 .skip-link:focus {
@@ -41,40 +80,571 @@ body {
 main {
   margin-left: auto;
   margin-right: auto;
-  max-width: 720px;
+  max-width: 760px;
   padding-left: 20px;
   padding-right: 20px;
 }
 
 .masthead {
-  padding-top: 32px;
-  padding-top: calc(32px + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+  padding-top: 26px;
+  padding-top: calc(26px + var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
   text-align: center;
 }
 
+.masthead__era {
+  color: var(--cinnabar);
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  margin: 0;
+}
+
 .masthead h1 {
-  font-size: 32px;
-  margin: 8px 0;
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  line-height: 1.2;
+  margin: 8px 0 3px;
 }
 
-.masthead p {
-  margin: 6px 0;
+.masthead__description {
+  color: #64706b;
+  font-size: 14px;
+  margin: 0;
 }
 
-.tabs {
-  min-height: 48px;
+.bottom-tabs {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-top: 22px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  padding-bottom: calc(10px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: #5d6863;
+  -webkit-box-flex: 1;
+  -ms-flex: 1 0 auto;
+  flex: 1 0 auto;
+  min-height: 44px;
+  min-width: 56px;
+  padding: 8px 13px;
+}
+
+.tab + .tab {
+  margin-left: 6px;
+}
+
+.tab--active {
+  background: var(--ink);
+  color: #ffffff;
 }
 
 main {
   min-width: 0;
-  padding-bottom: 32px;
-  padding-bottom: calc(32px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
-  padding-top: 24px;
+  padding-bottom: 48px;
+  padding-bottom: calc(48px + var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  padding-top: 26px;
 }
 
-[role="status"] {
-  background: #fffaf1;
-  border: 1px solid #d9cbb6;
-  border-radius: 12px;
+.section-heading {
+  border-left: 3px solid var(--coral);
+  padding-left: 15px;
+}
+
+.eyebrow {
+  color: var(--cinnabar);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 3px;
+}
+
+.view-title {
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.lede {
+  color: #52605a;
+  margin: 14px 0 22px;
+}
+
+.path-grid {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-left: -10px;
+}
+
+.path-card {
+  background: var(--paper-light);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: block;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  min-height: 142px;
   padding: 16px;
+  text-align: left;
+  width: calc(33.333% - 10px);
+}
+
+.path-card__mark,
+.path-card__title,
+.path-card__text {
+  display: block;
+}
+
+.path-card__mark {
+  color: var(--coral);
+  font-family: Georgia, serif;
+  font-size: 12px;
+}
+
+.path-card__title {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 18px;
+  margin-top: 7px;
+}
+
+.path-card__text {
+  color: #65716c;
+  font-size: 13px;
+  margin-top: 5px;
+}
+
+.paper-panel,
+.notice-panel,
+.filter-panel,
+.atlas,
+.polity-section {
+  border-radius: 18px;
+  margin-top: 20px;
+}
+
+.paper-panel,
+.filter-panel,
+.polity-section {
+  background: rgba(255, 250, 241, 0.85);
+  border: 1px solid var(--line);
+}
+
+.range-panel {
+  padding: 19px;
+}
+
+.range-panel__years {
+  color: var(--jade);
+  font-family: Georgia, serif;
+  font-size: 30px;
+  line-height: 1.2;
+  margin: 4px 0;
+}
+
+.muted {
+  color: #65716c;
+  margin: 4px 0 0;
+}
+
+.notice-panel {
+  background: #e2ece7;
+  border-left: 4px solid var(--jade);
+  padding: 18px;
+}
+
+.notice-panel__title {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.notice-panel p {
+  font-size: 13px;
+  margin: 7px 0 0;
+}
+
+.filter-panel {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  margin-bottom: 18px;
+  padding: 14px;
+}
+
+.field {
+  display: block;
+  -webkit-box-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  min-width: 0;
+}
+
+.field + .field {
+  margin-left: 12px;
+}
+
+.field__label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 5px;
+}
+
+.field__control,
+.search-field__input {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #ffffff;
+  border: 1px solid #c9beab;
+  border-radius: 10px;
+  min-height: 44px;
+  padding: 8px 12px;
+  width: 100%;
+}
+
+.field__control {
+  background-image: linear-gradient(45deg, transparent 50%, #52605a 50%), linear-gradient(135deg, #52605a 50%, transparent 50%);
+  background-position: calc(100% - 17px) 18px, calc(100% - 12px) 18px;
+  background-repeat: no-repeat;
+  background-size: 5px 5px, 5px 5px;
+  padding-right: 32px;
+}
+
+.search-field {
+  display: block;
+  margin: 20px 0 13px;
+}
+
+.chip-row {
+  overflow-x: auto;
+  padding-bottom: 10px;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chip {
+  background: #fffaf1;
+  border: 1px solid #cbbda7;
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 8px 15px;
+}
+
+.chip + .chip {
+  margin-left: 7px;
+}
+
+.chip--active {
+  background: var(--coral);
+  border-color: var(--coral);
+  color: #ffffff;
+}
+
+.card-list {
+  margin-top: 4px;
+}
+
+.history-card {
+  background: #fffaf1;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(23, 40, 36, 0.05);
+  padding: 18px;
+}
+
+.history-card + .history-card {
+  margin-top: 12px;
+}
+
+.history-card__meta {
+  color: var(--cinnabar);
+  font-size: 12px;
+  font-weight: 700;
+  margin: 0 0 5px;
+}
+
+.history-card__title {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 20px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.history-card__summary {
+  color: #53615b;
+  margin: 8px 0 12px;
+}
+
+.text-button,
+.dialog__close {
+  background: transparent;
+  border: 0;
+  color: var(--cinnabar);
+  font-weight: 700;
+  min-height: 44px;
+  padding: 8px 0;
+}
+
+.button {
+  border: 0;
+  border-radius: 999px;
+  min-height: 44px;
+  padding: 10px 18px;
+}
+
+.button--primary {
+  background: var(--coral);
+  color: #ffffff;
+}
+
+.empty-state {
+  background: #fffaf1;
+  border: 1px dashed #c9bba5;
+  border-radius: 16px;
+  margin-top: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.empty-state__text {
+  margin: 0 0 14px;
+}
+
+.dialog-backdrop {
+  background: rgba(23, 40, 36, 0.58);
+  bottom: 0;
+  left: 0;
+  overflow-y: auto;
+  padding: 24px 16px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 40;
+  -webkit-overflow-scrolling: touch;
+}
+
+.dialog {
+  background: var(--paper-light);
+  border-radius: 20px;
+  box-shadow: 0 20px 55px rgba(23, 40, 36, 0.24);
+  margin: 7vh auto;
+  max-width: 620px;
+  padding: 22px;
+}
+
+.dialog__top {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+.dialog__title {
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 24px;
+  margin: 0;
+  padding-right: 16px;
+}
+
+.dialog__meta {
+  color: var(--cinnabar);
+  margin: 4px 0 16px;
+}
+
+.detail-row {
+  border-top: 1px solid var(--line);
+  padding-top: 13px;
+}
+
+.detail-row + .detail-row {
+  margin-top: 13px;
+}
+
+.detail-row__label {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.detail-row__value {
+  color: #4f5c57;
+  margin: 0;
+}
+
+.atlas {
+  background: #dfe9e2;
+  border: 1px solid #b8c9bf;
+  margin-left: 0;
+  margin-right: 0;
+  overflow: hidden;
+}
+
+.atlas svg {
+  display: block;
+  height: auto;
+  width: 100%;
+}
+
+.atlas__land {
+  fill: #f7f1df;
+  stroke: #b79755;
+  stroke-width: 2;
+}
+
+.atlas__place {
+  fill: var(--cinnabar);
+  stroke: #fffaf1;
+  stroke-width: 2;
+}
+
+.atlas__label {
+  fill: var(--ink);
+  font-family: sans-serif;
+  font-size: 11px;
+}
+
+.atlas__polity-label {
+  fill: var(--ink);
+  font-family: Georgia, "Songti SC", serif;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.atlas__caption {
+  background: rgba(255, 250, 241, 0.84);
+  color: #58645f;
+  font-size: 12px;
+  padding: 12px 15px;
+}
+
+.polity-section {
+  padding: 18px;
+}
+
+.polity-section__title {
+  font-family: Georgia, "Songti SC", serif;
+  margin: 0 0 12px;
+}
+
+.polity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.polity-item {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  min-height: 44px;
+}
+
+.polity-item + .polity-item {
+  border-top: 1px solid var(--line);
+}
+
+.polity-item__swatch {
+  border-radius: 50%;
+  height: 10px;
+  margin-right: 10px;
+  width: 10px;
+}
+
+.polity-item__name {
+  min-width: 64px;
+}
+
+.polity-item__years {
+  color: #65716c;
+  font-size: 13px;
+}
+
+.polity-item__category {
+  color: var(--cinnabar);
+  font-size: 12px;
+  margin-left: auto;
+}
+
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+@media (max-width: 560px) {
+  .masthead,
+  .tabs,
+  main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .path-card {
+    min-height: 126px;
+    width: calc(50% - 10px);
+  }
+
+  .filter-panel {
+    display: block;
+  }
+
+  .field + .field {
+    margin-left: 0;
+    margin-top: 10px;
+  }
+
+  .dialog {
+    margin: 2vh auto;
+  }
+}
+
+@media (max-width: 380px) {
+  .path-card {
+    width: calc(100% - 10px);
+  }
+
+  .tab {
+    padding-left: 11px;
+    padding-right: 11px;
+  }
+}
+
+@media (hover: hover) {
+  .path-card:hover,
+  .history-card:hover {
+    border-color: var(--gold);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+  }
 }
