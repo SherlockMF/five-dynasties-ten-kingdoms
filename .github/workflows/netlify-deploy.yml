@@ -1,0 +1,35 @@
+name: Deploy Netlify
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/continuous-atlas
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+      NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm install -g netlify-cli@27.0.1
+      - name: Deploy to Netlify
+        run: netlify deploy --build --prod --message "GitHub Actions deploy ${{ github.sha }}"

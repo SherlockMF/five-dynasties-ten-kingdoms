@@ -16,3 +16,6 @@ __pycache__/
 *.py[cod]
 /public/maplibre/maplibre-gl-worker.mjs
 /public/maplibre/maplibre-gl-shared.mjs
+
+# Local Netlify folder
+.netlify
