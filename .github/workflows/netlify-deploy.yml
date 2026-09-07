@@ -32,4 +32,4 @@ jobs:
       - run: npm ci
       - run: npm install -g netlify-cli@27.0.1
       - name: Deploy to Netlify
-        run: netlify deploy --build --prod --message "GitHub Actions deploy ${{ github.sha }}"
+        run: netlify deploy --build --prod --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "GitHub Actions deploy ${{ github.sha }}"
