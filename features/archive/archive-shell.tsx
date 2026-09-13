@@ -18,6 +18,10 @@ function Section({ id, number, title, description, children }: { id: string; num
 }
 
 export function ArchiveShell({ initialView, allowDev }: { initialView: ArchiveView; allowDev: boolean }) {
+  return <ArchiveSession key={allowDev ? "development" : "scene"} initialView={initialView} allowDev={allowDev} />;
+}
+
+function ArchiveSession({ initialView, allowDev }: { initialView: ArchiveView; allowDev: boolean }) {
   const [view, setView] = useState(initialView);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -67,12 +71,21 @@ export function ArchiveShell({ initialView, allowDev }: { initialView: ArchiveVi
   }
   async function importFile(file: File | undefined) {
     if (!file) return;
+    cancelPending();
+    const revision = sequence.current;
+    setBusy(true);
+    setError("");
     try {
       if (file.size > 128_000) throw new Error("记录文件过大。");
       const value = JSON.parse(await file.text());
+      if (revision !== sequence.current) return;
       if (!value || !Array.isArray(value.discoveries)) throw new Error("文件需要包含 discoveries 数组。");
       await exchange([...records.current, ...value.discoveries]);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "无法读取记录文件。"); }
+    } catch (cause) {
+      if (revision !== sequence.current) return;
+      setError(cause instanceof Error ? cause.message : "无法读取记录文件。");
+      setBusy(false);
+    }
   }
   const entries = (type: string) => view.entries.filter(e => e.type === type);
   const cards = (type: string) => <div className={`grid gap-4 ${type === "inscription" ? "" : "md:grid-cols-2"}`}>{entries(type).map(e => <ArchiveRecord key={e.id} entry={e} />)}</div>;
@@ -97,7 +110,7 @@ export function ArchiveShell({ initialView, allowDev }: { initialView: ArchiveVi
       <Section id="artifacts" number="06" title="文物档案" description="先记录所见，再整理材料，最后连接时代背景。">{cards("artifact")}</Section>
       <Section id="timeline" number="07" title="时代坐标" description="从具体现场进入经纬专题；这里只保留已发现的时间坐标。">{cards("timeline")}</Section>
       <Section id="records" number="08" title="我的调查记录" description="保存发现顺序、调查时间与现场照片记录；进度仅保存在当前浏览器。">
-        <div className="mb-6 flex flex-wrap items-center gap-4"><label className="inline-flex min-h-11 cursor-pointer items-center border border-ink/25 px-4 text-sm focus-within:outline-2 focus-within:outline-cinnabar">导入现场记录<input aria-label="导入现场记录" type="file" accept="application/json,.json" disabled={busy} className="sr-only" onChange={e => { void importFile(e.target.files?.[0]); e.target.value = ""; }} /></label><button disabled={busy} onClick={reset} className="min-h-11 border-b border-ink/30 text-sm text-muted disabled:opacity-40">清空本机记录</button></div>
+        <div className="mb-6 flex flex-wrap items-center gap-4"><label className="inline-flex min-h-11 cursor-pointer items-center border border-ink/25 px-4 text-sm focus-within:outline-2 focus-within:outline-cinnabar">导入现场记录<input aria-label="导入现场记录" type="file" accept="application/json,.json" disabled={busy} className="sr-only" onChange={e => { void importFile(e.target.files?.[0]); e.target.value = ""; }} /></label><button onClick={reset} className="min-h-11 border-b border-ink/30 text-sm text-muted disabled:opacity-40">清空本机记录</button></div>
         {view.log.length ? <ol className="divide-y divide-ink/15">{view.log.map((r, i) => <li key={r.id} className="flex flex-wrap items-start gap-4 py-5"><span className="font-mono text-sm text-muted">{String(i + 1).padStart(2, "0")}</span><div className="min-w-0 flex-1"><a href={`#entry-${r.id}`} className="font-serif text-lg">{r.title}</a><p className="mt-2 text-xs text-muted">{r.discoveredAt ? new Date(r.discoveredAt).toLocaleString("zh-CN") : "调查时间未提供"}</p>{(r.sceneId || r.objectId) && <p className="mt-1 break-all text-xs text-muted">现场：{r.sceneId ?? "未提供"} · 对象：{r.objectId ?? "未提供"}</p>}{r.photo && <Image src={r.photo} alt={`${r.title}的现场照片`} width={320} height={240} unoptimized className="mt-3 max-w-full" />}</div><DiscoveryStatus state={r.state} /></li>)}</ol> : <p className="border border-dashed border-ink/20 p-8 text-sm text-muted">尚无现场调查记录。已有的项目基础资料不计作一次现场发现。</p>}
         <p className="mt-5 text-xs text-muted">另有 {view.total - view.discovered} 个条目尚未记录，名称与内容保持未知。</p>
       </Section>

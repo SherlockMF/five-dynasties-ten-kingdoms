@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 vi.mock("@/features/archive/relationship-record", () => ({ RelationshipRecord: () => <div>关系图</div> }));
@@ -39,4 +39,37 @@ it("clears local records even when the API is offline", async () => {
   vi.mocked(fetch).mockRejectedValue(new Error("offline"));
   fireEvent.click(screen.getByRole("button", { name: "清空本机记录" }));
   await waitFor(() => expect(JSON.parse(localStorage.getItem(discoveryStorageKey(false))!).discoveries).toEqual([]));
+});
+it("does not retain development discoveries when switching to normal mode offline", async () => {
+  const discoveries = [{ key: "li-jingxun.artifact.green-glass-bottle", state: "contextualized" as const }];
+  vi.mocked(fetch).mockResolvedValueOnce({ ok: true, json: async () => ({ discoveries, view: projectArchive(archiveEntries, archiveSources, discoveries) }) } as Response);
+  const { rerender } = render(<ArchiveShell initialView={initialView} allowDev />);
+  await waitFor(() => expect(screen.getByRole("heading", { name: "椭圆形绿玻璃瓶" })).toBeInTheDocument());
+  vi.mocked(fetch).mockRejectedValue(new Error("offline"));
+  rerender(<ArchiveShell initialView={initialView} allowDev={false} />);
+  expect(screen.queryByRole("heading", { name: "椭圆形绿玻璃瓶" })).not.toBeInTheDocument();
+  await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("offline"));
+});
+it("does not import a file that finishes reading after records were cleared", async () => {
+  render(<ArchiveShell initialView={initialView} allowDev={false} />);
+  await waitFor(() => expect(screen.queryByText("正在读取发现记录…")).not.toBeInTheDocument());
+  let finishReading!: (text: string) => void;
+  const pendingText = new Promise<string>(resolve => { finishReading = resolve; });
+  fireEvent.change(screen.getByLabelText("导入现场记录"), { target: { files: [{ size: 100, text: () => pendingText }] } });
+  fireEvent.click(screen.getByRole("button", { name: "清空本机记录" }));
+  const requestsAfterReset = vi.mocked(fetch).mock.calls.length;
+  await act(async () => { finishReading(JSON.stringify({ discoveries: ["li-jingxun.artifact.green-glass-bottle"] })); await pendingText; });
+  expect(vi.mocked(fetch).mock.calls).toHaveLength(requestsAfterReset);
+  expect(JSON.parse(localStorage.getItem(discoveryStorageKey(false))!).discoveries).toEqual([]);
+});
+it("ignores a late API response after records are cleared", async () => {
+  let finishRequest!: (response: Response) => void;
+  vi.mocked(fetch).mockImplementationOnce(() => new Promise<Response>(resolve => { finishRequest = resolve; }));
+  const discoveries = [{ key: "li-jingxun.artifact.green-glass-bottle", state: "contextualized" as const }];
+  render(<ArchiveShell initialView={initialView} allowDev={false} />);
+  await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
+  fireEvent.click(screen.getByRole("button", { name: "清空本机记录" }));
+  await act(async () => { finishRequest({ ok: true, json: async () => ({ discoveries, view: projectArchive(archiveEntries, archiveSources, discoveries) }) } as Response); });
+  expect(screen.queryByRole("heading", { name: "椭圆形绿玻璃瓶" })).not.toBeInTheDocument();
+  expect(JSON.parse(localStorage.getItem(discoveryStorageKey(false))!).discoveries).toEqual([]);
 });
