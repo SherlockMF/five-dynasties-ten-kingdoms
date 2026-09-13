@@ -107,6 +107,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
       if (!changed) return;
       const observed = observedRoute.current;
       if (!observed) return;
+      if (observed.pathname === "/" || observed.pathname === "/series") return;
       const desired = {
         pathname: observed.pathname,
         query: serializeHistoryQuery(state),

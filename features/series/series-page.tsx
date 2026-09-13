@@ -6,7 +6,6 @@ import { HomePageContent } from "@/features/home/home-page-content";
 import { Timeline } from "@/features/timeline/timeline";
 import { HistoricalMap } from "@/features/history-map/historical-map";
 import { PersonExplorer } from "@/features/people/person-explorer";
-import { SeriesNavigation } from "./series-navigation";
 
 export type SeriesPageProps = { params: Promise<{ seriesSlug: string }> };
 export type SeriesView = "home" | "timeline" | "map" | "people";
@@ -29,7 +28,6 @@ export async function renderSeriesPage({ params }: SeriesPageProps, view: Series
     : view === "people" && people.length ? <PersonExplorer initialPersonId="shi-jingtang" people={people} dynasties={dynasties} events={events} relations={relations} />
     : <p role="status" className="rounded-2xl border border-dashed border-ink/20 p-8 text-muted">{view === "people" ? "人物资料待核验入库。" : "专题框架准备中，历史内容尚未入库。"}</p>;
   return <>
-    <SeriesNavigation series={series} />
     {view === "home" ? content : <PageShell eyebrow={`${series.timelineMinYear}—${series.timelineMaxYear}`} title={series.title} description={series.subtitle ?? ""}>{content}</PageShell>}
   </>;
 }

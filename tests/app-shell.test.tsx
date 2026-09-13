@@ -34,18 +34,18 @@ describe("SiteHeader", () => {
       screen
         .getByRole("navigation", { name: "主要导航" })
         .querySelectorAll("a"),
-    ).toHaveLength(4);
+    ).toHaveLength(5);
     expect(
       screen
         .getByRole("navigation", { name: "主要导航" })
         .textContent?.replace(/\s/g, ""),
-    ).toBe("时间地图人物资料");
-    expect(screen.getByText("875—979")).toBeVisible();
+    ).toBe("专题首页时间地图人物资料");
+    expect(screen.getByText("五代十国 · 875—979")).toBeVisible();
   });
 });
 
 describe("MobileNav", () => {
-  it("keeps five destinations and labels the supporting material entry", () => {
+  it("retains supporting material alongside the topic switch", () => {
     useHistoryStore.getState().reset({ currentYear: 902 });
     render(<MobileNav />);
     expect(screen.getByRole("link", { name: "时间" })).toHaveAttribute("href", "/timeline?year=902#timeline");
@@ -53,10 +53,11 @@ describe("MobileNav", () => {
     const navigation = screen.getByRole("navigation", {
       name: "移动端主要导航",
     });
-    expect(navigation.querySelectorAll("a")).toHaveLength(5);
-    expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute(
+    expect(navigation.querySelectorAll("a")).toHaveLength(6);
+    expect(screen.getByRole("link", { name: "资料" })).toHaveAttribute("href", "/notes?year=902");
+    expect(screen.getByRole("link", { name: "切换专题" })).toHaveAttribute(
       "href",
-      "/notes?year=902",
+      "/",
     );
   });
 });
@@ -87,7 +88,7 @@ describe("TimelinePeriodLabel", () => {
 describe("expanded site range", () => {
   it("uses the expanded range in global metadata", () => {
     expect(metadata.description).toBe(
-      "用时间、地图、人物关系和事件因果，探索 875—979 年的五代十国。",
+      "选择一个历史专题，沿时间、地图与人物探索不同的时代。",
     );
   });
 

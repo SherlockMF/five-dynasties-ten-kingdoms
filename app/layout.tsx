@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
 import { Suspense, type ReactNode } from "react";
 
-import { MobileNav } from "@/components/layout/mobile-nav";
-import { SiteHeader } from "@/components/layout/site-header";
-import { AiDrawer } from "@/features/ai/ai-drawer";
+import { SiteChrome } from "@/components/layout/site-chrome";
 import { HistoryProvider } from "@/features/history-state/history-provider";
 
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "山河纪 · 五代十国互动历史", template: "%s · 山河纪" },
-  description: "用时间、地图、人物关系和事件因果，探索 875—979 年的五代十国。",
+  title: { default: "山河纪 · 历史专题", template: "%s · 山河纪" },
+  description: "选择一个历史专题，沿时间、地图与人物探索不同的时代。",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -19,10 +17,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <Suspense fallback={null}>
           <HistoryProvider>
-            <SiteHeader />
-            {children}
-            <AiDrawer />
-            <MobileNav />
+            <SiteChrome>{children}</SiteChrome>
           </HistoryProvider>
         </Suspense>
       </body>

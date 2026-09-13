@@ -44,11 +44,11 @@ describe("page repository ranges", () => {
     ).toBeVisible();
   });
 
-  it("loads the full range for the home page", async () => {
+  it("does not load dynasty data for the independent hub", async () => {
     await HomePage();
 
-    expect(repository.getEventsInRange).toHaveBeenCalledWith(875, 979);
-    expect(repository.getRegionsInRange).toHaveBeenCalledWith(875, 979);
+    expect(repository.getEventsInRange).not.toHaveBeenCalled();
+    expect(repository.getRegionsInRange).not.toHaveBeenCalled();
   });
 
   it("loads the full related-event range for event details", async () => {

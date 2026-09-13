@@ -12,7 +12,7 @@ test("production keeps historical lookup local and rejects free model chat", asy
 });
 
 test("reads a complete guided path and returns to the home choices", async ({ page }) => {
-  await page.goto("/#reading-paths");
+  await page.goto("/series/five-dynasties#reading-paths");
   await page.getByRole("link", { name: "开始阅读：五代如何更替" }).click();
   const navigation = page.getByRole("navigation", { name: "主题导读" });
   await expect(navigation).toContainText("第 1 / 6 站");
@@ -47,7 +47,7 @@ test("moves from a person's life to the event and annual map comparison", async 
 });
 
 test("new reading sections fit the viewport", async ({ page }) => {
-  for (const path of ["/#reading-paths", "/people?person=shi-jingtang", "/explore/chenqiao-mutiny?path=five-dynasties", "/map?year=978"]) {
+  for (const path of ["/series/five-dynasties#reading-paths", "/people?person=shi-jingtang", "/explore/chenqiao-mutiny?path=five-dynasties", "/map?year=978"]) {
     await page.goto(path);
     const dimensions = await page.evaluate(() => ({ width: document.documentElement.clientWidth, scroll: document.documentElement.scrollWidth }));
     expect(dimensions.scroll, path).toBeLessThanOrEqual(dimensions.width + 1);

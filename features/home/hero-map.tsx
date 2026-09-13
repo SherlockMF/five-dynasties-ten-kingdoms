@@ -20,7 +20,7 @@ const path = geoPath(geoTransform({
   },
 }));
 
-export function HeroMap({ year }: { year: number }) {
+export function HeroMap({ year, routePrefix = "" }: { year: number; routePrefix?: string }) {
   const snapshotId = year >= MAP_MIN_YEAR ? resolveMapYear(year).snapshotId : null;
   const [result, setResult] = useState<{ id: string; atlas?: AtlasDataset; failed?: boolean }>();
 
@@ -39,7 +39,7 @@ export function HeroMap({ year }: { year: number }) {
   return (
     <div className="relative mt-12 flex min-h-80 items-center lg:mt-0">
       {atlas ? (
-        <Link href={`/map?year=${year}`} aria-label={`查看 ${year} 年地图`} className="group relative block w-full rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar">
+        <Link href={`${routePrefix}/map?year=${year}`} aria-label={`查看 ${year} 年地图`} className="group relative block w-full rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar">
           <svg viewBox="0 0 620 520" role="img" aria-label={`${year} 年政权疆域预览`} className="w-full text-ink opacity-40 transition-opacity duration-500 group-hover:opacity-60" style={{ maskImage: "radial-gradient(ellipse at 50% 50%, black 45%, transparent 74%)" }}>
             <g stroke="currentColor" strokeWidth="0.7" strokeOpacity="0.4">
               {atlas.realms.features.map((feature) => <path key={feature.properties.id} d={path(feature) ?? undefined} fill={isMapContext(feature.properties.dynastyId) ? "#a8b3a3" : "#6d8d7f"} fillOpacity={isMapContext(feature.properties.dynastyId) ? 0.2 : 0.4} />)}
