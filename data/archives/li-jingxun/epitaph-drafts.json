@@ -1,0 +1,46 @@
+{
+  "status": "uncollated-do-not-publish",
+  "note": "旧策划摘录，未核墓志原石或拓片；不得在原文栏展示。",
+  "fragments": [
+    {
+      "id": "M01",
+      "quote": "女郎讳静训，字小孩……",
+      "sourceRefs": [
+        "epitaph",
+        "museum-exhibition"
+      ]
+    },
+    {
+      "id": "M02",
+      "quote": "……左光禄大夫敏之第四女也。",
+      "sourceRefs": [
+        "epitaph",
+        "sxdaily-sarcophagus"
+      ]
+    },
+    {
+      "id": "M03",
+      "quote": "幼为外祖母周皇太后所养……",
+      "sourceRefs": [
+        "epitaph",
+        "sxdaily-sarcophagus"
+      ]
+    },
+    {
+      "id": "M04",
+      "quote": "大业四年六月一日，遇疾终于汾源之宫，时年九岁。",
+      "sourceRefs": [
+        "epitaph",
+        "museum-necklace"
+      ]
+    },
+    {
+      "id": "M05",
+      "quote": "……瘗于京兆长安县休祥里万善道场之内。即于坟上构造重阁。",
+      "sourceRefs": [
+        "epitaph",
+        "sxdaily-sarcophagus"
+      ]
+    }
+  ]
+}

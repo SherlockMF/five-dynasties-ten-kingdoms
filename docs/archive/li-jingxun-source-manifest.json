@@ -1,0 +1,333 @@
+{
+  "source": "D:/OPC/lijingxun",
+  "files": [
+    {
+      "path": ".gitattributes",
+      "sha256": "c195e813f5ff9ecc617ee2537c098fdcddb21299b53e3ff156e75dc4a067fda3"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "1edc81701f3e5dab41e2670e784fb15b33049f57d4df21ed061415373b739d49"
+    },
+    {
+      "path": "01_李静训墓调查档案_V1.md",
+      "sha256": "39d56166976d76869076a053a95f67a23be82f4777a94040e82fb516744b09d1"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "63f2c50380ed6303237cce215ce27af1d620d094c215e28d1b1538a3c070e3bb"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "336cc4fbf19beaada7ccf9986414fa91851a8d7a07dfb3ccbe800a69eed0ab49"
+    },
+    {
+      "path": "README.md",
+      "sha256": "023bfc7448e0eb263b85646235074195bdc13e65d9878e5422e024fa8a60d4cc"
+    },
+    {
+      "path": "app\\globals.css",
+      "sha256": "b7358bef67230a7c9b9795830ca0ee8f4a78af3c74c4ef500e3710d49d093a87"
+    },
+    {
+      "path": "app\\investigate\\li-jingxun\\page.tsx",
+      "sha256": "f08b83c40dbbb5de1e49af1066f704f03dfd49ee041452e7953bf8497095b563"
+    },
+    {
+      "path": "app\\layout.tsx",
+      "sha256": "8fc874d0da619239dc6552b55bf43e71f27335be22c2a607075cd0dc920c1c2e"
+    },
+    {
+      "path": "app\\page.tsx",
+      "sha256": "f3a38b6b6ece5fa6926b36ccef14dfc79bcc195839b294e85933d82eaae80671"
+    },
+    {
+      "path": "data\\investigations\\li-jingxun.ts",
+      "sha256": "1d567876397e8b0f0cbd7377403f46d44ae5ee13f0a552e1c82d55abb5963c9c"
+    },
+    {
+      "path": "data\\investigations\\sources.ts",
+      "sha256": "ed6de4425a5c7ef7fe6d8e18e5d4791e5ba07b4b0903a2bf37ec3ad27fb255ec"
+    },
+    {
+      "path": "docs\\implementation-files.md",
+      "sha256": "79777da25cd7c8b058e1654403a62b9e377053cfd5b6124e44c2752df9237c3e"
+    },
+    {
+      "path": "docs\\source-audit.md",
+      "sha256": "e38bcd5b9b3775a385db852b61bb2b7eccb52766b1047be56ac6b499a373f6d5"
+    },
+    {
+      "path": "docs\\superpowers\\plans\\2026-09-12-li-jingxun.md",
+      "sha256": "0ca45097f56987e42efc2d5fd380c7c45970d400075adc860c971e5c049cbae4"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "sha256": "a3d044f9abd475e56a7efa71d5888d18784cbcc7f050dedeeb9f271c4064e6b1"
+    },
+    {
+      "path": "features\\investigation\\artifact-inspector.tsx",
+      "sha256": "871ac922e0000a9483d1d6f9192bb3ecb96850a8c18fe3906559463bccebfc8d"
+    },
+    {
+      "path": "features\\investigation\\chapter-content.tsx",
+      "sha256": "c9c5be5427aaaf74757b983319c1ec2b0f685bce7a71658447b08bf266654e3e"
+    },
+    {
+      "path": "features\\investigation\\chapters\\artifact-chapter.tsx",
+      "sha256": "a75637a148e4fd403947ecbfca30470f07ab5e40b7282da1a8dcc536199c5bf0"
+    },
+    {
+      "path": "features\\investigation\\chapters\\artifact.css",
+      "sha256": "24bdaec6d379edb7d21c73b88c4d4808336173e7fc6e0e0f6a8210003fd63487"
+    },
+    {
+      "path": "features\\investigation\\chapters\\conclusion-chapter.tsx",
+      "sha256": "02a628642aceae3abe750d7b51acaaad5aa9ad67b95c90f13dc2fbdcb681bc14"
+    },
+    {
+      "path": "features\\investigation\\chapters\\conclusion.css",
+      "sha256": "564700e4cbc6169c981935d1263598928c8e9c69043603d74cbcdd8af2cb309b"
+    },
+    {
+      "path": "features\\investigation\\chapters\\epitaph-chapter.tsx",
+      "sha256": "30da7ea793226ed846625a236b7a8634612139388842ae6747112432d531eb46"
+    },
+    {
+      "path": "features\\investigation\\chapters\\era-chapter.tsx",
+      "sha256": "0bc1947b411f119879a64c3b0d014514108a52aec5d951253da0f7ceae927b15"
+    },
+    {
+      "path": "features\\investigation\\chapters\\era.css",
+      "sha256": "b1095dcb99832be6536e55107440f72e1694c9298776d067e69dcd962dcf6189"
+    },
+    {
+      "path": "features\\investigation\\chapters\\evidence-court-chapter.tsx",
+      "sha256": "83345e700338f923bb717661cf466cc6ea21e700e8e6824b6643fad4448ae4f7"
+    },
+    {
+      "path": "features\\investigation\\chapters\\family-chapter.tsx",
+      "sha256": "cc4316260818d244fa913ccf55e77848c2f960645970cf6d4c43ebcf576f30e8"
+    },
+    {
+      "path": "features\\investigation\\chapters\\intro-chapter.tsx",
+      "sha256": "5bfafc10696d002405dc8ac3b6bc8026a785cadf32a8d6009e1d6a3ddffe3e04"
+    },
+    {
+      "path": "features\\investigation\\chapters\\opening-chapters.css",
+      "sha256": "22f2abec50f51cb2cb55464037abbf92b83c27844895e5d038284627dcb8319d"
+    },
+    {
+      "path": "features\\investigation\\chapters\\sarcophagus-chapter.tsx",
+      "sha256": "22fe953c0be01b84dbcc0568e5912c72279044cc2cb7e9f1bc1359feb06f4f53"
+    },
+    {
+      "path": "features\\investigation\\claim-sorter.tsx",
+      "sha256": "915c7593636be7ad5f60800097acbeddadf366fcc9d0a3b604a71bb895d0792b"
+    },
+    {
+      "path": "features\\investigation\\court.css",
+      "sha256": "179d6e6c95dbd5528993ae4a5ea29472cc9065e01bbde10133c0a9b968c528dd"
+    },
+    {
+      "path": "features\\investigation\\evidence-drawer.tsx",
+      "sha256": "f9ca9903a1ab14fbe6b766ff105ab339ed5159e1fe675a5ec8a4770ab9e660f1"
+    },
+    {
+      "path": "features\\investigation\\family-evidence-graph.tsx",
+      "sha256": "66c184c612a6d4f9f6cba65fc56162bf848dba377dd7cd7db228703ac24c9688"
+    },
+    {
+      "path": "features\\investigation\\family.css",
+      "sha256": "b126675884c3510f77550cf4bd786c445fb6f421cc342fc004515db5fc316a1d"
+    },
+    {
+      "path": "features\\investigation\\final-report.tsx",
+      "sha256": "199c653ef20a395d7ec1a0eae136a9c7e6dc6ae326afe10edcdee028f095d899"
+    },
+    {
+      "path": "features\\investigation\\hotspot-image.tsx",
+      "sha256": "40294bf6092f0df00d2c6764a0c36032cd08b9070da6d7fbeeb72a66a81193f6"
+    },
+    {
+      "path": "features\\investigation\\investigation-shell.tsx",
+      "sha256": "2d91843033662f1e62b496c4c2a03fd9875b3999569ced72232bca5298bb8a20"
+    },
+    {
+      "path": "features\\investigation\\shared.tsx",
+      "sha256": "61a969f705569161b5c21a1a2bba27441bf4a314158ef671b95d547d610d91a9"
+    },
+    {
+      "path": "features\\investigation\\source-drawer.tsx",
+      "sha256": "667cc1eec47683669e6b7c26905195cc9484878329283e566d41fd41568d1f96"
+    },
+    {
+      "path": "features\\investigation\\store\\investigation-progress-store.ts",
+      "sha256": "6b713f4ee1891c65ef07b434ed74f4d1e888b8aab48ea06032f5853326fa80b3"
+    },
+    {
+      "path": "next-env.d.ts",
+      "sha256": "0f70629890b72a0a82e91972cc032c04b658b26c265373cb711cf576bfbf8fcc"
+    },
+    {
+      "path": "next.config.ts",
+      "sha256": "b94e56c7e2b8868e564afd7e5ca78aca930ecc3db525c4e3ae68c662880ed226"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "02286ee4bed96191a1bf444ae5a61691be5b8e1de9a24be03af8c211c01ebb65"
+    },
+    {
+      "path": "package.json",
+      "sha256": "9ebca48d402fe41555e808b0a63428262bc8946de2068ea92177583528c48ae5"
+    },
+    {
+      "path": "playwright.config.ts",
+      "sha256": "e12a938b896b2789d80ff1feaa4141530525a63464c9c1415754a1b65a699efb"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "sha256": "7b299d3d3b16699ddda397c0b2373b3af4f25f8fc9ccc9b3d9e64ef083bc1c21"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\README-ASSETS.md",
+      "sha256": "853eae8db5fcd15fae0f39e138b566b0399a36df300c2aa26f401db3be8931d5"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\epitaph.svg",
+      "sha256": "acaa32383e493a81eb0bccf0080c54fe51da4742c24ebea0ff497e7e7ba8beed"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\green-glass-bottle.svg",
+      "sha256": "0d6747d1361686b259de9cd94b3c8583d149e459b2ebc56cf461981fcb8312be"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\jade-cup.svg",
+      "sha256": "3a9d93a2bae69b0c429aec6f8b290ee9942502f3e6e13b6e6f5f43f54e935125"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\necklace.svg",
+      "sha256": "062cf5ede8491083faa20fcc7d75052bc30546785b6516a53f205f5b2022b6d7"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\sarcophagus-warning.svg",
+      "sha256": "feb17327850b0a86995eca5924bf888068f7489a6dcdfa80201ae8312e4c98b6"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\sarcophagus.svg",
+      "sha256": "15c8483c4872e8dd337ce76c89e1bc4726d0411d68696759b6609b2690e1f9ab"
+    },
+    {
+      "path": "public\\investigations\\li-jingxun\\tomb-plan.svg",
+      "sha256": "3ddd4caabe2f06b8e31bdb1a93febcb618ec075a378776493b4de67fd781cb33"
+    },
+    {
+      "path": "tests\\e2e\\investigation-shell.spec.ts",
+      "sha256": "fec89724433f12b846e1465075e6de32289f902dd7a258ad582bf44f51750870"
+    },
+    {
+      "path": "tests\\e2e\\li-jingxun-investigation.spec.ts",
+      "sha256": "b881c3342aa9a4a78456dc9b00b389c761e28b7f16e895207d1305c09d59ea62"
+    },
+    {
+      "path": "tests\\helpers\\investigation.ts",
+      "sha256": "ba1f4dd6fcfafc8c7acf210d697b1b432a87829e4a05382d21157f35d886bd8f"
+    },
+    {
+      "path": "tests\\investigation-artifacts.test.tsx",
+      "sha256": "2fb4870db411e18612b6c80313755ea45eaaf07667590e70604e4d2a3c261a31"
+    },
+    {
+      "path": "tests\\investigation-conclusion.test.tsx",
+      "sha256": "4388da32bc40fc3d774304a748068b420cd1c7bcd7f1130f851b723392aadd4c"
+    },
+    {
+      "path": "tests\\investigation-court.test.tsx",
+      "sha256": "d171c660d2afd8e91dc2d9136c645b13178bee8a2dfdd9beb5d67018fa0cb416"
+    },
+    {
+      "path": "tests\\investigation-data.test.ts",
+      "sha256": "56bc65c162c32e30585f8bcd49ec151d1f95688efa9392c8363ac7036767a59f"
+    },
+    {
+      "path": "tests\\investigation-era.test.tsx",
+      "sha256": "9b163354b7633f09e17192dad35a9b96615a8ee120257ceaa2f075f55abb6ae6"
+    },
+    {
+      "path": "tests\\investigation-family.test.tsx",
+      "sha256": "f2020cba9f3d4e07adc9f1cd7efc104eb28ebfa5a90b1b387a0b9eff2b3e42ff"
+    },
+    {
+      "path": "tests\\investigation-progress.test.ts",
+      "sha256": "e03da5593f21e354431f82afe33bfa4f762c74b90cd16ba78e28e0df14aa9a43"
+    },
+    {
+      "path": "tests\\investigation-regressions.test.tsx",
+      "sha256": "eb2d26d2a4acc9559d6279890b0fb298893f1156138fea9b21f4e327791df33b"
+    },
+    {
+      "path": "tests\\investigation-report-evidence.test.tsx",
+      "sha256": "50a63b66ac1687034a989f17c1fc6b1fd8c982a3fbff1f6cbda48ec7c057394d"
+    },
+    {
+      "path": "tests\\investigation-shell.test.tsx",
+      "sha256": "e3c27e2ef0527295564ee05f0acb8a70060407bcab69513fe57cd2b8214ad16f"
+    },
+    {
+      "path": "tests\\investigation-sources.test.tsx",
+      "sha256": "436b664858788be747673a129ba951768e4f23a4d744e664b2ddbdd09f6667f2"
+    },
+    {
+      "path": "tests\\li-jingxun-investigation.test.tsx",
+      "sha256": "bc1d3115415bc5772aea9882dd14c5c556f0b3f712c3a5eeb654850b1fbf6b73"
+    },
+    {
+      "path": "tests\\setup.ts",
+      "sha256": "ac45afdfe913808337fe9fd7cb4b23b4d65d6c4bd432e02e1fd081ad432517b7"
+    },
+    {
+      "path": "tsconfig.json",
+      "sha256": "e65b4787ce8610a1acedc28f424d5673288acabbd254a54c772b82c006c379ed"
+    },
+    {
+      "path": "types\\investigation.ts",
+      "sha256": "28320b200efad2b822f6ec530ea4dcd69da6701825ecf4a919b0708afe576c39"
+    },
+    {
+      "path": "vitest.config.mts",
+      "sha256": "4d6f779c91ece3633089f7cba5eff8fb0557d707fabfa233bc40e1e6f1658696"
+    },
+    {
+      "path": "文稿\\逐字稿_乱世南北朝_01_vol.599 乱世南北朝：精神错乱的北齐.txt",
+      "sha256": "5be1490293cdc6eb74467a485c112f2f2aa0be039904e4a8416dc255418f0c90"
+    },
+    {
+      "path": "文稿\\逐字稿_乱世南北朝_02_vol.607 乱世南北朝：为隋朝做嫁衣的北周.txt",
+      "sha256": "a12ff9fd453855febf6b7da5efe6b59b7f7fa3d8da9b0b82e874ff94c290f208"
+    },
+    {
+      "path": "文稿\\逐字稿_寻声探墓集（贰）_04_肆 李静训墓 ｜ 隋宫珠，石棺咒，九岁魂萦北周梦.txt",
+      "sha256": "7e570d487f5ff1566b32e23efc30ecce2fee1b6d5c2c9b9be7b58105399cb808"
+    },
+    {
+      "path": "文稿\\逐字稿_隋！生于巅峰，陨于疯癫_01_vol.684 隋！生于巅峰，陨于疯癫（上）.txt",
+      "sha256": "f5de553132cbe69a5c3c861b38eb987c3a85ca7081f67cc71460a48a7c45176a"
+    },
+    {
+      "path": "文稿\\逐字稿_隋！生于巅峰，陨于疯癫_02_vol.685 隋！生于巅峰，陨于疯癫（中）.txt",
+      "sha256": "a137972606e92ab0188db59b3b03f2d82bb45fd1d6c286c23eb3ceec208b596a"
+    },
+    {
+      "path": "文稿\\逐字稿_隋！生于巅峰，陨于疯癫_03_vol.692 隋！生于巅峰，陨于疯癫（下）.txt",
+      "sha256": "1c67c9f4a64680f5afae3fe0317a7574a4f2810130d9a96294fe2bb1afb31eeb"
+    },
+    {
+      "path": "李静训墓_Codex开发执行Prompt_V1.md",
+      "sha256": "011a2b5ab446a9c9ccdf29b960556c771580ed200302237f5faa0fed4c37585c"
+    },
+    {
+      "path": "李静训墓完整游戏策划案_V1.md",
+      "sha256": "f574cab5dff7aabc6dcf727af37bac0877a510a6aeb511ac12216024d8a6e61b"
+    }
+  ]
+}

@@ -20,5 +20,6 @@ export function SeriesHub() {
         <span className="mt-auto flex items-center justify-between border-t border-ink/15 pt-5 text-sm text-cinnabar">进入专题<ArrowUpRight aria-hidden="true" className="size-5 transition-transform group-hover:-translate-y-1 group-hover:translate-x-1" /></span>
       </Link>)}</div>
     </section>
+    <section className="border-t border-ink/20 py-12"><p className="text-xs tracking-widest text-cinnabar">现场 · 调查档案</p><Link href="/archive/li-jingxun" className="mt-5 flex flex-wrap items-center justify-between gap-5 border border-ink/20 p-7 hover:border-cinnabar"><div><h2 className="font-serif text-2xl sm:text-3xl">李静训墓调查档案</h2><p className="mt-3 text-sm text-muted">隋 · 608 年 · 今西安地区</p><p className="mt-3 text-sm text-muted">现场负责发现，档案负责理解。</p></div><span className="text-sm text-cinnabar">打开档案 ↗</span></Link></section>
   </main>;
 }
