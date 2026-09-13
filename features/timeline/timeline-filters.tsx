@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import type { NarrativeTrack } from "@/types/history";
+import type { LegacyNarrativeTrack } from "@/types/history";
+import type { NarrativeTrackConfig } from "@/types/series";
 
 export const SUBJECT_TRACKS = [
   { id: "five-dynasties", label: "五代主线" },
@@ -9,20 +10,21 @@ export const SUBJECT_TRACKS = [
   { id: "liao-north", label: "辽与北方" },
   { id: "song-unification", label: "宋初统一" },
 ] as const satisfies readonly {
-  id: Exclude<NarrativeTrack, "late-tang">;
+  id: Exclude<LegacyNarrativeTrack, "late-tang">;
   label: string;
 }[];
 
-export type SubjectTrack = (typeof SUBJECT_TRACKS)[number]["id"];
+export type SubjectTrack = string;
 
 interface TimelineFiltersProps {
+  tracks?: readonly Pick<NarrativeTrackConfig, "id" | "label">[];
   selected: ReadonlySet<SubjectTrack>;
   onChange: (selected: Set<SubjectTrack>) => void;
 }
 
-export function TimelineFilters({ selected, onChange }: TimelineFiltersProps) {
+export function TimelineFilters({ selected, onChange, tracks = SUBJECT_TRACKS }: TimelineFiltersProps) {
   function toggleTrack(track: SubjectTrack) {
-    if (selected.size === SUBJECT_TRACKS.length) {
+    if (selected.size === tracks.length) {
       onChange(new Set([track]));
       return;
     }
@@ -45,7 +47,7 @@ export function TimelineFilters({ selected, onChange }: TimelineFiltersProps) {
       <span className="mr-1 text-[10px] tracking-[0.14em] text-muted uppercase">
         主体轨道
       </span>
-      {SUBJECT_TRACKS.map((track) => {
+      {tracks.map((track) => {
         const active = selected.has(track.id);
         return (
           <button

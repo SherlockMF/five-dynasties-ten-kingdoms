@@ -1,8 +1,5 @@
-import {
-  DEFAULT_YEAR,
-  MAX_YEAR,
-  TIMELINE_MIN_YEAR,
-} from "@/lib/history/year-range";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig } from "@/types/series";
 
 import type { HistoryCoreState } from "./history-store";
 
@@ -10,16 +7,17 @@ const selectionKeys = ["dynasty", "person", "event"] as const;
 
 export function parseHistoryQuery(
   input: string | URLSearchParams,
+  series: HistorySeriesConfig = fiveDynastiesConfig,
 ): Partial<HistoryCoreState> & Pick<HistoryCoreState, "currentYear"> {
   const params =
     typeof input === "string" ? new URLSearchParams(input) : input;
   const rawYear = Number(params.get("year"));
   const currentYear =
     Number.isInteger(rawYear) &&
-    rawYear >= TIMELINE_MIN_YEAR &&
-    rawYear <= MAX_YEAR
+    rawYear >= series.timelineMinYear &&
+    rawYear <= series.timelineMaxYear
       ? rawYear
-      : DEFAULT_YEAR;
+      : series.defaultYear;
 
   return {
     currentYear,

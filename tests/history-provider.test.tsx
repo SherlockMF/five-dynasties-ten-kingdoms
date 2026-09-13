@@ -42,6 +42,21 @@ describe("HistoryProvider URL synchronization", () => {
 
   afterEach(cleanup);
 
+  it("switches series without clamping 608 to the old range and restores legacy routes", () => {
+    const { commit } = renderProvider();
+    act(() => useHistoryStore.getState().selectPerson("shi-jingtang"));
+    commit("year=608", "/series/northern-qi-zhou-sui/timeline");
+    expect(useHistoryStore.getState().currentYear).toBe(608);
+    expect(useHistoryStore.getState().selectedPerson).toBeUndefined();
+    expect(useHistoryStore.getState().series.id).toBe("northern-qi-zhou-sui");
+    act(() => useHistoryStore.getState().setCurrentYear(609));
+    expect(navigation.replace).toHaveBeenLastCalledWith("/series/northern-qi-zhou-sui/timeline?year=609", { scroll: false });
+    commit("year=936", "/map");
+    expect(useHistoryStore.getState().currentYear).toBe(936);
+    expect(useHistoryStore.getState().series.id).toBe("five-dynasties");
+    expect(useHistoryStore.getState().routePrefix).toBe("");
+  });
+
   it("updates map playback years without a server navigation", () => {
     const replaceState = vi.spyOn(window.history, "replaceState");
     renderProvider();

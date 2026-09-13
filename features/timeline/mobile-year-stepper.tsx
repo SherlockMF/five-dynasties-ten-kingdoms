@@ -2,10 +2,14 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { MAX_YEAR, MIN_YEAR, useHistoryStore } from "@/features/history-state/history-store";
+import { useHistoryStore } from "@/features/history-state/history-store";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig } from "@/types/series";
 import { Button } from "@/components/ui/button";
 
-export function MobileYearStepper() {
+export function MobileYearStepper({ series = fiveDynastiesConfig }: { series?: HistorySeriesConfig }) {
+  const MIN_YEAR = series.timelineMinYear;
+  const MAX_YEAR = series.timelineMaxYear;
   const currentYear = useHistoryStore((state) => state.currentYear);
   const setCurrentYear = useHistoryStore((state) => state.setCurrentYear);
   const years = Array.from({ length: MAX_YEAR - MIN_YEAR + 1 }, (_, index) => MIN_YEAR + index);

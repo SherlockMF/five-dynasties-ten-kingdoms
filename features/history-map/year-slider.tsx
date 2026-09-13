@@ -3,19 +3,19 @@
 import { useEffect, useState } from "react";
 
 import { useHistoryStore } from "@/features/history-state/history-store";
-import {
-  clampMapYear,
-  MAP_MIN_YEAR,
-  MAX_YEAR,
-} from "@/lib/history/year-range";
+import { clampSeriesYear } from "@/lib/history/series";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig } from "@/types/series";
 
-export function YearSlider() {
+export function YearSlider({ series = fiveDynastiesConfig }: { series?: HistorySeriesConfig }) {
+  const MAP_MIN_YEAR = series.mapMinYear ?? series.timelineMinYear;
+  const MAX_YEAR = series.mapMaxYear ?? series.timelineMaxYear;
   const year = useHistoryStore((state) => state.currentYear);
   const setCurrentYear = useHistoryStore((state) => state.setCurrentYear);
   const [showMapStartNotice, setShowMapStartNotice] = useState(
     year < MAP_MIN_YEAR,
   );
-  const mapYear = clampMapYear(year);
+  const mapYear = clampSeriesYear(year, series, "map");
 
   if (year < MAP_MIN_YEAR && !showMapStartNotice) {
     setShowMapStartNotice(true);
@@ -25,7 +25,7 @@ export function YearSlider() {
     if (year < MAP_MIN_YEAR) {
       setCurrentYear(mapYear);
     }
-  }, [mapYear, setCurrentYear, year]);
+  }, [mapYear, setCurrentYear, year, MAP_MIN_YEAR]);
 
   return (
     <label className="grid min-w-0 flex-1 gap-2">
@@ -43,7 +43,7 @@ export function YearSlider() {
       />
       {showMapStartNotice ? (
         <span role="status" aria-live="polite" className="text-xs text-paper/70">
-          地图仅展示907—979年，已校正为907年
+          地图仅展示{MAP_MIN_YEAR}—{MAX_YEAR}年，已校正为{MAP_MIN_YEAR}年
         </span>
       ) : null}
     </label>

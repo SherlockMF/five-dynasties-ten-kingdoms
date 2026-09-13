@@ -5,15 +5,17 @@ import { useEffect, useMemo, useRef } from "react";
 import { useHistoryStore } from "@/features/history-state/history-store";
 import { cn } from "@/lib/utils";
 import type { HistoricalEvent } from "@/types/history";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig } from "@/types/series";
 
 import { getTimelineSlots } from "./timeline-years";
 
-export function TimelineTrack({ eventsByYear }: { eventsByYear: Map<number, HistoricalEvent[]> }) {
+export function TimelineTrack({ eventsByYear, series = fiveDynastiesConfig }: { eventsByYear: Map<number, HistoricalEvent[]>; series?: HistorySeriesConfig }) {
   const currentYear = useHistoryStore((state) => state.currentYear);
   const setCurrentYear = useHistoryStore((state) => state.setCurrentYear);
   const viewportRef = useRef<HTMLDivElement>(null);
   const selectedRef = useRef<HTMLButtonElement>(null);
-  const slots = useMemo(() => getTimelineSlots(eventsByYear, currentYear), [eventsByYear, currentYear]);
+  const slots = useMemo(() => getTimelineSlots(eventsByYear, currentYear, series), [eventsByYear, currentYear, series]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -30,7 +32,7 @@ export function TimelineTrack({ eventsByYear }: { eventsByYear: Map<number, Hist
   }, [slots]);
 
   return (
-    <div ref={viewportRef} className="relative mt-4 overflow-x-auto pb-3" aria-label="875至979年时间轨">
+    <div ref={viewportRef} className="relative mt-4 overflow-x-auto pb-3" aria-label={`${series.timelineMinYear}至${series.timelineMaxYear}年时间轨`}>
       <div className="relative flex w-max min-w-full items-end px-2 pt-4">
         <div className="absolute inset-x-2 bottom-3 h-px bg-ink/20" />
         {slots.map(({ start, end, marked }) => {

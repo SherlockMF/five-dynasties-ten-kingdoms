@@ -4,7 +4,8 @@ import { Pause, Play } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { useHistoryStore } from "@/features/history-state/history-store";
-import { MAP_MIN_YEAR, MAX_YEAR } from "@/lib/history/year-range";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig } from "@/types/series";
 import { useHistoryPlayer } from "@/hooks/use-history-player";
 
 import { YearSlider } from "./year-slider";
@@ -13,19 +14,19 @@ import { resolveMapSnapshot, resolveMapYear } from "./atlas/map-year-records";
 
 const prepareMapYear = (year: number) => loadCachedAtlasSnapshot(resolveMapSnapshot(resolveMapYear(year).snapshotId));
 
-export function MapControls() {
+export function MapControls({ series = fiveDynastiesConfig }: { series?: HistorySeriesConfig }) {
   const { error } = useHistoryPlayer(prepareMapYear);
   const playing = useHistoryStore((state) => state.isPlaying);
   const play = useHistoryStore((state) => state.play);
   const pause = useHistoryStore((state) => state.pause);
-  const atEnd = useHistoryStore((state) => state.currentYear >= MAX_YEAR);
+  const atEnd = useHistoryStore((state) => state.currentYear >= (series.mapMaxYear ?? series.timelineMaxYear));
   const startPlayback = () => {
-    if (atEnd) useHistoryStore.getState().setCurrentYear(MAP_MIN_YEAR);
+    if (atEnd) useHistoryStore.getState().setCurrentYear(series.mapMinYear ?? series.timelineMinYear);
     play();
   };
   return (
     <div className="sticky top-16 z-30 flex items-center gap-3 rounded-t-[1.25rem] border-b border-white/15 bg-ink px-4 py-2 text-paper sm:gap-5 sm:px-5 sm:py-4 lg:static">
-      <YearSlider />
+      <YearSlider series={series} />
       <Button variant="outline" className="min-h-11 shrink-0 border-paper/20 bg-white/5 px-3 text-xs text-paper hover:border-gold hover:text-gold sm:px-5" onClick={playing ? pause : startPlayback}>
         {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
         {playing ? "暂停" : atEnd ? "重新播放" : "播放历史"}

@@ -4,7 +4,10 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useHistoryStore } from "@/features/history-state/history-store";
-import { clampMapYear } from "@/lib/history/year-range";
+import { clampSeriesYear } from "@/lib/history/series";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig, HistoricalMapSnapshot } from "@/types/series";
+import { SnapshotMap } from "./snapshot-map";
 import type {
   Dynasty,
   HistoricalEvent,
@@ -107,6 +110,8 @@ function availableLegendKinds(atlas: AtlasDataset, selected?: string): MapLegend
 }
 
 interface HistoricalMapProps {
+  snapshots?: HistoricalMapSnapshot[];
+  series?: HistorySeriesConfig;
   regions: HistoricalRegion[];
   dynasties: Dynasty[];
   events?: HistoricalEvent[];
@@ -128,14 +133,21 @@ const EMPTY_ATLAS: AtlasDataset = {
   places: { type: "FeatureCollection", features: [] }, sources: [], warnings: [],
 };
 
-export function HistoricalMap({
+export function HistoricalMap(props: HistoricalMapProps) {
+  const series = props.series ?? fiveDynastiesConfig;
+  if (series.mapMode === "snapshot") return <SnapshotMap series={series} snapshots={props.snapshots ?? []} />;
+  return <AnnualHistoricalMap {...props} series={series} />;
+}
+
+function AnnualHistoricalMap({
+  series = fiveDynastiesConfig,
   dynasties: siteDynasties,
   events = EMPTY_EVENTS,
   locations = EMPTY_LOCATIONS,
   mode = "full",
 }: HistoricalMapProps) {
   const storeYear = useHistoryStore((state) => state.currentYear);
-  const year = clampMapYear(storeYear);
+  const year = clampSeriesYear(storeYear, series, "map");
   const selectedId = useHistoryStore((state) => state.selectedDynasty);
   const selectDynasty = useHistoryStore((state) => state.selectDynasty);
   const selectEvent = useHistoryStore((state) => state.selectEvent);
@@ -290,8 +302,8 @@ export function HistoricalMap({
   }, [atlas, dynasties, resolvedForYear?.status, selectDynasty, selectedId, year]);
 
   return (
-    <section aria-label="五代十国互动历史地图" className="relative rounded-[1.25rem] border border-ink/15 bg-paper shadow-[0_24px_70px_rgba(23,40,36,.14)]">
-      {mode === "full" ? <MapControls /> : null}
+    <section aria-label={`${series.title}互动历史地图`} className="relative rounded-[1.25rem] border border-ink/15 bg-paper shadow-[0_24px_70px_rgba(23,40,36,.14)]">
+      {mode === "full" ? <MapControls series={series} /> : null}
       {inactiveSelection ? <InactiveDynastyNotice dynasty={inactiveSelection} year={year} onClose={() => selectDynasty(undefined)} /> : null}
       <div className="grid min-w-0 bg-paper lg:grid-cols-[minmax(0,1fr)_19rem]">
         <div className="relative min-h-[26rem] overflow-hidden bg-paper">

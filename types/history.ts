@@ -1,4 +1,5 @@
 import type { Geometry } from "geojson";
+import type { SourceEpisodeRef } from "./series";
 
 export type VerificationStatus = "verified" | "reviewed" | "illustrative";
 export type ContentOrigin =
@@ -26,12 +27,13 @@ export type ContentProvenance =
   | HistoricalExtensionProvenance
   | TranscriptCoreProvenance
   | MixedContentProvenance;
-export type NarrativeTrack =
+export type LegacyNarrativeTrack =
   | "late-tang"
   | "five-dynasties"
   | "ten-kingdoms"
   | "liao-north"
   | "song-unification";
+export type NarrativeTrack = string;
 export type DynastyCategory =
   | "five-dynasties"
   | "ten-kingdoms"
@@ -58,6 +60,7 @@ export type PersonRoleCategory =
   | "regent";
 
 export type SourcedEntity = ContentProvenance & {
+  sourceEpisodes?: SourceEpisodeRef[];
   sourceRefs: string[];
   verificationStatus: VerificationStatus;
   disputedNote?: string;

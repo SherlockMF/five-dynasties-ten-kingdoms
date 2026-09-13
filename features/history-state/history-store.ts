@@ -2,11 +2,9 @@
 
 import { create } from "zustand";
 
-import {
-  clampYear,
-  DEFAULT_YEAR,
-  MAX_YEAR,
-} from "@/lib/history/year-range";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import { clampSeriesYear } from "@/lib/history/series";
+import type { HistorySeriesConfig } from "@/types/series";
 
 export {
   clampMapYear,
@@ -20,6 +18,8 @@ export {
 } from "@/lib/history/year-range";
 
 export interface HistoryCoreState {
+  series: HistorySeriesConfig;
+  routePrefix: string;
   currentYear: number;
   selectedDynasty?: string;
   selectedPerson?: string;
@@ -44,7 +44,9 @@ export type HistoryState = HistoryCoreState & HistoryActions;
 type HistoryAction = { type: "setYear"; year: number };
 
 const initialState: HistoryCoreState = {
-  currentYear: DEFAULT_YEAR,
+  series: fiveDynastiesConfig,
+  routePrefix: "",
+  currentYear: fiveDynastiesConfig.defaultYear,
   isPlaying: false,
   aiDrawerOpen: false,
 };
@@ -52,9 +54,9 @@ const initialState: HistoryCoreState = {
 export function reduceHistoryState(
   state: Pick<HistoryCoreState, "currentYear" | "selectedDynasty">,
   action: HistoryAction,
-  dependencies: { isDynastyActive: (id: string, year: number) => boolean },
+  dependencies: { isDynastyActive: (id: string, year: number) => boolean; series?: HistorySeriesConfig },
 ) {
-  const currentYear = clampYear(action.year);
+  const currentYear = clampSeriesYear(action.year, dependencies.series ?? fiveDynastiesConfig);
   return {
     ...state,
     currentYear,
@@ -70,14 +72,14 @@ export const useHistoryStore = create<HistoryState>((set) => ({
   ...initialState,
   setCurrentYear: (year, isDynastyActive = () => true) =>
     set((state) => ({
-      ...reduceHistoryState(state, { type: "setYear", year }, { isDynastyActive }),
-      isPlaying: state.isPlaying && clampYear(year) < MAX_YEAR,
+      ...reduceHistoryState(state, { type: "setYear", year }, { isDynastyActive, series: state.series }),
+      isPlaying: state.isPlaying && clampSeriesYear(year, state.series) < state.series.timelineMaxYear,
     })),
   selectDynasty: (selectedDynasty) => set({ selectedDynasty }),
   selectPerson: (selectedPerson) => set({ selectedPerson }),
   selectEvent: (selectedEvent) => set({ selectedEvent }),
-  play: () => set((state) => ({ isPlaying: state.currentYear < MAX_YEAR })),
+  play: () => set((state) => ({ isPlaying: state.currentYear < state.series.timelineMaxYear })),
   pause: () => set({ isPlaying: false }),
   setAiDrawerOpen: (aiDrawerOpen) => set({ aiDrawerOpen }),
-  reset: (state = {}) => set({ ...initialState, ...state }),
+  reset: (state = {}) => set({ ...initialState, ...state, currentYear: clampSeriesYear(state.currentYear ?? state.series?.defaultYear ?? initialState.currentYear, state.series ?? fiveDynastiesConfig) }),
 }));

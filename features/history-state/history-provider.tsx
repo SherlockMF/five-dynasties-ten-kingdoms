@@ -1,7 +1,8 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type ReactNode, useCallback, useEffect, useRef } from "react";
+import { getRouteSeries } from "@/data/series";
 
 import { useHistoryStore } from "./history-store";
 import { parseHistoryQuery, serializeHistoryQuery } from "./history-url";
@@ -24,16 +25,19 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const query = searchParams.toString();
+  const series = getRouteSeries(pathname);
+  const routePrefix = pathname.startsWith("/series/") ? `/series/${series.slug}` : "";
   const initialized = useRef(false);
   const observedRoute = useRef<RouteSnapshot | null>(null);
   const latestDesiredRoute = useRef<RouteSnapshot | null>(null);
   const pendingInternalRoute = useRef<RouteSnapshot | null>(null);
   const applyingUrl = useRef(false);
 
-  function resetStoreFromUrl(incomingQuery: string) {
-    const parsed = parseHistoryQuery(incomingQuery);
+  const resetStoreFromUrl = useCallback((incomingQuery: string) => {
+    const parsed = parseHistoryQuery(incomingQuery, series);
     const state = useHistoryStore.getState();
     if (
+      state.series.id === series.id && state.routePrefix === routePrefix &&
       parsed.currentYear === state.currentYear &&
       parsed.selectedDynasty === state.selectedDynasty &&
       parsed.selectedPerson === state.selectedPerson &&
@@ -45,13 +49,15 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
     try {
       state.reset({
         ...parsed,
+        series,
+        routePrefix,
         isPlaying: false,
-        aiDrawerOpen: state.aiDrawerOpen,
+        aiDrawerOpen: series.id === "five-dynasties" && state.aiDrawerOpen,
       });
     } finally {
       applyingUrl.current = false;
     }
-  }
+  }, [series, routePrefix]);
 
   useEffect(() => {
     const incoming = { pathname, query };
@@ -59,7 +65,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
       observedRoute.current = incoming;
       latestDesiredRoute.current = incoming;
       pendingInternalRoute.current = null;
-      useHistoryStore.getState().reset(parseHistoryQuery(query));
+      useHistoryStore.getState().reset({ ...parseHistoryQuery(query, series), series, routePrefix });
       initialized.current = true;
       return;
     }
@@ -88,7 +94,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
 
     latestDesiredRoute.current = incoming;
     resetStoreFromUrl(query);
-  }, [pathname, query, router]);
+  }, [pathname, query, router, series, routePrefix, resetStoreFromUrl]);
 
   useEffect(() => {
     return useHistoryStore.subscribe((state, previous) => {
@@ -111,7 +117,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
         !routesMatch(desired, observed)
       ) {
         pendingInternalRoute.current = desired;
-        if (observed.pathname === "/map" && state.currentYear !== previous.currentYear) {
+        if ((observed.pathname === "/map" || /^\/series\/[^/]+\/map$/.test(observed.pathname)) && state.currentYear !== previous.currentYear) {
           // Map years are client-side state; no RSC navigation per playback tick.
           window.history.replaceState(null, "", routeHref(desired));
         } else {

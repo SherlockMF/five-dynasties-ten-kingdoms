@@ -3,20 +3,20 @@
 import { useEffect, useState } from "react";
 
 import {
-  MAX_YEAR,
   useHistoryStore,
 } from "@/features/history-state/history-store";
 
 export function useHistoryPlayer(prepareYear?: (year: number) => Promise<unknown>) {
   const [failure, setFailure] = useState<{ year: number; message: string }>();
   const currentYear = useHistoryStore((state) => state.currentYear);
+  const maxYear = useHistoryStore((state) => state.series.timelineMaxYear);
   const isPlaying = useHistoryStore((state) => state.isPlaying);
   const setCurrentYear = useHistoryStore((state) => state.setCurrentYear);
   const pause = useHistoryStore((state) => state.pause);
 
   useEffect(() => {
     if (!isPlaying) return;
-    if (currentYear >= MAX_YEAR) {
+    if (currentYear >= maxYear) {
       pause();
       return;
     }
@@ -30,7 +30,7 @@ export function useHistoryPlayer(prepareYear?: (year: number) => Promise<unknown
       if (cancelled) return;
       const nextYear = currentYear + 1;
       setCurrentYear(nextYear);
-      if (nextYear >= MAX_YEAR) pause();
+      if (nextYear >= maxYear) pause();
     };
     const timer = window.setTimeout(() => {
       if (!preparation) { advance(); return; }
@@ -44,7 +44,7 @@ export function useHistoryPlayer(prepareYear?: (year: number) => Promise<unknown
       });
     }, 1200);
     return () => { cancelled = true; window.clearTimeout(timer); };
-  }, [currentYear, isPlaying, pause, prepareYear, setCurrentYear]);
+  }, [currentYear, isPlaying, pause, prepareYear, setCurrentYear, maxYear]);
 
   useEffect(() => {
     const handleVisibility = () => {

@@ -3,16 +3,17 @@
 import { useMemo, useState } from "react";
 
 import {
-  MAP_MIN_YEAR,
   useHistoryStore,
 } from "@/features/history-state/history-store";
 import type { HistoricalEvent } from "@/types/history";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import { getSeriesTracks } from "@/lib/history/series";
+import type { HistorySeriesConfig } from "@/types/series";
 
 import { MobileYearStepper } from "./mobile-year-stepper";
 import { TimelineEmpty } from "./timeline-empty";
 import { TimelineEventNode, typeMeta } from "./timeline-event-node";
 import {
-  SUBJECT_TRACKS,
   TimelineFilters,
   type SubjectTrack,
 } from "./timeline-filters";
@@ -21,35 +22,36 @@ import { TimelinePlayer } from "./timeline-player";
 import { TimelineTrack } from "./timeline-track";
 import { getTimelineEventsByYear } from "./timeline-years";
 
-export function Timeline({ events, mode = "full" }: { events: HistoricalEvent[]; mode?: "full" | "preview" }) {
+export function Timeline({ events, mode = "full", series = fiveDynastiesConfig }: { events: HistoricalEvent[]; mode?: "full" | "preview"; series?: HistorySeriesConfig }) {
+  const tracks = getSeriesTracks(series);
   const currentYear = useHistoryStore((state) => state.currentYear);
   const [selectedTracks, setSelectedTracks] = useState<Set<SubjectTrack>>(
-    () => new Set(SUBJECT_TRACKS.map((track) => track.id)),
+    () => new Set(tracks.map((track) => track.id)),
   );
   const eventsByYear = useMemo(
-    () => getTimelineEventsByYear(events, selectedTracks),
-    [events, selectedTracks],
+    () => getTimelineEventsByYear(events, selectedTracks, series),
+    [events, selectedTracks, series],
   );
   const currentYearEvents = eventsByYear.get(currentYear) ?? [];
   const subjectTracksEmpty =
-    selectedTracks.size === 0 && currentYear >= MAP_MIN_YEAR;
+    selectedTracks.size === 0 && (!series.prehistory || currentYear > series.prehistory.endYear);
 
   return (
     <section id="timeline" aria-label="互动历史时间线" className="min-w-0 scroll-mt-24">
       <div className="flex flex-col gap-4 border-y border-ink/15 py-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="grid gap-2">
-          <TimelinePeriodLabel year={currentYear} />
-          <MobileYearStepper />
+          <TimelinePeriodLabel year={currentYear} series={series} />
+          <MobileYearStepper series={series} />
         </div>
         {mode === "full" ? <TimelinePlayer /> : null}
       </div>
-      <TimelineFilters selected={selectedTracks} onChange={setSelectedTracks} />
-      {currentYear < MAP_MIN_YEAR ? (
+      <TimelineFilters tracks={tracks} selected={selectedTracks} onChange={setSelectedTracks} />
+      {series.prehistory && currentYear <= series.prehistory.endYear ? (
         <p className="mt-3 border-l-2 border-gold pl-3 text-xs leading-6 text-muted">
-          875—906 年为唐末前史阶段，不受主体轨道筛选影响。
+          {series.timelineMinYear}—{series.prehistory.endYear} 年为{series.prehistory.label}阶段，不受主体轨道筛选影响。
         </p>
       ) : null}
-      <TimelineTrack eventsByYear={eventsByYear} />
+      <TimelineTrack eventsByYear={eventsByYear} series={series} />
       <p className="mt-2 text-xs leading-6 text-muted">连续暂无收录事件的年份已合并，时间轨间距不代表实际年数；可用上方年份选择逐年查看。</p>
       <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[10px] tracking-[0.1em] text-muted">
         {Object.entries(typeMeta).map(([key, meta]) => <span key={key}>{meta.label}</span>)}
