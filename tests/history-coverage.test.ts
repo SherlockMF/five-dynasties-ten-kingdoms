@@ -74,7 +74,7 @@ describe("expanded northern history corpus", () => {
       if (event.contentOrigin === "historical-extension") {
         expect(event.transcriptEpisodeIds, `${event.id}:extension-episodes`).toEqual([]);
       } else {
-        expect(event.transcriptEpisodeIds.length, `${event.id}:episodes`).toBeGreaterThan(0);
+        expect(event.transcriptEpisodeIds?.length, `${event.id}:episodes`).toBeGreaterThan(0);
       }
       for (const field of [
         "summary",
@@ -298,11 +298,11 @@ describe("expanded northern history corpus", () => {
   });
 
   it("maps every mixed Task 4 entity to its exact transcript episodes", () => {
-    const mixedMap = (entities: Array<{ id: string; contentOrigin: string; transcriptEpisodeIds: readonly number[] }>) =>
+    const mixedMap = (entities: Array<{ id: string; contentOrigin: string; transcriptEpisodeIds?: readonly number[] }>) =>
       Object.fromEntries(entities
         .filter((entity) => entity.contentOrigin === "mixed")
         .sort((left, right) => left.id.localeCompare(right.id))
-        .map((entity) => [entity.id, [...entity.transcriptEpisodeIds]]));
+        .map((entity) => [entity.id, [...(entity.transcriptEpisodeIds ?? [])]]));
 
     expect(mixedMap([...tenKingdomsEvents, ...liaoSongEvents])).toEqual({
       "abaoyi-khagan": [2, 3], "battle-shiling-pass": [6], "chenqiao-mutiny": [6],
@@ -364,7 +364,7 @@ describe("expanded northern history corpus", () => {
       if (person.contentOrigin === "historical-extension") {
         expect(person.transcriptEpisodeIds, `${person.id}:extension-episodes`).toEqual([]);
       } else {
-        expect(person.transcriptEpisodeIds.length, `${person.id}:episodes`).toBeGreaterThan(0);
+        expect(person.transcriptEpisodeIds?.length, `${person.id}:episodes`).toBeGreaterThan(0);
       }
     }
   });

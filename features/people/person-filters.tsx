@@ -1,15 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
 import type { Dynasty, Person, PersonRoleCategory } from "@/types/history";
+import type { SeriesPolityGroup } from "@/types/series";
 
-export const PERSON_CATEGORY_FILTERS = [
-  { id: "all", label: "全部", accessibleName: "全部人物" },
-  { id: "five-dynasties", label: "五代", accessibleName: "五代人物" },
-  { id: "ten-kingdoms", label: "十国", accessibleName: "十国人物" },
-  { id: "liao", label: "辽", accessibleName: "辽人物" },
-  { id: "song", label: "宋初", accessibleName: "宋初人物" },
-] as const;
+const legacyGroups = fiveDynastiesConfig.polityGroups ?? [];
 
 export const PERSON_ROLE_FILTERS = [
   { id: "ruler", label: "君主" },
@@ -18,8 +14,7 @@ export const PERSON_ROLE_FILTERS = [
   { id: "cultural", label: "文化人物" },
 ] as const satisfies readonly { id: PersonFilterRole; label: string }[];
 
-export type PersonCategoryFilter =
-  (typeof PERSON_CATEGORY_FILTERS)[number]["id"];
+export type PersonCategoryFilter = string;
 export type PersonFilterRole = Exclude<PersonRoleCategory, "regent">;
 
 export interface PersonFilterState {
@@ -31,15 +26,14 @@ function matchesCategory(
   person: Person,
   dynastiesById: ReadonlyMap<string, Dynasty>,
   category: PersonCategoryFilter,
+  groups: readonly SeriesPolityGroup[],
 ) {
   if (category === "all") return true;
 
   return person.dynastyIds.some((dynastyId) => {
     const dynasty = dynastiesById.get(dynastyId);
     if (!dynasty) return false;
-    if (category === "liao") return dynasty.id === "liao";
-    if (category === "song") return dynasty.category === "transition";
-    return dynasty.category === category;
+    return groups.find((group) => group.id === category)?.dynastyIds.includes(dynasty.id) ?? false;
   });
 }
 
@@ -52,18 +46,20 @@ export function filterPeople(
   people: readonly Person[],
   dynasties: readonly Dynasty[],
   filters: PersonFilterState,
+  groups: readonly SeriesPolityGroup[] = legacyGroups,
 ) {
   const dynastiesById = new Map(
     dynasties.map((dynasty) => [dynasty.id, dynasty]),
   );
   return people.filter(
     (person) =>
-      matchesCategory(person, dynastiesById, filters.category) &&
+      matchesCategory(person, dynastiesById, filters.category, groups) &&
       matchesRole(person, filters.role),
   );
 }
 
 interface PersonFiltersProps extends PersonFilterState {
+  groups?: readonly SeriesPolityGroup[];
   onCategoryChange: (category: PersonCategoryFilter) => void;
   onRoleChange: (role: PersonFilterRole | null) => void;
 }
@@ -73,7 +69,12 @@ export function PersonFilters({
   role,
   onCategoryChange,
   onRoleChange,
+  groups = legacyGroups,
 }: PersonFiltersProps) {
+  const categories = [
+    { id: "all", label: "全部", accessibleName: "全部人物" },
+    ...groups.map((group) => ({ ...group, accessibleName: `${group.label}人物` })),
+  ];
   return (
     <div className="grid gap-3 rounded-2xl border border-ink/10 bg-white/30 p-4">
       <div
@@ -84,7 +85,7 @@ export function PersonFilters({
         <span className="mr-1 text-[10px] tracking-[0.14em] text-ink/70 uppercase">
           类别
         </span>
-        {PERSON_CATEGORY_FILTERS.map((filter) => {
+        {categories.map((filter) => {
           const active = category === filter.id;
           return (
             <button

@@ -15,6 +15,7 @@ const baseEvent: Omit<
   | "tracks"
   | "contentOrigin"
   | "transcriptEpisodeIds"
+  | "sourceEpisodes"
   | "disputedNote"
 > = {
   eventType: "political",

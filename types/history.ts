@@ -6,23 +6,34 @@ export type ContentOrigin =
   | "transcript-core"
   | "historical-extension"
   | "mixed";
-export type TranscriptEpisodeId = 1 | 2 | 3 | 4 | 5 | 6;
-export type TranscriptEpisodeIds = readonly [
-  TranscriptEpisodeId,
-  ...TranscriptEpisodeId[],
+/** Compatibility for the original Five Dynasties transcripts only. */
+export type LegacyTranscriptEpisodeId = 1 | 2 | 3 | 4 | 5 | 6;
+export type LegacyTranscriptEpisodeIds = readonly [
+  LegacyTranscriptEpisodeId,
+  ...LegacyTranscriptEpisodeId[],
 ];
+/** @deprecated Use SourceEpisodeRef for new content. */
+export type TranscriptEpisodeId = LegacyTranscriptEpisodeId;
+/** @deprecated Use sourceEpisodes for new content. */
+export type TranscriptEpisodeIds = LegacyTranscriptEpisodeIds;
 export type HistoricalExtensionProvenance = {
   contentOrigin: "historical-extension";
-  transcriptEpisodeIds: readonly [];
+  sourceEpisodes?: [];
+  transcriptEpisodeIds?: readonly [];
 };
-export type TranscriptCoreProvenance = {
-  contentOrigin: "transcript-core";
-  transcriptEpisodeIds: TranscriptEpisodeIds;
+export type LegacyTranscriptProvenance = {
+  contentOrigin: "transcript-core" | "mixed";
+  transcriptEpisodeIds: LegacyTranscriptEpisodeIds;
+  sourceEpisodes?: SourceEpisodeRef[];
 };
-export type MixedContentProvenance = {
-  contentOrigin: "mixed";
-  transcriptEpisodeIds: TranscriptEpisodeIds;
+/** Standard provenance for new transcript-derived content; validated as non-empty. */
+export type SourceEpisodeProvenance = {
+  contentOrigin: "transcript-core" | "mixed";
+  sourceEpisodes: SourceEpisodeRef[];
+  transcriptEpisodeIds?: LegacyTranscriptEpisodeIds;
 };
+export type TranscriptCoreProvenance = (SourceEpisodeProvenance | LegacyTranscriptProvenance) & { contentOrigin: "transcript-core" };
+export type MixedContentProvenance = (SourceEpisodeProvenance | LegacyTranscriptProvenance) & { contentOrigin: "mixed" };
 export type ContentProvenance =
   | HistoricalExtensionProvenance
   | TranscriptCoreProvenance
@@ -34,9 +45,10 @@ export type LegacyNarrativeTrack =
   | "liao-north"
   | "song-unification";
 export type NarrativeTrack = string;
-export type DynastyCategory =
-  | "five-dynasties"
-  | "ten-kingdoms"
+/** Neutral default presentation role, not a historical legitimacy classification. */
+export type PolityDisplayRole =
+  | "core"
+  | "regional"
   | "neighbor"
   | "transition";
 export type EventType =
@@ -60,7 +72,6 @@ export type PersonRoleCategory =
   | "regent";
 
 export type SourcedEntity = ContentProvenance & {
-  sourceEpisodes?: SourceEpisodeRef[];
   sourceRefs: string[];
   verificationStatus: VerificationStatus;
   disputedNote?: string;
@@ -78,7 +89,7 @@ export type Dynasty = SourcedEntity & {
   id: string;
   name: string;
   shortName: string;
-  category: DynastyCategory;
+  displayRole: PolityDisplayRole;
   startYear: number;
   endYear: number;
   capital?: string;

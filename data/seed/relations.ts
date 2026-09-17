@@ -2,7 +2,7 @@ import type {
   DynastySuccession,
   EventRelation,
   PersonRelation,
-  TranscriptEpisodeIds,
+  LegacyTranscriptEpisodeIds,
 } from "@/types/history";
 
 import { events } from "./events/index";
@@ -123,11 +123,11 @@ function declareEventRelation(sourceEventId: string, targetEventId: string) {
 
   const transcriptEpisodeIds = [
     ...new Set([
-      ...sourceEvent.transcriptEpisodeIds,
-      ...targetEvent.transcriptEpisodeIds,
+      ...(sourceEvent.transcriptEpisodeIds ?? []),
+      ...(targetEvent.transcriptEpisodeIds ?? []),
     ]),
   ].sort((left, right) => left - right);
-  const mixedEpisodes: TranscriptEpisodeIds | null = transcriptEpisodeIds.length
+  const mixedEpisodes: LegacyTranscriptEpisodeIds | null = transcriptEpisodeIds.length
     ? [transcriptEpisodeIds[0]!, ...transcriptEpisodeIds.slice(1)]
     : null;
   const provenance = mixedEpisodes

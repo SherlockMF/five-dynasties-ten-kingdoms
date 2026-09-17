@@ -1,12 +1,12 @@
 import type {
   HistoricalExtensionProvenance,
-  MixedContentProvenance,
-  TranscriptEpisodeIds,
+  LegacyTranscriptProvenance,
+  LegacyTranscriptEpisodeIds,
 } from "@/types/history";
 
 export function mixed(
-  transcriptEpisodeIds: TranscriptEpisodeIds,
-): MixedContentProvenance {
+  transcriptEpisodeIds: LegacyTranscriptEpisodeIds,
+): LegacyTranscriptProvenance & { contentOrigin: "mixed" } {
   return { contentOrigin: "mixed", transcriptEpisodeIds };
 }
 

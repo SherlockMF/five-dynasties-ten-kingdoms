@@ -4,6 +4,8 @@ import { RotateCcw } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
+import type { HistorySeriesConfig } from "@/types/series";
 import { useHistoryStore } from "@/features/history-state/history-store";
 import type { Dynasty, HistoricalEvent, Person, PersonRelation } from "@/types/history";
 import { PersonLifeEvents } from "./person-life-events";
@@ -15,14 +17,15 @@ import { PersonSearch } from "./person-search";
 import { RelationLegend } from "./relation-legend";
 import { RelationListView } from "./relation-list-view";
 
-export function PersonExplorer({ initialPersonId, people, dynasties, relations, events = [] }: { initialPersonId: string; people: Person[]; dynasties: Dynasty[]; relations: PersonRelation[]; events?: HistoricalEvent[] }) {
+export function PersonExplorer({ initialPersonId, people, dynasties, relations, events = [], series = fiveDynastiesConfig }: { initialPersonId: string; people: Person[]; dynasties: Dynasty[]; relations: PersonRelation[]; events?: HistoricalEvent[]; series?: HistorySeriesConfig }) {
   const selectedId = useHistoryStore((state) => state.selectedPerson) ?? initialPersonId;
   const selectPerson = useHistoryStore((state) => state.selectPerson);
   const [category, setCategory] = useState<PersonCategoryFilter>("all");
   const [role, setRole] = useState<PersonFilterRole | null>(null);
   const detailRef = useRef<HTMLDivElement>(null);
   const center = people.find((person) => person.id === selectedId) ?? people.find((person) => person.id === initialPersonId) ?? people[0];
-  const candidates = useMemo(() => filterPeople(people, dynasties, { category, role }), [category, dynasties, people, role]);
+  const groups = useMemo(() => series.polityGroups ?? dynasties.map((dynasty) => ({ id: dynasty.id, label: dynasty.name, dynastyIds: [dynasty.id] })), [series.polityGroups, dynasties]);
+  const candidates = useMemo(() => filterPeople(people, dynasties, { category, role }, groups), [category, dynasties, people, role, groups]);
   const activeRelations = useMemo(() => relations.filter((relation) => relation.sourcePersonId === center.id || relation.targetPersonId === center.id), [center.id, relations]);
   const relatedIds = new Set(activeRelations.flatMap((relation) => [relation.sourcePersonId, relation.targetPersonId]));
   const graphPeople = people.filter((person) => relatedIds.has(person.id));
@@ -32,7 +35,7 @@ export function PersonExplorer({ initialPersonId, people, dynasties, relations, 
   };
   return (
     <section className="grid min-w-0 gap-6">
-      <PersonFilters category={category} role={role} onCategoryChange={setCategory} onRoleChange={setRole} />
+      <PersonFilters groups={groups} category={category} role={role} onCategoryChange={setCategory} onRoleChange={setRole} />
       <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
         <PersonSearch people={candidates} hasActiveFilters={category !== "all" || role !== null} onSelect={focus} />
         <Button variant="outline" onClick={() => selectPerson(initialPersonId)}><RotateCcw aria-hidden="true" className="size-4" />重置中心</Button>

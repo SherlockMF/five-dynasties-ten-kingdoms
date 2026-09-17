@@ -352,13 +352,32 @@ function validateSources(
   }
 
   const transcriptEpisodeIds: unknown = entity.transcriptEpisodeIds;
+  const sourceEpisodes: unknown = entity.sourceEpisodes;
+  const modernEpisodes: unknown[] = Array.isArray(sourceEpisodes) ? sourceEpisodes : [];
+  if (sourceEpisodes !== undefined && !Array.isArray(sourceEpisodes)) {
+    errors.push(`${kind}:${entity.id}:invalid-source-episodes`);
+  }
+  let validModernEpisodes = 0;
+  for (const [index, episode] of modernEpisodes.entries()) {
+    if (
+      !episode || typeof episode !== "object" ||
+      !("sourceSeriesId" in episode) || typeof episode.sourceSeriesId !== "string" || !episode.sourceSeriesId.trim() ||
+      !("episodeId" in episode) || typeof episode.episodeId !== "string" || !episode.episodeId.trim() ||
+      ("title" in episode && episode.title !== undefined && typeof episode.title !== "string") ||
+      ("locator" in episode && episode.locator !== undefined && typeof episode.locator !== "string")
+    ) {
+      errors.push(`${kind}:${entity.id}:invalid-source-episode:${index}`);
+    } else {
+      validModernEpisodes += 1;
+    }
+  }
   const episodes: unknown[] = Array.isArray(transcriptEpisodeIds)
     ? transcriptEpisodeIds
     : [];
-  if (entity.contentOrigin === "historical-extension" && episodes.length) {
+  if (entity.contentOrigin === "historical-extension" && (episodes.length || modernEpisodes.length)) {
     errors.push(`${kind}:${entity.id}:extension-has-transcript`);
   }
-  if (entity.contentOrigin !== "historical-extension" && !episodes.length) {
+  if (entity.contentOrigin !== "historical-extension" && !episodes.length && !validModernEpisodes) {
     errors.push(`${kind}:${entity.id}:transcript-origin-without-episode`);
   }
 

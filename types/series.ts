@@ -23,6 +23,9 @@ export type HistorySeriesConfig = {
   slug: string;
   title: string;
   subtitle?: string;
+  featuredPersonId?: string;
+  featuredEventId?: string;
+  polityGroups?: readonly SeriesPolityGroup[];
   timelineMinYear: number;
   timelineMaxYear: number;
   mapMinYear?: number;
@@ -32,6 +35,13 @@ export type HistorySeriesConfig = {
   trackIds: readonly string[];
   tracks: readonly NarrativeTrackConfig[];
   prehistory?: { trackId: string; endYear: number; label: string; mainLabel: string };
+};
+
+/** Series-specific groups such as Five Dynasties / Ten Kingdoms. */
+export type SeriesPolityGroup = {
+  id: string;
+  label: string;
+  dynastyIds: readonly string[];
 };
 
 export type SourceEpisodeRef = {

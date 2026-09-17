@@ -531,7 +531,7 @@ test("map event modal is a top-level inert and accessible portal", async (
     ? page
         .getByRole("navigation", { name: "移动端主要导航" })
         .getByRole("link", { name: "首页" })
-    : page.getByRole("link", { name: "五代十国互动历史探索首页" });
+    : page.getByRole("link", { name: "山河纪总首页" });
 
   await taiyuan.click();
   const taiyuanAccessibleName = await taiyuan.getAttribute("aria-label");

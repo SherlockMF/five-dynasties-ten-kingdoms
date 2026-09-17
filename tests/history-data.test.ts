@@ -743,10 +743,10 @@ describe("history seed data", () => {
 
   it("represents northern succession and southern coexistence", () => {
     const northern = seedData.dynasties.filter(
-      (dynasty) => dynasty.category === "five-dynasties",
+      (dynasty) => dynasty.displayRole === "core",
     );
     const southern = seedData.dynasties.filter(
-      (dynasty) => dynasty.category === "ten-kingdoms",
+      (dynasty) => dynasty.displayRole === "regional",
     );
 
     expect(northern.map((dynasty) => dynasty.id)).toEqual([
@@ -775,7 +775,7 @@ describe("history seed data", () => {
       expect(entities.length, collectionName).toBeGreaterThan(0);
       for (const entity of entities) {
         expect(
-          entity.transcriptEpisodeIds.every(
+          entity.transcriptEpisodeIds?.every(
             (episode) => episode >= 1 && episode <= 6,
           ),
           `${collectionName}:${entity.id}:episode-range`,
@@ -788,7 +788,7 @@ describe("history seed data", () => {
           ).toEqual([]);
         } else {
           expect(
-            entity.transcriptEpisodeIds.length,
+            entity.transcriptEpisodeIds?.length,
             `${collectionName}:${entity.id}:transcript-episodes`,
           ).toBeGreaterThan(0);
         }
@@ -811,7 +811,7 @@ describe("history seed data", () => {
     );
     const southern = seedData.dynasties.filter(
       (dynasty) =>
-        dynasty.category === "ten-kingdoms" && dynasty.id !== "northern-han",
+        dynasty.displayRole === "regional" && dynasty.id !== "northern-han",
     );
 
     expect(laterJin).toMatchObject({
@@ -822,7 +822,7 @@ describe("history seed data", () => {
       southern.every(
         (dynasty) =>
           dynasty.contentOrigin === "historical-extension" &&
-          dynasty.transcriptEpisodeIds.length === 0,
+          dynasty.transcriptEpisodeIds?.length === 0,
       ),
     ).toBe(true);
   });

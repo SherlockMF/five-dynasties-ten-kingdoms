@@ -11,7 +11,7 @@ export function withMapPolities(dynasties: Dynasty[]): Dynasty[] {
   return [...dynasties, ...mapPolities.map((polity): Dynasty => ({
     ...polity,
     shortName: polity.name,
-    category: "transition",
+    displayRole: "transition",
     summary: polity.description,
     predecessorIds: [], successorIds: [], rulerPeriods: [],
     sourceRefs: ["地图专用分区归属时间表（gis/continuous/ownership.json）"],

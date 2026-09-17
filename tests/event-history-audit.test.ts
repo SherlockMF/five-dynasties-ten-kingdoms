@@ -43,7 +43,7 @@ describe("audited historical chronology", () => {
   });
 
   it("includes ten-kingdom events in that filter even when they cross other tracks", () => {
-    const kingdoms = new Set(seedData.dynasties.filter((item) => item.category === "ten-kingdoms").map((item) => item.id));
+    const kingdoms = new Set(seedData.dynasties.filter((item) => item.displayRole === "regional").map((item) => item.id));
     for (const item of seedData.events.filter((item) => item.startYear >= 907 && item.dynastyIds.some((id) => kingdoms.has(id)))) {
       expect(item.tracks, item.id).toContain("ten-kingdoms");
     }

@@ -22,10 +22,16 @@ function getSourceMarkerLabel(entity: SourceMarkerEntity): string {
   const meanings: string[] = [];
 
   if (entity.contentOrigin !== "historical-extension") {
-    const episodes = entity.transcriptEpisodeIds
-      .map((episode) => String(episode).padStart(2, "0"))
-      .join("、");
-    meanings.push(episodes ? `第${episodes}集主线` : "六集主线");
+    if (entity.sourceEpisodes?.length) {
+      meanings.push(entity.sourceEpisodes.map((episode) =>
+        `${episode.sourceSeriesId} / ${episode.episodeId}${episode.title ? `：${episode.title}` : ""}${episode.locator ? `（${episode.locator}）` : ""}`,
+      ).join("、"));
+    } else {
+      const episodes = (entity.transcriptEpisodeIds ?? [])
+        .map((episode) => String(episode).padStart(2, "0"))
+        .join("、");
+      meanings.push(episodes ? `第${episodes}集主线` : "逐字稿主线");
+    }
   }
 
   if (entity.contentOrigin !== "transcript-core") {
@@ -142,7 +148,7 @@ export function SourceMarker({
           variant === "inverse" ? "text-paper" : "text-ink/75",
         )}
       >
-        ¹ 六集主线 · ² 史料扩展 · ³ 存在异说
+        ¹ {entity.sourceEpisodes?.length ? "逐字稿主线" : "六集主线"} · ² 史料扩展 · ³ 存在异说
       </span>
     </span>
   );

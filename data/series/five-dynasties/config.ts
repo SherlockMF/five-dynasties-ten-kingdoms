@@ -5,6 +5,13 @@ export const fiveDynastiesConfig: HistorySeriesConfig = {
   slug: "five-dynasties",
   title: "五代十国",
   subtitle: "从唐末余波，到宋初统一",
+  featuredPersonId: "shi-jingtang",
+  polityGroups: [
+    { id: "five-dynasties", label: "五代", dynastyIds: ["later-liang", "later-tang", "later-jin", "later-han", "later-zhou"] },
+    { id: "ten-kingdoms", label: "十国", dynastyIds: ["wu", "wuyue", "min", "chu", "former-shu", "later-shu", "southern-han", "southern-tang", "jingnan", "northern-han"] },
+    { id: "liao", label: "辽", dynastyIds: ["liao"] },
+    { id: "song", label: "宋初", dynastyIds: ["northern-song"] },
+  ],
   timelineMinYear: 875,
   timelineMaxYear: 979,
   mapMinYear: 907,
