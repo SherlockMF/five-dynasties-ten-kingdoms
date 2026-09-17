@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
-import { dynasties, people } from "@/data/seed";
+import { dynasties, people } from "@/data/seed/five-dynasties";
 import {
   filterPeople,
   PERSON_ROLE_FILTERS,

@@ -54,7 +54,7 @@ export function Timeline({ events, mode = "full", series = fiveDynastiesConfig }
       <TimelineTrack eventsByYear={eventsByYear} series={series} />
       <p className="mt-2 text-xs leading-6 text-muted">连续暂无收录事件的年份已合并，时间轨间距不代表实际年数；可用上方年份选择逐年查看。</p>
       <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[10px] tracking-[0.1em] text-muted">
-        {Object.entries(typeMeta).map(([key, meta]) => <span key={key}>{meta.label}</span>)}
+        {Object.entries(typeMeta).filter(([key]) => key !== "biographical" || events.some((event) => event.eventType === key)).map(([key, meta]) => <span key={key}>{meta.label}</span>)}
       </div>
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-live="polite">
         {currentYearEvents.length ? (

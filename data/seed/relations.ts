@@ -5,7 +5,7 @@ import type {
   LegacyTranscriptEpisodeIds,
 } from "@/types/history";
 
-import { events } from "./events/index";
+import { legacyEvents as events } from "./events/index";
 import {
   historicalExtension,
   mixed as transcript,

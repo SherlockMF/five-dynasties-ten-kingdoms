@@ -1,4 +1,4 @@
-import { Crown, Flag, Landmark, Scale, Swords } from "lucide-react";
+import { Crown, Flag, Landmark, Scale, Swords, UserRound } from "lucide-react";
 import Link from "next/link";
 
 import { SourceMarker } from "@/components/history/source-marker";
@@ -13,6 +13,7 @@ const typeMeta: Record<
   collapse: { label: "政权灭亡", icon: Landmark, className: "text-ink" },
   war: { label: "战争", icon: Swords, className: "text-[#70535c]" },
   succession: { label: "皇位变化", icon: Crown, className: "text-gold" },
+  biographical: { label: "人物生平", icon: UserRound, className: "text-[#70535c]" },
   political: { label: "政治事件", icon: Scale, className: "text-[#457267]" },
 };
 

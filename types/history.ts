@@ -56,7 +56,8 @@ export type EventType =
   | "collapse"
   | "war"
   | "succession"
-  | "political";
+  | "political"
+  | "biographical";
 export type PersonRelationType =
   | "family"
   | "ally"
@@ -69,7 +70,8 @@ export type PersonRoleCategory =
   | "general"
   | "official"
   | "cultural"
-  | "regent";
+  | "regent"
+  | "royal-family";
 
 export type SourcedEntity = ContentProvenance & {
   sourceRefs: string[];

@@ -36,6 +36,7 @@ const PERSON_ROLE_CATEGORIES = new Set<PersonRoleCategory>([
   "official",
   "cultural",
   "regent",
+  "royal-family",
 ]);
 
 function isIntegerYear(value: unknown): value is number {
@@ -46,6 +47,7 @@ function isIntegerYear(value: unknown): value is number {
   );
 }
 
+/** Five Dynasties audit: fixed legacy counts, years and succession coverage. */
 export function validateHistoryData(data: HistoryDataSet): string[] {
   const errors: string[] = [];
   const dynastyIds = new Set(data.dynasties.map(({ id }) => id));

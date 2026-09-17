@@ -4,8 +4,8 @@ import { fiveDynastiesConfig } from "@/data/series/five-dynasties/config";
 import type { HistorySeriesConfig, SeriesReadingPath } from "@/types/series";
 import type { HistoricalEvent } from "@/types/history";
 
-export function ReadingPaths({ events, series = fiveDynastiesConfig }: { events: HistoricalEvent[]; series?: HistorySeriesConfig }) {
-  const readingPaths: readonly SeriesReadingPath[] = series.id === fiveDynastiesConfig.id ? fiveDynastiesReadingPaths : [];
+export function ReadingPaths({ events, series = fiveDynastiesConfig, paths }: { events: HistoricalEvent[]; series?: HistorySeriesConfig; paths?: readonly SeriesReadingPath[] }) {
+  const readingPaths: readonly SeriesReadingPath[] = paths ?? (series.id === fiveDynastiesConfig.id ? fiveDynastiesReadingPaths : []);
   const byId = new Map(events.map((event) => [event.id, event]));
   return <section id="reading-paths" aria-labelledby="reading-paths-title" className="scroll-mt-24 border-b border-ink/15 py-16 sm:py-20">
     <p className="text-[10px] tracking-[0.2em] text-cinnabar">从一条主线开始</p>

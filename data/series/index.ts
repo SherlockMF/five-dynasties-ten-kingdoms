@@ -1,3 +1,4 @@
+import { northernQiZhouSuiEntityIds } from "./northern-qi-zhou-sui/entity-ids";
 import { fiveDynastiesConfig } from "./five-dynasties/config";
 import { northernQiZhouSuiConfig } from "./northern-qi-zhou-sui/config";
 
@@ -8,6 +9,8 @@ export function findSeriesBySlug(slug: string) {
 }
 
 export function getRouteSeries(pathname: string) {
+  const eventId = /^\/explore\/([^/]+)(?:\/|$)/.exec(pathname)?.[1];
+  if (eventId && (northernQiZhouSuiEntityIds.events as readonly string[]).includes(eventId)) return northernQiZhouSuiConfig;
   const slug = /^\/series\/([^/]+)(?:\/|$)/.exec(pathname)?.[1];
   return (slug ? findSeriesBySlug(slug) : null) ?? fiveDynastiesConfig;
 }

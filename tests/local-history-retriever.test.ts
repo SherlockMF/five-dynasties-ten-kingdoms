@@ -6,6 +6,12 @@ import { describe, expect, it } from "vitest";
 import { LocalHistoryRetriever } from "@/lib/rag/local-history-retriever";
 
 describe("LocalHistoryRetriever", () => {
+  it("keeps the legacy AI corpus inside its supported series and year range", async () => {
+    const result = await new LocalHistoryRetriever().retrieve("隋灭陈", { year: 936, currentPage: "/timeline" });
+    expect(result.evidence).toEqual([]);
+    const contextual = await new LocalHistoryRetriever().retrieve("背景是什么", { currentPage: "/explore/sui-conquers-chen" });
+    expect(contextual.evidence.some((item) => item.eventId === "sui-conquers-chen")).toBe(false);
+  });
   it("retrieves the sourced event behind the cession of the Sixteen Prefectures", async () => {
     const result = await new LocalHistoryRetriever().retrieve(
       "石敬瑭为什么割让十六州",

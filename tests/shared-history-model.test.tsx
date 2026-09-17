@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { seedData } from "@/data/seed";
+import { fiveDynastiesSeedData as seedData } from "@/data/seed/five-dynasties";
 import { SourceMarker } from "@/components/history/source-marker";
 import { validateHistoryData } from "@/lib/validation/history-data";
 import { filterPeople } from "@/features/people/person-filters";

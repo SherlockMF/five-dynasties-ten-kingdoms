@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getSeriesBySlug, getSeriesRepository } from "@/lib/repositories/series-repository";
 import { clampSeriesYear } from "@/lib/history/series";
-import { seedData } from "@/data/seed";
+import { fiveDynastiesSeedData as seedData } from "@/data/seed/five-dynasties";
 
 describe("series repository", () => {
   it("keeps the two year ranges independent", async () => {
@@ -17,11 +17,11 @@ describe("series repository", () => {
   it("returns null for unknown slugs", async () => {
     expect(await getSeriesBySlug("missing")).toBeNull();
   });
-  it("reuses existing entities and exposes no unverified new content", async () => {
+  it("preserves the legacy corpus and rejects unknown selectors", async () => {
     const repository = getSeriesRepository();
     expect(await repository.getSeriesPeople("five-dynasties")).toEqual(seedData.people);
     expect(await repository.getSeriesEvents("five-dynasties")).toEqual(seedData.events);
-    for (const id of ["northern-qi-zhou-sui", "missing"]) {
+    for (const id of ["missing"]) {
       expect(await repository.getSeriesPeople(id)).toEqual([]);
       expect(await repository.getSeriesEvents(id)).toEqual([]);
       expect(await repository.getSeriesDynasties(id)).toEqual([]);

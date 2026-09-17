@@ -46,7 +46,7 @@ export function PersonExplorer({ initialPersonId, people, dynasties, relations, 
       </div>
       <div className="grid min-w-0 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
         <div className="order-2 min-w-0 md:order-1 xl:sticky xl:top-28"><PersonGraph center={center} people={graphPeople} relations={activeRelations} onFocus={focus} /></div>
-        <div ref={detailRef} className="order-1 min-w-0 scroll-mt-24 md:order-2"><PersonDetailPanel person={center} /><PersonLifeEvents person={center} events={events} /></div>
+        <div ref={detailRef} className="order-1 min-w-0 scroll-mt-24 md:order-2"><PersonDetailPanel person={center} enableChat={series.id === fiveDynastiesConfig.id} /><PersonLifeEvents person={center} events={events} /></div>
       </div>
       <div className="border-t border-ink/10 pt-6"><h2 className="mb-4 font-serif text-xl">关系中的人</h2><RelationListView center={center} people={graphPeople} relations={activeRelations} onFocus={focus} /></div>
     </section>

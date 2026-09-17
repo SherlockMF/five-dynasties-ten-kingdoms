@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { dynasties, eventRelations, events, locations, people, regions, seedData } from "@/data/seed";
+import { dynasties, eventRelations, events, locations, people, regions, fiveDynastiesSeedData as seedData } from "@/data/seed/five-dynasties";
 import { liaoSongEvents } from "@/data/seed/events/liao-song";
 import { tenKingdomsEvents } from "@/data/seed/events/ten-kingdoms";
 import { liaoSongPeople } from "@/data/seed/people/liao-song";

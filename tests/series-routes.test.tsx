@@ -50,12 +50,14 @@ describe("series routes", () => {
     render(await SeriesIndex());
     expect(screen.getByRole("link", { name: /五代十国/ })).toHaveAttribute("href", "/series/five-dynasties");
     expect(screen.getByRole("link", { name: /北齐/ })).toHaveAttribute("href", "/series/northern-qi-zhou-sui");
+    expect(screen.queryByText(/框架预览 · 内容筹备中/)).not.toBeInTheDocument();
   });
   it("serves existing content at the new five dynasties route", async () => {
     render(await SeriesPage(props("five-dynasties")));
     expect(screen.getByText("五代十国首页内容")).toBeVisible();
   });
-  it("keeps new people empty until content ingestion", async () => {
+  it("renders a safe empty state if the series has no people", async () => {
+    vi.spyOn(getSeriesRepository(), "getSeriesPeople").mockResolvedValue([]);
     render(await SeriesPeople(props("northern-qi-zhou-sui")));
     expect(screen.getByText(/人物资料待核验入库/)).toBeVisible();
   });

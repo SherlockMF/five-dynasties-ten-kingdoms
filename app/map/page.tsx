@@ -2,18 +2,18 @@ import type { Metadata } from "next";
 
 import { PageShell } from "@/components/layout/page-shell";
 import { HistoricalMap } from "@/features/history-map/historical-map";
-import { MAP_MIN_YEAR, MAX_YEAR } from "@/lib/history/year-range";
-import { getHistoryRepository } from "@/lib/repositories";
+import { MAP_MIN_YEAR } from "@/lib/history/year-range";
+import { getSeriesRepository } from "@/lib/repositories/series-repository";
 
 export const metadata: Metadata = { title: "互动历史地图" };
 
 export default async function MapPage() {
-  const repository = getHistoryRepository();
+  const repository = getSeriesRepository();
   const [regions, dynasties, events, locations] = await Promise.all([
-    repository.getRegionsInRange(MAP_MIN_YEAR, MAX_YEAR),
-    repository.getAllDynasties(),
-    repository.getEventsInRange(MAP_MIN_YEAR, MAX_YEAR),
-    repository.getAllLocations(),
+    repository.getSeriesRegions("five-dynasties"),
+    repository.getSeriesDynasties("five-dynasties"),
+    repository.getSeriesEvents("five-dynasties").then((items) => items.filter((event) => (event.endYear ?? event.startYear) >= MAP_MIN_YEAR)),
+    repository.getSeriesLocations("five-dynasties"),
   ]);
 
   return (

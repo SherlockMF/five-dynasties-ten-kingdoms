@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 
 import { portraits } from "@/data/portraits";
-import { people } from "@/data/seed/people";
+import { people } from "@/data/seed/five-dynasties";
 
 describe("published portrait assets", () => {
   it("gives every person exactly one distinct portrait", () => {

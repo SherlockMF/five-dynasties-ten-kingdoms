@@ -13,7 +13,7 @@ export function SeriesHub() {
     <section id="series" aria-labelledby="series-heading" className="scroll-mt-24 py-12 sm:py-16">
       <div className="mb-8 flex items-end justify-between gap-4"><h2 id="series-heading" className="font-serif text-3xl">选择一个时代</h2><span className="text-xs text-muted">{historySeries.length} 个专题</span></div>
       <div className="grid gap-6 md:grid-cols-2">{historySeries.map((series, index) => <Link key={series.id} href={"/series/" + series.slug} className="group flex min-h-80 flex-col rounded-2xl border border-ink/20 bg-paper p-7 transition-colors hover:border-cinnabar hover:bg-white/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cinnabar sm:p-10">
-        <div className="flex items-center justify-between gap-4"><span className="font-serif text-4xl text-ink/25">0{index + 1}</span><span className="rounded-full border border-ink/15 px-3 py-1 text-xs text-muted">{series.mapMode === "annual" ? "可探索" : "框架预览 · 内容筹备中"}</span></div>
+        <div className="flex items-center justify-between gap-4"><span className="font-serif text-4xl text-ink/25">0{index + 1}</span><span className="rounded-full border border-ink/15 px-3 py-1 text-xs text-muted">{series.mapMode === "annual" ? "可探索" : "可探索 · 阶段示意地图"}</span></div>
         <p className="mt-8 text-sm tracking-widest text-cinnabar">{series.timelineMinYear}—{series.timelineMaxYear}</p>
         <h3 className="mt-3 font-serif text-3xl sm:text-4xl">{series.title}</h3>
         <p className="mb-8 mt-4 text-sm leading-7 text-muted">{series.subtitle}</p>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { seedData } from "@/data/seed";
+import { fiveDynastiesSeedData as seedData } from "@/data/seed/five-dynasties";
 import { validateHistoryData } from "@/lib/validation/history-data";
 import type {
   HistoricalEvent,

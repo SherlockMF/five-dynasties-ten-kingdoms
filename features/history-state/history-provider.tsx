@@ -26,7 +26,7 @@ export function HistoryProvider({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const query = searchParams.toString();
   const series = getRouteSeries(pathname);
-  const routePrefix = pathname.startsWith("/series/") ? `/series/${series.slug}` : "";
+  const routePrefix = (pathname.startsWith("/series/") || series.id !== "five-dynasties") ? `/series/${series.slug}` : "";
   const initialized = useRef(false);
   const observedRoute = useRef<RouteSnapshot | null>(null);
   const latestDesiredRoute = useRef<RouteSnapshot | null>(null);

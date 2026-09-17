@@ -567,3 +567,7 @@ Codex 开始大任务前：
 > Web 不替 Game 完成探索；Game 不替 Web 写百科。
 
 > 先做第一个闭环，再扩数量。
+
+## 本地叙事素材库（2026-09-18）
+
+后续逐字稿等资料统一从 `D:\OPC\小宇宙待开发` 查找实际文件，优先 `_source-materials/transcripts/cleaned`；raw 仅回查。清洗不等于事实核验，新历史内容须以传世史料或权威研究复核。北齐/北周→隋研究台账见 `docs/research/northern-qi-zhou-sui/`。

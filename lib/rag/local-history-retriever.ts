@@ -1,6 +1,7 @@
 import "server-only";
 
-import { seedData } from "@/data/seed";
+// The current AI contract is limited to the Five Dynasties series.
+import { fiveDynastiesSeedData as seedData } from "@/data/seed/five-dynasties";
 import { MAX_YEAR, TIMELINE_MIN_YEAR } from "@/lib/history/year-range";
 import type { RetrievedEvidence } from "@/types/ai";
 import type { HistoricalEvent, SourcedEntity } from "@/types/history";
