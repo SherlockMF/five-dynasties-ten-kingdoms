@@ -38,7 +38,7 @@ export function projectArchive(entries: ArchiveEntry[], sources: ArchiveSourceRe
     const blocks = entry.blocks.filter(b => rank(b.state) <= rank(state) && (b.requires ?? []).every(observed));
     return { id: entry.id, type: entry.type, title: entry.title, state, blocks: blocks.map(b => ({ label: b.label, text: b.text, sourceRefs: rank(state) >= 2 ? codes(b.sourceRefs) : [] })), ...(entry.image ? { image: entry.image } : {}), ...(entry.year ? { year: entry.year } : {}), ...(entry.position ? { position: entry.position } : {}) };
   });
-  const relations = entries.filter(e => e.type === "relation" && observed(e.id) && e.endpoints?.every(observed)).map(e => ({ id: e.id, from: e.endpoints![0], to: e.endpoints![1], label: e.title, sourceRefs: codes(e.blocks.flatMap(b => b.sourceRefs)) }));
+  const relations = entries.filter(e => e.type === "relation" && observed(e.id) && e.endpoints?.every(observed)).map(e => ({ id: e.id, from: e.endpoints![0], to: e.endpoints![1], label: e.title, sourceRefs: rank(states.get(e.id)!) >= 2 ? codes(e.blocks.filter(b => rank(b.state) <= rank(states.get(e.id)!) && (b.requires ?? []).every(observed)).flatMap(b => b.sourceRefs)) : [] }));
   const log = records.flatMap(r => {
     const original = entries.find(e => e.key === r.key);
     if (!original) return [];

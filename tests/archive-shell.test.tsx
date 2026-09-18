@@ -32,6 +32,18 @@ it("clears discoveries and persists the reset", async () => {
   fireEvent.click(screen.getByRole("button", { name: "清空本机记录" }));
   await waitFor(() => expect(JSON.parse(localStorage.getItem(discoveryStorageKey(false))!).discoveries).toEqual([]));
 });
+it("restores legacy discovery strings from localStorage through the API", async () => {
+  const key = "li-jingxun.artifact.green-glass-bottle";
+  localStorage.setItem(discoveryStorageKey(false), JSON.stringify({ version: 1, discoveries: [key] }));
+  vi.mocked(fetch).mockImplementationOnce(async (_url, options) => {
+    const { discoveries } = JSON.parse(options!.body as string);
+    expect(discoveries).toEqual([{ key, state: "observed" }]);
+    return { ok: true, json: async () => ({ discoveries, view: projectArchive(archiveEntries, archiveSources, discoveries) }) } as Response;
+  });
+  render(<ArchiveShell initialView={initialView} allowDev={false} />);
+  await waitFor(() => expect(screen.getByRole("heading", { name: "椭圆形绿玻璃瓶" })).toBeInTheDocument());
+  expect(screen.queryByText(/国博馆藏资料记载/)).not.toBeInTheDocument();
+});
 it("clears local records even when the API is offline", async () => {
   localStorage.setItem(discoveryStorageKey(false), JSON.stringify({ version: 1, discoveries: ["li-jingxun.artifact.green-glass-bottle"] }));
   render(<ArchiveShell initialView={initialView} allowDev={false} />);

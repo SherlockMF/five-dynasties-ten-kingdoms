@@ -329,5 +329,67 @@
       "path": "李静训墓完整游戏策划案_V1.md",
       "sha256": "f574cab5dff7aabc6dcf727af37bac0877a510a6aeb511ac12216024d8a6e61b"
     }
+  ],
+  "freezeVersion": "li-jingxun-content-freeze-v1",
+  "reviewedAt": "2026-09-18",
+  "epitaph": {
+    "fullTextCollated": false,
+    "status": "uncollated-do-not-publish"
+  },
+  "gameSourcePack": {
+    "path": "D:/OPC/history-field/docs/source_pack/li_jingxun_source_pack.md",
+    "sha256": "c476edbf21a48f9155470bad0453c1167ab2bf8bbe6a154bcdd12a5655b1564c",
+    "status": "DRAFT v0.1; claim-by-claim review only"
+  },
+  "illustrations": [
+    {
+      "id": "sarcophagus",
+      "entryId": "A01",
+      "sourcePath": "public/investigations/li-jingxun/sarcophagus.svg",
+      "sha256": "15c8483c4872e8dd337ce76c89e1bc4726d0411d68696759b6609b2690e1f9ab",
+      "rights": "RUNTIME_ALLOWED",
+      "rightsBasis": "旧项目 README-ASSETS.md 记为项目内原创矢量示意；与只读源 SHA-256 一致，无第三方图像嵌入。仅作为明确标示的示意复原使用，不充当文物影像或测绘依据。"
+    },
+    {
+      "id": "necklace",
+      "entryId": "A02",
+      "sourcePath": "public/investigations/li-jingxun/necklace.svg",
+      "sha256": "062cf5ede8491083faa20fcc7d75052bc30546785b6516a53f205f5b2022b6d7",
+      "rights": "RUNTIME_ALLOWED",
+      "rightsBasis": "旧项目 README-ASSETS.md 记为项目内原创矢量示意；与只读源 SHA-256 一致，无第三方图像嵌入。仅作为明确标示的示意复原使用，不充当文物影像或测绘依据。"
+    },
+    {
+      "id": "green-glass-bottle",
+      "entryId": "A03",
+      "sourcePath": "public/investigations/li-jingxun/green-glass-bottle.svg",
+      "sha256": "0d6747d1361686b259de9cd94b3c8583d149e459b2ebc56cf461981fcb8312be",
+      "rights": "RUNTIME_ALLOWED",
+      "rightsBasis": "旧项目 README-ASSETS.md 记为项目内原创矢量示意；与只读源 SHA-256 一致，无第三方图像嵌入。仅作为明确标示的示意复原使用，不充当文物影像或测绘依据。"
+    },
+    {
+      "id": "jade-cup",
+      "entryId": "A04",
+      "sourcePath": "public/investigations/li-jingxun/jade-cup.svg",
+      "sha256": "3a9d93a2bae69b0c429aec6f8b290ee9942502f3e6e13b6e6f5f43f54e935125",
+      "rights": "RUNTIME_ALLOWED",
+      "rightsBasis": "旧项目 README-ASSETS.md 记为项目内原创矢量示意；与只读源 SHA-256 一致，无第三方图像嵌入。仅作为明确标示的示意复原使用，不充当文物影像或测绘依据。"
+    }
+  ],
+  "referenceImages": [
+    {
+      "source": "Game Source Pack §8：cand_1/cand_2、ref_figurines_plate、ref_gold_necklace、ref_green_glass_bottle",
+      "rights": "REFERENCE_ONLY",
+      "reason": "仅有推定公版说法；未完成版本、摄影及使用权核定，不复制到 Web runtime。"
+    },
+    {
+      "source": "Game Source Pack §8：stone_coffin_front_source、ref_stone_coffin_front",
+      "rights": "REFERENCE_ONLY",
+      "reason": "新闻机构或博物馆照片，开发下载授权不等于公开使用授权，不复制到 Web runtime。"
+    },
+    {
+      "source": "Game 目录中的 epitaph_rubbing_source / epitaph_cover_rubbing_source",
+      "rights": "REFERENCE_ONLY",
+      "reason": "§8 未登记的拓片文件，仅发现文件存在，未有来源及权利证明；不复制、不据此宣称全文终核。"
+    }
   ]
 }
