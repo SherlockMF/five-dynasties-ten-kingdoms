@@ -5,7 +5,7 @@ import { liaoSongEvents } from "@/data/seed/events/liao-song";
 import { tenKingdomsEvents } from "@/data/seed/events/ten-kingdoms";
 import { liaoSongPeople } from "@/data/seed/people/liao-song";
 import { southernPeople } from "@/data/seed/people/southern";
-import { validateHistoryData } from "@/lib/validation/history-data";
+import { validateFiveDynastiesData as validateHistoryData } from "@/lib/validation/history-data";
 import type { HistoricalEvent } from "@/types/history";
 
 const rejectTrackMutation = () => {

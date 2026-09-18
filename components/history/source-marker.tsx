@@ -57,12 +57,15 @@ export function SourceMarker({
   variant = "default",
 }: SourceMarkerProps) {
   const label = getSourceMarkerLabel(entity);
+  const hasDetailedSources = Boolean(entity.sourceEpisodes?.length);
   const tooltipId = useId();
   const markerRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const [tooltipPosition, setTooltipPosition] = useState<{
     horizontal: "left" | "right";
     vertical: "above" | "below";
+    maxHeight?: number;
+    left?: number;
   }>({ horizontal: "right", vertical: "below" });
 
   function placeTooltipWithinViewport() {
@@ -70,26 +73,29 @@ export function SourceMarker({
     if (!markerBox) return;
     const viewportGutter = 16;
     const tooltipGap = 8;
-    const tooltipWidth = Math.min(112, window.innerWidth - viewportGutter * 2);
+    const tooltipWidth = Math.min(hasDetailedSources ? 288 : 112, window.innerWidth - viewportGutter * 2);
     const tooltipHeight = tooltipRef.current?.offsetHeight ?? 0;
     const spaceBelow =
       window.innerHeight - markerBox.bottom - tooltipGap - viewportGutter;
     const spaceAbove = markerBox.top - tooltipGap - viewportGutter;
+    const above = tooltipHeight > spaceBelow && spaceAbove > spaceBelow;
     const nextPosition = {
+      maxHeight: Math.max(0, above ? spaceAbove : spaceBelow),
+      left: Math.max(viewportGutter, Math.min(markerBox.left, window.innerWidth - viewportGutter - tooltipWidth)) - markerBox.left,
       horizontal:
         markerBox.left + tooltipWidth <= window.innerWidth - viewportGutter
           ? ("left" as const)
           : ("right" as const),
       vertical:
-        tooltipHeight > 0 &&
-        spaceBelow < tooltipHeight &&
-        spaceAbove >= tooltipHeight
+        above
           ? ("above" as const)
           : ("below" as const),
     };
     setTooltipPosition((current) =>
       current.horizontal === nextPosition.horizontal &&
-      current.vertical === nextPosition.vertical
+      current.vertical === nextPosition.vertical &&
+      current.maxHeight === nextPosition.maxHeight &&
+      current.left === nextPosition.left
         ? current
         : nextPosition,
     );
@@ -119,14 +125,21 @@ export function SourceMarker({
       <span
         ref={tooltipRef}
         id={tooltipId}
-        aria-hidden="true"
+        aria-hidden={hasDetailedSources ? undefined : true}
+        tabIndex={hasDetailedSources ? 0 : undefined}
         role="tooltip"
+        style={hasDetailedSources ? {
+          maxHeight: tooltipPosition.maxHeight,
+          left: tooltipPosition.left,
+          right: tooltipPosition.left === undefined ? undefined : "auto",
+        } : undefined}
         className={cn(
-          "pointer-events-none invisible absolute z-50 w-28 max-w-[calc(100vw-2rem)] whitespace-normal rounded-lg px-3 py-2 text-center text-xs leading-5 opacity-0 shadow-xl transition-[opacity,visibility] group-hover/source-marker:visible group-hover/source-marker:opacity-100 group-focus-within/source-marker:visible group-focus-within/source-marker:opacity-100",
+          "invisible absolute z-50 max-w-[calc(100vw-2rem)] whitespace-normal rounded-lg px-3 py-2 text-center text-xs leading-5 opacity-0 shadow-xl transition-[opacity,visibility] group-hover/source-marker:visible group-hover/source-marker:opacity-100 group-focus-within/source-marker:visible group-focus-within/source-marker:opacity-100",
+          hasDetailedSources ? "w-72 overflow-y-auto overscroll-contain break-words" : "pointer-events-none w-28",
           tooltipPosition.horizontal === "left" ? "left-0" : "right-0",
           tooltipPosition.vertical === "above"
-            ? "bottom-full mb-2"
-            : "top-full mt-2",
+            ? (hasDetailedSources ? "bottom-full" : "bottom-full mb-2")
+            : (hasDetailedSources ? "top-full" : "top-full mt-2"),
           variant === "inverse" ? "bg-paper text-ink" : "bg-ink text-paper",
         )}
       >

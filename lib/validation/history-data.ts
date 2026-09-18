@@ -47,8 +47,17 @@ function isIntegerYear(value: unknown): value is number {
   );
 }
 
-/** Five Dynasties audit: fixed legacy counts, years and succession coverage. */
+/** Shared integrity checks, independent of series dates and size. */
 export function validateHistoryData(data: HistoryDataSet): string[] {
+  return validateData(data, false);
+}
+
+/** Retains the original Five Dynasties completeness requirements. */
+export function validateFiveDynastiesData(data: HistoryDataSet): string[] {
+  return validateData(data, true);
+}
+
+function validateData(data: HistoryDataSet, legacy: boolean): string[] {
   const errors: string[] = [];
   const dynastyIds = new Set(data.dynasties.map(({ id }) => id));
   const personIds = new Set(data.people.map(({ id }) => id));
@@ -75,7 +84,7 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
   }
 
   for (const [collectionName, [minimum, maximum]] of Object.entries(
-    COLLECTION_LIMITS,
+    legacy ? COLLECTION_LIMITS : {},
   )) {
     const count = data[collectionName as keyof typeof COLLECTION_LIMITS].length;
     if (count < minimum || count > maximum) {
@@ -92,8 +101,8 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
       (validStartYear &&
         validEndYear &&
         (dynasty.startYear > dynasty.endYear ||
-          dynasty.startYear < TIMELINE_MIN_YEAR ||
-          dynasty.endYear > 1127))
+          (legacy && (dynasty.startYear < TIMELINE_MIN_YEAR ||
+          dynasty.endYear > 1127))))
     ) {
       errors.push(`dynasty:${dynasty.id}:invalid-years`);
     }
@@ -151,7 +160,7 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
       }
       seenRulerPeriods.add(duplicateKey);
     }
-    if (validStartYear && validEndYear) {
+    if (legacy && validStartYear && validEndYear) {
       const firstMapYear = Math.max(907, dynasty.startYear);
       const lastMapYear = Math.min(MAX_YEAR, dynasty.endYear);
       for (let year = firstMapYear; year <= lastMapYear; year += 1) {
@@ -244,10 +253,9 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
       (validStartYear &&
         validEndYear &&
         isIntegerYear(endYear) &&
-        (event.startYear < TIMELINE_MIN_YEAR ||
-          event.startYear > MAX_YEAR ||
-          endYear < event.startYear ||
-          endYear > MAX_YEAR))
+        (endYear < event.startYear ||
+          (legacy && (event.startYear < TIMELINE_MIN_YEAR ||
+          event.startYear > MAX_YEAR || endYear > MAX_YEAR))))
     ) {
       errors.push(`event:${event.id}:year-out-of-range`);
     }
@@ -302,14 +310,14 @@ export function validateHistoryData(data: HistoryDataSet): string[] {
     );
   }
 
-  validateEventCoverage(data, errors);
+  if (legacy) validateEventCoverage(data, errors);
   validatePersonRelations(
     data,
     new Map(data.people.map((person) => [person.id, person])),
     errors,
   );
   validateEventRelations(data, eventIds, errors);
-  validateDynastySuccessions(data, dynastyIds, errors);
+  validateDynastySuccessions(data, dynastyIds, errors, legacy);
 
   for (const region of data.regions) {
     if (!dynastyIds.has(region.dynastyId)) {
@@ -579,6 +587,7 @@ function validateDynastySuccessions(
   data: HistoryDataSet,
   dynastyIds: ReadonlySet<string>,
   errors: string[],
+  legacy: boolean,
 ) {
   const edges = new Set<string>();
   for (const succession of data.dynastySuccessions) {
@@ -597,7 +606,7 @@ function validateDynastySuccessions(
     }
     edges.add(edge);
   }
-  for (const edge of REQUIRED_SUCCESSION_EDGES) {
+  for (const edge of legacy ? REQUIRED_SUCCESSION_EDGES : []) {
     if (!edges.has(edge)) {
       errors.push(`dynasty-successions:missing-required-edge:${edge}`);
     }

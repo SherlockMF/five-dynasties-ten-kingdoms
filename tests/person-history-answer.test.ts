@@ -1,13 +1,31 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { people } from "@/data/seed";
+import { fiveDynastiesSeedData } from "@/data/seed/five-dynasties";
+import { people as allPeople } from "@/data/seed";
 import { getPersonHistoryAnswer } from "@/lib/ai/person-history-answer";
 import type { PersonChatMessage } from "@/lib/ai/person-chat-schema";
 
+const { people } = fiveDynastiesSeedData;
 const shi = people.find((person) => person.id === "shi-jingtang")!;
 const signal = new AbortController().signal;
 
 describe("local person conversation", () => {
+  it("also enforces scope when called directly with a new-series person", async () => {
+    const reply = await getPersonHistoryAnswer(allPeople.find((item) => item.id === "yang-jian")!, "你是谁？", signal);
+    expect(reply.answer).toContain("仅支持五代十国");
+    expect(reply.references).toEqual([]);
+  });
+  it("does not answer out-of-series dates using another person's profile", async () => {
+    const reply = await getPersonHistoryAnswer(shi, "杨坚何时去世", signal);
+    expect(reply.answer).toContain("五代十国");
+    expect(reply.answer).not.toContain("没有确切记载");
+    expect(reply.references).toEqual([]);
+  });
+  it("distinguishes missing date fields from missing historical records", async () => {
+    const reply = await getPersonHistoryAnswer({ ...shi, deathYear: undefined }, "你何时去世", signal);
+    expect(reply.answer).toContain("尚未录入");
+    expect(reply.answer).not.toContain("没有确切记载");
+  });
   it.each(people)("introduces $name in the first person", async (person) => {
     const reply = await getPersonHistoryAnswer(person, "你是谁？", signal);
     expect(reply.answer).toContain(`我是${person.name}`);

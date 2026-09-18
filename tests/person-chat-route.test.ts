@@ -10,6 +10,18 @@ const request = (body: unknown = input) => new Request("http://localhost/api/per
 });
 
 describe("person chat route", () => {
+  it.each(["history", "free"])("does not send an unsupported subject to a configured model (%s)", async (mode) => {
+    const response = await POST(request({ ...input, mode, message: "杨坚何时去世" }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: "CHAT_SERIES_UNSUPPORTED" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it.each(["history", "free"])("rejects unsupported series before any model call (%s)", async (mode) => {
+    const response = await POST(request({ ...input, mode, personId: "yang-jian" }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: "CHAT_SERIES_UNSUPPORTED" });
+    expect(fetch).not.toHaveBeenCalled();
+  });
   beforeEach(() => {
     vi.stubGlobal("fetch", vi.fn());
     vi.stubEnv("LLM_PROVIDER", "openai-compatible");

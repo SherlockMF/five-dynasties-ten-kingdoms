@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { supportsPersonChat } from "@/lib/ai/person-chat-scope";
 
 import { generatePersonReply, isPersonChatConfigured, PersonChatConfigurationError } from "@/lib/ai/person-chat-provider";
 import { getPersonHistoryAnswer } from "@/lib/ai/person-history-answer";
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
     signal.throwIfAborted();
     const person = await getHistoryRepository().getPerson(input.personId);
     if (!person) return NextResponse.json({ code: "PERSON_NOT_FOUND", message: "未找到这位人物，请重新选择。" }, { status: 404 });
+    if (!supportsPersonChat(person.id, input.message)) return NextResponse.json({ code: "CHAT_SERIES_UNSUPPORTED", message: "人物对话目前仅支持五代十国专题。" }, { status: 400 });
     if (input.mode === "free" && process.env.NODE_ENV === "production") {
       return NextResponse.json({ code: "CHAT_LOCAL_ONLY", message: "随意聊仅在本地开发环境开放。你仍可使用问历史查询站内资料。" }, { status: 403, headers: { "Cache-Control": "no-store" } });
     }

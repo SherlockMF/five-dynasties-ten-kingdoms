@@ -1,6 +1,7 @@
 import "server-only";
 
-import { seedData } from "@/data/seed";
+import { supportsPersonChat } from "@/lib/ai/person-chat-scope";
+import { fiveDynastiesSeedData as seedData } from "@/data/seed/five-dynasties";
 import { personEventDialogues } from "@/data/person-dialogues";
 import { LocalHistoryRetriever } from "@/lib/rag/local-history-retriever";
 import type { HistoricalEvent, Person, PersonRelation } from "@/types/history";
@@ -77,11 +78,11 @@ function ageReply(person: Person, question: string): string {
   const year = Number(question.match(/(\d{3,4})年/)?.[1]) || undefined;
   if (year && person.birthYear !== undefined && year < person.birthYear) return `${year} 年时我尚未出生。我生于 ${person.birthYear} 年。`;
   if (year && person.deathYear !== undefined && year > person.deathYear) return `${year} 年时我已经去世了。史书记下的卒年是 ${person.deathYear} 年。`;
-  if (/出生|生于|哪年生/.test(question)) return person.birthYear !== undefined ? `我生于 ${person.birthYear} 年。` : "我的出生年份没有确切记载，这一点我说不准。";
-  if (/去世|哪年死|卒年/.test(question) && !/多大|几岁|年龄/.test(question)) return person.deathYear !== undefined ? `我的一生止于 ${person.deathYear} 年。${person.disputedNote ? `不过，这里需要说明：${person.disputedNote}` : ""}` : "我的去世年份没有确切记载，这一点我说不准。";
-  if (person.birthYear === undefined) return "我的出生年份没有确切记载，不能据此算出年龄。";
+  if (/出生|生于|哪年生/.test(question)) return person.birthYear !== undefined ? `我生于 ${person.birthYear} 年。` : "站内人物档案尚未录入我的出生年份，这一点我说不准。";
+  if (/去世|哪年死|卒年/.test(question) && !/多大|几岁|年龄/.test(question)) return person.deathYear !== undefined ? `我的一生止于 ${person.deathYear} 年。${person.disputedNote ? `不过，这里需要说明：${person.disputedNote}` : ""}` : "站内人物档案尚未录入我的去世年份，不能据此判断史料是否有记载。";
+  if (person.birthYear === undefined) return "站内人物档案尚未录入我的出生年份，不能据此算出年龄。";
   const end = year ?? person.deathYear;
-  if (end === undefined) return `我生于 ${person.birthYear} 年，但现有记载不足以推算寿数。`;
+  if (end === undefined) return `我生于 ${person.birthYear} 年，但站内人物档案尚未录入卒年，无法据此推算寿数。`;
   return `${year ? `${year} 年时` : "按生卒年份推算"}，我约 ${end - person.birthYear} 岁。这里只按年份相减，不作精确周岁或虚岁计算。`;
 }
 
@@ -110,6 +111,7 @@ export async function getPersonHistoryAnswer(
   signal.throwIfAborted();
   const question = normalize(message);
   const answer = (text: string, refs: string[] = person.sourceRefs): PersonChatAnswer => ({ answer: text, references: unique(refs) });
+  if (!supportsPersonChat(person.id, question)) return answer("人物对话目前仅支持五代十国专题，其他专题的资料请在对应人物页和事件页查看。", []);
   const namedOthers = seedData.people.filter((other) => other.id !== person.id && question.includes(other.name));
   if (/真人|机器人|你是AI|你是ai|模型/.test(question)) return answer(`我是${person.name}的角色演绎，用已有史料与你交谈，并不是真实人物。`, []);
   if (/^(你好|您好|嗨|在吗|早上好|晚上好|哈喽)$/.test(question)) return answer(`你好，我是${person.name}。想聊我的经历，还是想问一个当年的选择？`, []);

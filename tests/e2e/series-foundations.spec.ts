@@ -21,6 +21,8 @@ test("series entry routes and people remain isolated", async ({ page }) => {
 
 test("new series has real paths, timeline, people and explicit placeholder map", async ({ page }) => {
   await page.goto("/series/northern-qi-zhou-sui");
+  await expect(page.getByRole("link", { name: "从杨坚开始" })).toHaveAttribute("href", "/series/northern-qi-zhou-sui/people?year=550&person=yang-jian");
+  await expect(page.getByRole("link", { name: "从石敬瑭开始" })).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "杨坚", exact: true })).toBeVisible();
   const paths = page.locator("#reading-paths");
   await expect(paths.getByRole("link", { name: /开始阅读/ })).toHaveCount(3);
@@ -30,6 +32,7 @@ test("new series has real paths, timeline, people and explicit placeholder map",
   await expect(page.getByRole("link", { name: /返回时间线/ })).toHaveAttribute("href", "/series/northern-qi-zhou-sui/timeline?year=578#timeline");
   await page.getByRole("link", { name: /下一站/ }).click();
   await expect(page.getByRole("heading", { name: "宇文赟即位，杨丽华成为皇后", exact: true })).toBeVisible();
+  expect(await page.evaluate(() => innerWidth)).toBe(page.viewportSize()!.width);
   await page.getByRole("link", { name: "杨丽华", exact: true }).click();
   await expect(page).toHaveURL(/\/series\/northern-qi-zhou-sui\/people/);
   await expect(page.getByRole("heading", { name: "杨丽华", exact: true })).toBeVisible();
@@ -44,4 +47,23 @@ test("new series has real paths, timeline, people and explicit placeholder map",
   await expect(page.getByText(/形状不代表真实边界/)).toBeVisible();
   await page.goto("/series/northern-qi-zhou-sui/timeline?year=608");
   await expect(page.getByRole("link", { name: /李静训去世与安葬/ }).first()).toBeVisible();
+});
+
+test("modern source details stay in the viewport and can scroll on a short screen", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 240 });
+  await page.goto("/series/northern-qi-zhou-sui/people");
+  const marker = page.getByRole("note", { name: /sui.*upper/ }).first();
+  await marker.scrollIntoViewIfNeeded();
+  await marker.focus();
+  const tooltip = page.locator(`[id="${await marker.getAttribute("aria-controls")}"]`);
+  await expect(tooltip).toBeVisible();
+  await tooltip.focus();
+  const box = await tooltip.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.x).toBeGreaterThanOrEqual(0);
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.x + box!.width).toBeLessThanOrEqual(390);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(240);
+  await tooltip.press("End");
+  await expect.poll(() => tooltip.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 });
