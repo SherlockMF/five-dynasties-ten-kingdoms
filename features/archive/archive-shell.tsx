@@ -1,5 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
+import { historySeries } from "@/data/series";
+import { liJingxunSite } from "@/data/sites/li-jingxun/config";
 import Link from "next/link";
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -11,6 +13,7 @@ import { DiscoveryStatus } from "./discovery-status";
 
 const RelationshipRecord = dynamic(() => import("./relationship-record").then(m => m.RelationshipRecord), { ssr: false, loading: () => <p className="p-8 text-muted">正在加载关系图…</p> });
 const DevDiscoveryPanel = process.env.NODE_ENV === "development" ? dynamic(() => import("./dev-discovery-panel").then(m => m.DevDiscoveryPanel), { ssr: false }) : () => null;
+const relatedSeries = historySeries.filter(series => series.relatedSiteIds?.includes(liJingxunSite.id));
 const sourceLevels = [["primary", "一手 / 发掘材料"], ["museum", "文博机构公开资料"], ["research", "学术研究解释"], ["transcript", "节目逐字稿"]] as const;
 
 function Section({ id, number, title, description, children }: { id: string; number: string; title: string; description: string; children: ReactNode }) {
@@ -88,11 +91,11 @@ function ArchiveSession({ initialView, allowDev }: { initialView: ArchiveView; a
     }
   }
   const entries = (type: string) => view.entries.filter(e => e.type === type);
-  const cards = (type: string) => <div className={`grid gap-4 ${type === "inscription" ? "" : "md:grid-cols-2"}`}>{entries(type).map(e => <ArchiveRecord key={e.id} entry={e} />)}</div>;
+  const cards = (type: string) => <div className={`grid gap-4 ${type === "inscription" ? "" : "md:grid-cols-2"}`}>{entries(type).map(e => <ArchiveRecord key={e.id} entry={e} series={relatedSeries[0]} />)}</div>;
   const siteNodes = view.entries.filter(e => ["S02", "S03", "A01", "I01", "S04"].includes(e.id));
 
   return <main className="bg-paper text-ink">
-    <header className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-8 lg:px-12"><Link href="/" className="font-serif text-xl">山河纪 <span className="ml-3 font-sans text-xs text-muted">全部专题</span></Link><Link href="/series/northern-qi-zhou-sui" className="text-sm text-muted hover:text-cinnabar">北齐北周至隋专题 ↗</Link></header>
+    <header className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-4 py-6 sm:px-8 lg:px-12"><Link href="/" className="font-serif text-xl">山河纪 <span className="ml-3 font-sans text-xs text-muted">全部专题</span></Link><nav aria-label="相关历史专题" className="flex flex-wrap gap-4">{relatedSeries.map(series => <Link key={series.id} href={`/series/${series.slug}`} className="text-sm text-muted hover:text-cinnabar">{series.title}专题 ↗</Link>)}</nav></header>
     <ArchiveNav />
     <div className="mx-auto max-w-[1440px] px-4 sm:px-8 lg:px-12">
       <section id="overview" className="scroll-mt-20 grid gap-10 py-14 sm:py-20 lg:grid-cols-[1.4fr_1fr]">

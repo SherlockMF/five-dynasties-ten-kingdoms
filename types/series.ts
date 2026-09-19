@@ -25,6 +25,7 @@ export type HistorySeriesConfig = {
   subtitle?: string;
   featuredPersonId?: string;
   featuredEventId?: string;
+  relatedSiteIds?: readonly string[];
   polityGroups?: readonly SeriesPolityGroup[];
   timelineMinYear: number;
   timelineMaxYear: number;

@@ -1,3 +1,5 @@
+import type { HistoryEntityRef } from "./site";
+
 export const discoveryStates = ["hidden", "observed", "catalogued", "contextualized"] as const;
 export type DiscoveryState = typeof discoveryStates[number];
 export type ArchiveEntryType = "site" | "inscription" | "person" | "relation" | "artifact" | "timeline" | "interpretation";
@@ -41,6 +43,7 @@ export interface ArchiveEntry {
   position?: { x: number; y: number };
 }
 export interface VisibleArchiveEntry {
+  entityRef?: HistoryEntityRef;
   id: string;
   type: ArchiveEntryType;
   title: string;

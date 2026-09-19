@@ -1,4 +1,6 @@
 import { SourceMarker } from "@/components/history/source-marker";
+import { getSitesForEntity } from "@/data/sites";
+import { RelatedSites } from "@/features/sites/related-sites";
 import { PersonPortrait } from "./person-portrait";
 import { PersonChat } from "./person-chat";
 import type { Person } from "@/types/history";
@@ -12,6 +14,7 @@ export function PersonDetailPanel({ person, enableChat = true }: { person: Perso
       <PersonPortrait person={person} details collapsibleDetails className="mx-auto mt-5 max-w-52" />
       <p className="mt-5 text-sm leading-7 text-paper/80">{person.biography ?? person.summary}</p>
       {person.disputedNote?.trim() ? <aside role="note" aria-label="异说" className="mt-4 border-t border-gold/30 pt-4"><p className="text-xs font-semibold text-gold">史料异说</p><p className="mt-2 text-xs leading-6 text-paper/75">{person.disputedNote}</p></aside> : null}
+      <RelatedSites sites={getSitesForEntity({ type: "person", id: person.id })} inverse />
     </section>
   );
 }

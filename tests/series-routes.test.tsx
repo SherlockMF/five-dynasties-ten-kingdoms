@@ -55,6 +55,18 @@ describe("series routes", () => {
   it("serves existing content at the new five dynasties route", async () => {
     render(await SeriesPage(props("five-dynasties")));
     expect(screen.getByText("五代十国首页内容")).toBeVisible();
+    expect(screen.queryByRole("link", { name: /李静训墓调查档案/ })).not.toBeInTheDocument();
+  });
+  it("renders related sites only when selected in the series config", async () => {
+    const original = northernQiZhouSuiConfig.relatedSiteIds;
+    const { unmount } = render(await SeriesPage(props("northern-qi-zhou-sui")));
+    expect(screen.getByRole("link", { name: /李静训墓调查档案/ })).toHaveAttribute("href", "/archive/li-jingxun");
+    unmount();
+    try {
+      northernQiZhouSuiConfig.relatedSiteIds = [];
+      render(await SeriesPage(props("northern-qi-zhou-sui")));
+      expect(screen.queryByRole("link", { name: /李静训墓调查档案/ })).not.toBeInTheDocument();
+    } finally { northernQiZhouSuiConfig.relatedSiteIds = original; }
   });
   it("renders a safe empty state if the series has no people", async () => {
     vi.spyOn(getSeriesRepository(), "getSeriesPeople").mockResolvedValue([]);

@@ -73,6 +73,7 @@ export const northernQiZhouSuiEntityIds = {
     "yang-jian-empress-dugu",
     "yang-jian-yang-lihua",
     "yang-lihua-yuwen-yun",
+    "empress-dugu-yang-lihua",
     "yang-lihua-yuwen-eying",
     "yuwen-yun-yuwen-eying",
     "yuwen-eying-li-min",

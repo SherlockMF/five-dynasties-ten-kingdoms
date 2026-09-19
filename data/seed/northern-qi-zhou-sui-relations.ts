@@ -60,6 +60,14 @@ export const northernQiZhouSuiPersonRelations: PersonRelation[] = [
     ...sourced(["zhou9"], ["zhou","tomb"]),
   },
   {
+    "id": "empress-dugu-yang-lihua",
+    "sourcePersonId": "empress-dugu",
+    "targetPersonId": "yang-lihua",
+    "type": "family",
+    "description": "独孤皇后为杨丽华之母。",
+    ...sourced(["zhou9"], ["zhou","tomb"]),
+  },
+  {
     "id": "yang-lihua-yuwen-eying",
     "sourcePersonId": "yang-lihua",
     "targetPersonId": "yuwen-eying",

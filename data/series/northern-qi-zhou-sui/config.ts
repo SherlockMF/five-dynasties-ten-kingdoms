@@ -6,6 +6,7 @@ export const northernQiZhouSuiConfig: HistorySeriesConfig = {
   title: "北齐·北周 → 隋",
   featuredPersonId: "yang-jian",
   featuredEventId: "sui-founded",
+  relatedSiteIds: ["li-jingxun"],
   subtitle: "从北魏分裂，到隋的统一与崩解",
   timelineMinYear: 534,
   timelineMaxYear: 618,

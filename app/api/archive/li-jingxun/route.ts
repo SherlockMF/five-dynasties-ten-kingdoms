@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { archiveEntries, archiveSources } from "@/data/archives/li-jingxun/catalogue";
+import { liJingxunEntityMapping } from "@/data/sites/li-jingxun/entity-mapping";
 import { normalizeDiscoveries, projectArchive } from "@/lib/archive/unlock-rules";
 import { discoveryStates } from "@/types/archive";
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       // The development simulator can set a lower level; scene imports remain monotonic.
       discoveries = normalizeDiscoveries([...discoveries.filter(r => !keys.has(r.key)), ...selected.map(e => ({ key: e.key, state: level, discoveredAt: new Date().toISOString(), sceneId: "development-simulator" }))]);
     }
-    return json({ discoveries, view: projectArchive(archiveEntries, archiveSources, discoveries) });
+    return json({ discoveries, view: projectArchive(archiveEntries, archiveSources, discoveries, liJingxunEntityMapping) });
   } catch {
     return json({ error: "无法读取发现记录。" }, 400);
   }

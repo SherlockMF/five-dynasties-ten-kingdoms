@@ -1,4 +1,5 @@
 import { discoveryStates, type ArchiveEntry, type ArchiveSourceRef, type ArchiveView, type PlayerDiscoveryRecord } from "@/types/archive";
+import type { ArchiveEntityMapping } from "@/types/site";
 
 const rank = (state: string) => discoveryStates.indexOf(state as PlayerDiscoveryRecord["state"]);
 const labels = { site: "墓葬记录", inscription: "铭文记录", person: "人物", relation: "关系", artifact: "文物", timeline: "时代记录", interpretation: "解释记录" };
@@ -21,7 +22,7 @@ export function normalizeDiscoveries(input: unknown): PlayerDiscoveryRecord[] {
   return [...merged.values()].filter(r => r.state !== "hidden");
 }
 
-export function projectArchive(entries: ArchiveEntry[], sources: ArchiveSourceRef[], input: unknown): ArchiveView {
+export function projectArchive(entries: ArchiveEntry[], sources: ArchiveSourceRef[], input: unknown, entityMapping: ArchiveEntityMapping = {}): ArchiveView {
   const records = normalizeDiscoveries(input);
   const states = new Map(entries.map(entry => [entry.id, entry.defaultState ?? "hidden"]));
   for (const record of records) {
@@ -36,7 +37,7 @@ export function projectArchive(entries: ArchiveEntry[], sources: ArchiveSourceRe
     const state = states.get(entry.id)!;
     if (state === "hidden") return { id: entry.id, type: entry.type, title: `${labels[entry.type]} ${entry.id.replace(/\D/g, "")}`, state, blocks: [] };
     const blocks = entry.blocks.filter(b => rank(b.state) <= rank(state) && (b.requires ?? []).every(observed));
-    return { id: entry.id, type: entry.type, title: entry.title, state, blocks: blocks.map(b => ({ label: b.label, text: b.text, sourceRefs: rank(state) >= 2 ? codes(b.sourceRefs) : [] })), ...(entry.image ? { image: entry.image } : {}), ...(entry.year ? { year: entry.year } : {}), ...(entry.position ? { position: entry.position } : {}) };
+    return { id: entry.id, type: entry.type, title: entry.title, state, ...(entityMapping[entry.id] ? { entityRef: entityMapping[entry.id] } : {}), blocks: blocks.map(b => ({ label: b.label, text: b.text, sourceRefs: rank(state) >= 2 ? codes(b.sourceRefs) : [] })), ...(entry.image ? { image: entry.image } : {}), ...(entry.year ? { year: entry.year } : {}), ...(entry.position ? { position: entry.position } : {}) };
   });
   const relations = entries.filter(e => e.type === "relation" && observed(e.id) && e.endpoints?.every(observed)).map(e => ({ id: e.id, from: e.endpoints![0], to: e.endpoints![1], label: e.title, sourceRefs: rank(states.get(e.id)!) >= 2 ? codes(e.blocks.filter(b => rank(b.state) <= rank(states.get(e.id)!) && (b.requires ?? []).every(observed)).flatMap(b => b.sourceRefs)) : [] }));
   const log = records.flatMap(r => {
