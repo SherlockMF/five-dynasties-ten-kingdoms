@@ -1,16 +1,28 @@
-import type { Polygon } from "geojson";
+import type { MultiPolygon, Polygon } from "geojson";
+
+export type SnapshotAccuracy = "illustrative" | "approximate" | "reconstructed";
+/** Independent of annual HistoricalRegion; coordinates are longitude/latitude. */
+export type SnapshotRegion = {
+  polityId: string;
+  geometry: Polygon | MultiPolygon;
+  /** Text placement only, not a capital or surveyed location. */
+  labelPoint: [number, number];
+  accuracyLevel: SnapshotAccuracy;
+  note: string;
+};
+export type SnapshotMapSource = { title: string; url: string; referenceYear?: number };
 
 export type HistoricalMapSnapshot = {
   id: string;
   seriesId: string;
   year: number;
   label: string;
-  regionIds: string[];
   note: string;
-  accuracyLevel: "illustrative" | "approximate" | "reconstructed";
-  /** Engineering-only shape, never a historical boundary. */
-  placeholderGeometry?: Polygon;
-};
+  accuracyNote: string;
+  scopeNote: string;
+  accuracyLevel: SnapshotAccuracy;
+  sources: SnapshotMapSource[];
+} & ({ status: "ready"; regions: [SnapshotRegion, ...SnapshotRegion[]] } | { status: "pending"; regions: [] });
 
 export type NarrativeTrackConfig = {
   id: string;

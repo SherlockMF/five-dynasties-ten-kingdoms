@@ -135,7 +135,7 @@ const EMPTY_ATLAS: AtlasDataset = {
 
 export function HistoricalMap(props: HistoricalMapProps) {
   const series = props.series ?? fiveDynastiesConfig;
-  if (series.mapMode === "snapshot") return <SnapshotMap series={series} snapshots={props.snapshots ?? []} />;
+  if (series.mapMode === "snapshot") return <SnapshotMap series={series} snapshots={props.snapshots ?? []} dynasties={props.dynasties} events={props.events} />;
   return <AnnualHistoricalMap {...props} series={series} />;
 }
 

@@ -73,7 +73,7 @@ describe("verified northern Qi / Zhou / Sui corpus", () => {
     const people = await repository.getSeriesPeople(seriesId);
     const events = await repository.getSeriesEvents(seriesId);
     const locations = await repository.getSeriesLocations(seriesId);
-    expect(dynasties).toHaveLength(6);
+    expect(dynasties).toHaveLength(8);
     expect(people).toHaveLength(19);
     expect(events).toHaveLength(25);
     expect(locations.length).toBeGreaterThan(0);
@@ -97,9 +97,9 @@ describe("verified northern Qi / Zhou / Sui corpus", () => {
     expect(entities.length).toBeGreaterThan(50);
     for (const entity of entities) {
       expect(entity.sourceRefs.some((source) => /https:\/\//.test(source))).toBe(true);
-      expect(entity.sourceEpisodes?.length).toBeGreaterThan(0);
+      if (entity.contentOrigin !== "historical-extension") expect(entity.sourceEpisodes?.length).toBeGreaterThan(0);
       expect(entity.transcriptEpisodeIds).toBeUndefined();
-      expect(entity.contentOrigin).toBe("mixed");
+      expect(["mixed", "historical-extension"]).toContain(entity.contentOrigin);
       for (const episode of entity.sourceEpisodes ?? []) expect(typeof episode.episodeId).toBe("string");
     }
     expect(entities.some((entity) => entity.sourceEpisodes?.some(({ episodeId }) => episodeId === "upper"))).toBe(true);

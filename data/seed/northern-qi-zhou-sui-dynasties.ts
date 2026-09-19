@@ -3,6 +3,20 @@ import { sourced } from "./northern-qi-zhou-sui-sources";
 
 export const northernQiZhouSuiDynasties: Dynasty[] = [
   {
+    id: "southern-liang", name: "南梁", shortName: "南梁", startYear: 502, endYear: 557,
+    capital: "建康，后迁江陵", displayRole: "neighbor", predecessorIds: [], successorIds: ["chen", "western-liang"],
+    summary: "萧氏建立的南朝梁。侯景之乱后各地势力分裂；本专题550年地图只用梁旧域表达南方背景，不表示朝廷统一有效控制。",
+    color: "#9b8b57", rulerPeriods: [], contentOrigin: "historical-extension", verificationStatus: "reviewed",
+    sourceRefs: ["《梁书》卷一、卷四 — https://zh.wikisource.org/wiki/梁書/卷01", "《陈书》卷二（557年代梁） — https://zh.wikisource.org/wiki/陳書/卷2"],
+  },
+  {
+    id: "western-liang", name: "后梁（江陵）", shortName: "后梁", startYear: 555, endYear: 587,
+    capital: "江陵", displayRole: "regional", predecessorIds: ["southern-liang"], successorIds: ["sui"],
+    summary: "萧詧在江陵建立的梁政权，亦称西梁、后梁，先后依附西魏、北周与隋；587年隋废梁国。与五代朱温的后梁不同。",
+    color: "#a68a76", rulerPeriods: [], contentOrigin: "historical-extension", verificationStatus: "reviewed",
+    sourceRefs: ["《周书》卷四十八（萧詧与江陵） — https://zh.wikisource.org/wiki/周書/卷48", "《隋书》卷一（开皇七年废梁国） — https://zh.wikisource.org/wiki/隋書/卷01"],
+  },
+  {
     "id": "eastern-wei",
     "name": "东魏",
     "shortName": "东魏",

@@ -1,6 +1,8 @@
 // Membership only. Canonical entities live in data/seed.
 export const northernQiZhouSuiEntityIds = {
   "dynasties": [
+    "southern-liang",
+    "western-liang",
     "eastern-wei",
     "western-wei",
     "northern-qi",
