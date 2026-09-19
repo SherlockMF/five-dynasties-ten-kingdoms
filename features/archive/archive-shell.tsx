@@ -20,11 +20,11 @@ function Section({ id, number, title, description, children }: { id: string; num
   return <section id={id} aria-labelledby={`${id}-heading`} className="scroll-mt-20 border-t border-ink/20 py-10 sm:py-14"><div className="mb-7 grid gap-3 md:grid-cols-[80px_1fr]"><span className="font-mono text-sm text-cinnabar">{number} /</span><div><h2 id={`${id}-heading`} className="font-serif text-3xl">{title}</h2><p className="mt-3 text-sm leading-7 text-muted">{description}</p></div></div>{children}</section>;
 }
 
-export function ArchiveShell({ initialView, allowDev }: { initialView: ArchiveView; allowDev: boolean }) {
-  return <ArchiveSession key={allowDev ? "development" : "scene"} initialView={initialView} allowDev={allowDev} />;
+export function ArchiveShell({ initialView, allowDev, fieldAvailable = false }: { initialView: ArchiveView; allowDev: boolean; fieldAvailable?: boolean }) {
+  return <ArchiveSession key={allowDev ? "development" : "scene"} initialView={initialView} allowDev={allowDev} fieldAvailable={fieldAvailable} />;
 }
 
-function ArchiveSession({ initialView, allowDev }: { initialView: ArchiveView; allowDev: boolean }) {
+function ArchiveSession({ initialView, allowDev, fieldAvailable }: { initialView: ArchiveView; allowDev: boolean; fieldAvailable: boolean }) {
   const [view, setView] = useState(initialView);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState("");
@@ -99,7 +99,7 @@ function ArchiveSession({ initialView, allowDev }: { initialView: ArchiveView; a
     <ArchiveNav />
     <div className="mx-auto max-w-[1440px] px-4 sm:px-8 lg:px-12">
       <section id="overview" className="scroll-mt-20 grid gap-10 py-14 sm:py-20 lg:grid-cols-[1.4fr_1fr]">
-        <div><p className="font-mono text-xs tracking-[0.2em] text-cinnabar">ARCHIVE / 001 · 调查中</p><h1 className="mt-6 font-serif text-4xl leading-tight sm:text-6xl">李静训墓<br /><span className="text-ink/70">调查档案</span></h1><p className="mt-6 max-w-lg text-base leading-8 text-muted">现场负责发现，档案负责理解。<br />将亲眼观察过的线索，慢慢整理成对历史的认识。</p><div className="mt-8 flex flex-wrap gap-4"><button disabled className="min-h-12 cursor-not-allowed bg-ink/10 px-6 text-sm text-muted">进入现场（开发中）</button><a href="#records" className="inline-flex min-h-12 items-center border border-ink/25 px-6 text-sm hover:border-cinnabar">查看已记录档案 ↓</a></div></div>
+        <div><p className="font-mono text-xs tracking-[0.2em] text-cinnabar">ARCHIVE / 001 · 调查中</p><h1 className="mt-6 font-serif text-4xl leading-tight sm:text-6xl">李静训墓<br /><span className="text-ink/70">调查档案</span></h1><p className="mt-6 max-w-lg text-base leading-8 text-muted">现场负责发现，档案负责理解。<br />将亲眼观察过的线索，慢慢整理成对历史的认识。</p><div className="mt-8 flex flex-wrap gap-4"><Link href="/field/li-jingxun" className="inline-flex min-h-12 items-center bg-ink px-6 text-sm text-paper hover:bg-ink/80">{fieldAvailable ? "进入现场" : "现场版本准备中"}</Link><a href="#records" className="inline-flex min-h-12 items-center border border-ink/25 px-6 text-sm hover:border-cinnabar">查看已记录档案 ↓</a></div></div>
         <aside className="relative flex flex-col justify-between border border-ink/20 p-7 sm:p-9"><span aria-hidden="true" className="absolute right-7 top-5 font-serif text-7xl text-ink/5">608</span><p className="text-xs tracking-[0.25em] text-muted">项目登记卡</p><dl className="my-8 grid grid-cols-[70px_1fr] gap-y-5 text-sm"><dt className="text-muted">时代</dt><dd>隋</dd><dt className="text-muted">年代</dt><dd>大业四年 / 608 年</dd><dt className="text-muted">地点</dt><dd>今西安地区</dd><dt className="text-muted">状态</dt><dd>调查中</dd></dl><div className="border-t border-ink/20 pt-5"><div className="mb-3 flex items-baseline justify-between"><span className="text-xs text-muted">档案发现度</span><span className="font-mono text-xl">{view.discovered}<span className="text-sm text-muted"> / {view.total}</span></span></div><progress aria-label="档案发现度" value={view.discovered} max={view.total} className="h-1 w-full accent-[#a33e32]" /><p className="mt-3 text-xs leading-6 text-muted">含项目基础条目。无需全部发现，也没有通关分数。</p></div></aside>
       </section>
       <div aria-live="polite">{busy && <p role="status" className="mb-5 text-sm text-muted">正在读取发现记录…</p>}{error && <p role="alert" className="mb-5 border-l-2 border-cinnabar bg-cinnabar/5 p-4 text-sm text-cinnabar">{error}</p>}</div>

@@ -12,9 +12,9 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ view: initialView, discoveries: [] }) }));
 });
 afterEach(() => vi.unstubAllGlobals());
-it("offers nine non-linear modules and a disabled scene entrance without spoilers", async () => {
+it("offers nine non-linear modules and a Field entrance without spoilers", async () => {
   render(<ArchiveShell initialView={initialView} allowDev={false} />);
-  expect(screen.getByRole("button", { name: "进入现场（开发中）" })).toBeDisabled();
+  expect(screen.getByRole("link", { name: "现场版本准备中" })).toHaveAttribute("href", "/field/li-jingxun");
   expect(screen.getByRole("navigation", { name: "档案模块" }).querySelectorAll("a")).toHaveLength(9);
   expect(screen.queryByText("椭圆形绿玻璃瓶")).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "全部解锁" })).not.toBeInTheDocument();

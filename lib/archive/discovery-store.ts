@@ -6,7 +6,7 @@ export function readDiscoveries(storage: Pick<Storage, "getItem">, development: 
   const text = storage.getItem(discoveryStorageKey(development));
   if (!text) return [];
   const value = JSON.parse(text);
-  if (value.version !== 1 || !Array.isArray(value.discoveries)) throw new Error("发现记录版本无效。");
+  if (!value || value.version !== 1 || !Array.isArray(value.discoveries) || value.discoveries.length > 200) throw new Error("发现记录版本或数量无效。");
   return normalizeDiscoveries(value.discoveries);
 }
 export function writeDiscoveries(storage: Pick<Storage, "setItem">, discoveries: PlayerDiscoveryRecord[], development: boolean) {

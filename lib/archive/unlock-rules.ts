@@ -4,6 +4,18 @@ import type { ArchiveEntityMapping } from "@/types/site";
 const rank = (state: string) => discoveryStates.indexOf(state as PlayerDiscoveryRecord["state"]);
 const labels = { site: "墓葬记录", inscription: "铭文记录", person: "人物", relation: "关系", artifact: "文物", timeline: "时代记录", interpretation: "解释记录" };
 
+/** Merge normalized batches without treating duplicate input >200 as an empty reset. */
+export function mergeDiscoveries(...batches: PlayerDiscoveryRecord[][]): PlayerDiscoveryRecord[] {
+  const merged = new Map<string, PlayerDiscoveryRecord>();
+  for (const batch of batches) for (const record of batch) {
+    const previous = merged.get(record.key);
+    const result = normalizeDiscoveries(previous ? [previous, record] : [record])[0];
+    if (result) merged.set(record.key, result);
+    if (merged.size > 200) throw new Error("发现记录数量超过上限，未修改已保存记录。");
+  }
+  return [...merged.values()];
+}
+
 export function normalizeDiscoveries(input: unknown): PlayerDiscoveryRecord[] {
   if (!Array.isArray(input) || input.length > 200) return [];
   const merged = new Map<string, PlayerDiscoveryRecord>();
